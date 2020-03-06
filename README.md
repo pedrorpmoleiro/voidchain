@@ -1,10 +1,12 @@
-# VoidChain
-
-## A simple and high-performant permissioned distributed ledger technology platform
+# VoidChain - A simple and high-performant permissioned distributed ledger technology platform
 
 ## Descrition
 
+
+
 ## Objective
+
+
 
 ## Built With
 
