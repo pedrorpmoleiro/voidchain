@@ -1,6 +1,8 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
 public class Util {
+
+
     public static String convertByteArrayToHexString(byte[] arrayBytes) {
         StringBuffer stringBuffer = new StringBuffer();
         for (int i = 0; i < arrayBytes.length; i++) {

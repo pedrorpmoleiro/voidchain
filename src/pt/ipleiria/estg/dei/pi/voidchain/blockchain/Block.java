@@ -12,13 +12,10 @@ public class Block {
     private Set<Transaction> transactions;
     private byte[] hash;
     private long timestamp;
-    private int nTransactions;
-    private final int MAX_TRANSACTIONS = 5;
 
     public Block(byte[] previousHash) {
         this.previousHash = previousHash;
         this.transactions = new HashSet<>();
-        this.nTransactions = 0;
 
         this.timestamp = new Timestamp(System.currentTimeMillis()).getTime();
 
@@ -26,15 +23,9 @@ public class Block {
     }
 
     public Block(byte[] previousHash, Set<Transaction> transactions) {
-        if (transactions.size() >= MAX_TRANSACTIONS) {
-            throw new IllegalArgumentException("Number of transactions exceeds " + this.MAX_TRANSACTIONS);
-        }
-
         this.previousHash = previousHash;
         this.transactions = new HashSet<>();
         this.transactions.addAll(transactions);
-
-        this.nTransactions = this.transactions.size();
 
         this.timestamp = new Timestamp(System.currentTimeMillis()).getTime();
 
@@ -57,21 +48,15 @@ public class Block {
     }
 
     public void addTransaction(Transaction transaction) {
-        if (this.isFull()) {
-            throw new IndexOutOfBoundsException("CANT ADD TRANSACTION");
-        }
-
         this.transactions.add(transaction);
         this.updateHash();
-
-        this.nTransactions++;
     }
 
     public byte[] getHash() {
         return hash;
     }
 
-    public boolean isFull() {
-        return this.nTransactions >= MAX_TRANSACTIONS;
+    public byte[] getPreviousHash() {
+        return previousHash;
     }
 }
