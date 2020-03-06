@@ -1,35 +1,37 @@
 package pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain;
 
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
+import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Util;
 
-import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 public class Main {
     public static void main(String[] args) {
-        Set<Block> blockchain = new LinkedHashSet<>();
-        //Block mostRecentBlock = null;
+        Blockchain voidchain = new Blockchain();
 
-        String firstPreviousHash = "GENESIS";
-        Block genesisBlock = new Block(firstPreviousHash.getBytes(StandardCharsets.UTF_8));
-        System.out.println("GENESIS HASH: " + Util.convertByteArrayToHexString(genesisBlock.getHash()));
-        blockchain.add(genesisBlock);
+        System.out.println("GENESIS HASH: " + Util.convertByteArrayToHexString(voidchain.getCurrentBlock().getPreviousHash()));
+        System.out.println("BEFORE ADD TRANSACTION, BLOCK: " + Util.convertByteArrayToHexString(voidchain.getCurrentBlock().getHash()));
 
-        Block secondBlock = new Block(genesisBlock.getHash());
-        blockchain.add(secondBlock);
-        //mostRecentBlock = secondBlock;
-        System.out.println("SECOND BLOCK HASH: " + Util.convertByteArrayToHexString(secondBlock.getHash()));
+        voidchain.getCurrentBlock().addTransaction(new Transaction("FIRST TRANSACTION"));
 
-        secondBlock.addTransaction(new Transaction("1st Transaction"));
-        System.out.println("SECOND HASH (1 Transaction): " + Util.convertByteArrayToHexString(secondBlock.getHash()));
+        System.out.println("AFTER ADD TRANSACTION AND BEFORE CREATE BLOCK: " + Util.convertByteArrayToHexString(voidchain.getCurrentBlock().getHash()));
 
-        secondBlock.addTransaction(new Transaction("THE SECOND"));
-        System.out.println("SECOND HASH (2 Transaction): " + Util.convertByteArrayToHexString(secondBlock.getHash()));
+        Block midBlock = voidchain.getCurrentBlock();
+        voidchain.createBlock();
 
-        secondBlock.addTransaction(new Transaction("END"));
-        System.out.println("SECOND HASH (3 Transaction): " + Util.convertByteArrayToHexString(secondBlock.getHash()));
+        System.out.println("AFTER CREATE NEW BLOCK: " + Util.convertByteArrayToHexString(voidchain.getCurrentBlock().getHash()));
+
+        System.out.println("NUMBER OF BLOCKS: " + voidchain.getBlockHeight());
+
+        voidchain.getCurrentBlock().addTransaction(new Transaction("NEW TRANSACTION"));
+
+        System.out.println("AFTER CREATE TRANSACTION ON NEW BLOCK: " + Util.convertByteArrayToHexString(voidchain.getCurrentBlock().getHash()));
+
+        System.out.println("IS BLOCKCHAIN VALID: " + voidchain.isChainValid());
+
+        System.out.println("ALTERING SECOND BLOCK (ADDING TRANSACTION)");
+        midBlock.addTransaction(new Transaction("BREAKING TRANSACTION"));
+
+        System.out.println("IS BLOCKCHAIN VALID: " + voidchain.isChainValid());
     }
 }
