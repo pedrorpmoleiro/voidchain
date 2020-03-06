@@ -10,4 +10,12 @@ public class Transaction {
         this.message = message;
         this.timestamp = new Timestamp(System.currentTimeMillis()).getTime();
     }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
 }
