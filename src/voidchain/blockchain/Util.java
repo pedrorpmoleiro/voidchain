@@ -1,4 +1,4 @@
-package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
+package voidchain.blockchain;
 
 public class Util {
 

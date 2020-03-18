@@ -1,9 +1,9 @@
-package pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain;
+package voidchain.demo.blockchain;
 
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
-import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
+import voidchain.blockchain.Block;
 
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashSet;

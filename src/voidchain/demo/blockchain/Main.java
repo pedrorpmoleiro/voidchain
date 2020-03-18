@@ -1,9 +1,9 @@
-package pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain;
+package voidchain.demo.blockchain;
 
-import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
-import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
-import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
-import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Util;
+import voidchain.blockchain.Block;
+import voidchain.blockchain.Blockchain;
+import voidchain.blockchain.Transaction;
+import voidchain.blockchain.Util;
 
 public class Main {
     public static void main(String[] args) {
