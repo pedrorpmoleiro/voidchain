@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement />
+  <nodes>
+    <node x="260.0" y="4568.0">bftsmart.communication.MessageHandler</node>
+    <node x="2412.0" y="2818.0">bftsmart.tom.leaderchange.RequestsTimer</node>
+    <node x="2130.25" y="2084.0">bftsmart.tom.server.BatchExecutable</node>
+    <node x="3949.0" y="4295.0">bftsmart.statemanagement.strategy.durability.StateSender</node>
+    <node x="4153.0" y="4295.0">bftsmart.tom.util.BatchBuilder</node>
+    <node x="3320.0" y="3956.0">bftsmart.reconfiguration.VMServices</node>
+    <node x="3201.75" y="1913.0">bftsmart.tom.server.defaultservices.StateLog</node>
+    <node x="3578.0" y="4568.0">bftsmart.communication.client.CommunicationSystemServerSideFactory</node>
+    <node x="4269.25" y="2182.0">bftsmart.statemanagement.strategy.durability.CSTState</node>
+    <node x="2648.0" y="516.0">bftsmart.tom.ServiceProxy</node>
+    <node x="4435.0" y="3956.0">bftsmart.consensus.roles.Acceptor</node>
+    <node x="2490.25" y="2127.0">bftsmart.communication.client.netty.NettyClientServerCommunicationSystemClientSide</node>
+    <node x="1672.5" y="2019.0">bftsmart.tom.server.Recoverable</node>
+    <node x="1158.5" y="3489.0">bftsmart.tom.util.KeyLoader</node>
+    <node x="280.5" y="3956.0">bftsmart.reconfiguration.views.ViewStorage</node>
+    <node x="3390.75" y="0.0">bftsmart.statemanagement.StateManager</node>
+    <node x="2458.0" y="3956.0">bftsmart.tom.core.messages.TOMMessageType</node>
+    <node x="3676.0" y="3010.0">bftsmart.communication.client.netty.NettyClientServerCommunicationSystemServerSide</node>
+    <node x="2446.25" y="3293.0">bftsmart.tom.leaderchange.RequestsTimer.RequestTimerTask</node>
+    <node x="1440.0" y="3489.0">bftsmart.tom.ServiceReplica</node>
+    <node x="3019.0" y="3956.0">bftsmart.reconfiguration.Reconfiguration</node>
+    <node x="4675.0" y="4568.0">bftsmart.tom.util.Extractor</node>
+    <node x="1583.0" y="4295.0">bftsmart.tom.ReplicaContext</node>
+    <node x="270.0" y="1913.0">bftsmart.communication.client.RequestReceiver</node>
+    <node x="1786.25" y="286.0">bftsmart.tom.core.messages.TOMMessage</node>
+    <node x="0.0" y="4733.0">bftsmart.tom.server.RequestVerifier</node>
+    <node x="1121.0" y="3681.0">bftsmart.reconfiguration.util.RSAKeyLoader</node>
+    <node x="4413.0" y="3030.0">bftsmart.statemanagement.strategy.durability.CSTRequestF1</node>
+    <node x="1605.0" y="2818.0">bftsmart.tom.core.ExecutionManager</node>
+    <node x="1028.0" y="3956.0">bftsmart.reconfiguration.ViewManager</node>
+    <node x="2211.0" y="3956.0">bftsmart.tom.util.Storage</node>
+    <node x="3378.5" y="3184.0">bftsmart.tom.server.defaultservices.FileRecoverer.FileListFilter</node>
+    <node x="817.0" y="4733.0">bftsmart.tom.util.SignatureTest</node>
+    <node x="2654.25" y="3272.0">bftsmart.tom.leaderchange.RequestsTimer.SendStopTask</node>
+    <node x="2983.0" y="4568.0">bftsmart.communication.client.netty.NettyTOMMessageDecoder</node>
+    <node x="203.0" y="3791.0">bftsmart.communication.server.ServersCommunicationLayer.PendingConnection</node>
+    <node x="3320.0" y="2818.0">bftsmart.tom.server.defaultservices.FileRecoverer</node>
+    <node x="3750.5" y="2818.0">bftsmart.communication.client.CommunicationSystemServerSide</node>
+    <node x="0.0" y="3956.0">bftsmart.consensus.TimestampValuePair</node>
+    <node x="2357.0" y="3489.0">bftsmart.communication.server.ServerConnection</node>
+    <node x="3049.833333333333" y="3489.0">bftsmart.clientsmanagement.ClientsManager</node>
+    <node x="3236.25" y="756.0">bftsmart.statemanagement.strategy.StandardStateManager</node>
+    <node x="298.0" y="4733.0">bftsmart.reconfiguration.views.TestViewSerialization</node>
+    <node x="1388.0" y="4568.0">bftsmart.tom.core.ReplyManager</node>
+    <node x="2566.25" y="1913.0">bftsmart.communication.client.CommunicationSystemClientSide</node>
+    <node x="3327.5" y="4148.0">bftsmart.reconfiguration.util.DefaultVMServices</node>
+    <node x="4051.5" y="0.0">bftsmart.reconfiguration.ViewController</node>
+    <node x="668.0" y="3489.0">bftsmart.communication.ServerCommunicationSystem</node>
+    <node x="3566.833333333333" y="3489.0">bftsmart.tom.leaderchange.CollectData</node>
+    <node x="0.0" y="4568.0">bftsmart.tom.util.RSAKeyPairGenerator</node>
+    <node x="2586.75" y="2537.0">bftsmart.communication.client.netty.NettyClientServerCommunicationSystemClientSide.SyncListener</node>
+    <node x="2330.0" y="4295.0">bftsmart.communication.client.netty.NettyServerPipelineFactory</node>
+    <node x="0.0" y="2818.0">bftsmart.tom.util.TOMUtil</node>
+    <node x="396.0" y="1376.0">bftsmart.statemanagement.strategy.durability.CSTSMMessage</node>
+    <node x="2403.8333333333335" y="3723.0">bftsmart.communication.server.ServerConnection.SenderThread</node>
+    <node x="3017.5" y="3184.0">bftsmart.reconfiguration.util.HostsConfig.Config</node>
+    <node x="575.0" y="4733.0">bftsmart.communication.server.TestSerialization</node>
+    <node x="4580.0" y="4295.0">bftsmart.reconfiguration.ReconfigurationTest</node>
+    <node x="2383.0" y="4568.0">bftsmart.communication.client.CommunicationSystemClientSideFactory</node>
+    <node x="3885.25" y="432.0">bftsmart.reconfiguration.ServerViewController</node>
+    <node x="1743.0" y="4568.0">bftsmart.tom.util.ShutdownHookThread</node>
+    <node x="2649.0" y="106.0">bftsmart.tom.core.TOMSender</node>
+    <node x="0.0" y="3489.0">bftsmart.communication.server.ServersCommunicationLayer</node>
+    <node x="2436.25" y="882.0">bftsmart.tom.AsynchServiceProxy</node>
+    <node x="2010.0" y="3489.0">bftsmart.clientsmanagement.ClientData</node>
+    <node x="1341.0" y="4295.0">bftsmart.statemanagement.strategy.durability.StateSenderServer</node>
+    <node x="3390.75" y="346.0">bftsmart.statemanagement.strategy.BaseStateManager</node>
+    <node x="1512.25" y="714.0">bftsmart.tom.core.messages.ForwardedMessage</node>
+    <node x="268.0" y="4084.0">bftsmart.reconfiguration.views.DefaultViewStorage</node>
+    <node x="0.0" y="0.0">bftsmart.reconfiguration.util.Configuration</node>
+    <node x="2045.0" y="2818.0">bftsmart.consensus.Consensus</node>
+    <node x="4087.0" y="1913.0">bftsmart.statemanagement.ApplicationState</node>
+    <node x="703.0" y="4295.0">bftsmart.tom.server.defaultservices.CommandsInfo</node>
+    <node x="2039.0" y="4295.0">bftsmart.tom.util.DebugInfo</node>
+    <node x="2168.25" y="671.0">bftsmart.tom.leaderchange.LCMessage</node>
+    <node x="3805.25" y="2171.0">bftsmart.tom.server.defaultservices.DefaultApplicationState</node>
+    <node x="1277.0" y="2818.0">bftsmart.consensus.Epoch</node>
+    <node x="4374.833333333333" y="3489.0">bftsmart.tom.leaderchange.CertifiedDecision</node>
+    <node x="1713.25" y="2277.0">bftsmart.tom.server.defaultservices.DefaultRecoverable</node>
+    <node x="3395.25" y="2345.0">bftsmart.tom.server.defaultservices.DiskStateLog</node>
+    <node x="4166.0" y="4568.0">bftsmart.communication.client.netty.NettyTOMMessageEncoder</node>
+    <node x="2020.0" y="4568.0">bftsmart.communication.client.ReplyListener</node>
+    <node x="1256.25" y="703.0">bftsmart.reconfiguration.VMMessage</node>
+    <node x="725.25" y="670.0">bftsmart.statemanagement.SMMessage</node>
+    <node x="476.0" y="4568.0">bftsmart.consensus.roles.Proposer</node>
+    <node x="0.0" y="2019.0">bftsmart.tom.core.TOMLayer</node>
+    <node x="2767.8333333333335" y="3723.0">bftsmart.communication.server.ServerConnection.TTPReceiverThread</node>
+    <node x="433.0" y="2818.0">bftsmart.tom.MessageContext</node>
+    <node x="2112.25" y="2255.0">bftsmart.tom.server.defaultservices.durability.DurabilityCoordinator</node>
+    <node x="1708.125" y="1913.0">bftsmart.tom.server.Executable</node>
+    <node x="4173.0" y="3052.0">bftsmart.statemanagement.strategy.durability.CSTRequestFGT1</node>
+    <node x="1346.0" y="3956.0">bftsmart.reconfiguration.View</node>
+    <node x="3156.0" y="4295.0">bftsmart.communication.client.netty.NettyClientPipelineFactory</node>
+    <node x="1932.0" y="3956.0">bftsmart.reconfiguration.ReconfigureRequest</node>
+    <node x="827.0" y="1913.0">bftsmart.tom.leaderchange.LCManager</node>
+    <node x="2576.8333333333335" y="3723.0">bftsmart.communication.server.ServerConnection.ReceiverThread</node>
+    <node x="0.0" y="4295.0">bftsmart.consensus.messages.MessageFactory</node>
+    <node x="855.0" y="1376.0">bftsmart.statemanagement.strategy.StandardSMMessage</node>
+    <node x="4073.833333333333" y="3489.0">bftsmart.reconfiguration.views.View</node>
+    <node x="2924.0" y="2818.0">bftsmart.reconfiguration.util.HostsConfig</node>
+    <node x="3577.0" y="4104.0">bftsmart.tom.server.defaultservices.DefaultReplier</node>
+    <node x="2712.0" y="3956.0">bftsmart.reconfiguration.ReconfigureReply</node>
+    <node x="1647.0" y="3956.0">bftsmart.consensus.Decision</node>
+    <node x="1294.0" y="2084.0">bftsmart.tom.server.SingleExecutable</node>
+    <node x="3548.25" y="767.0">bftsmart.statemanagement.strategy.durability.DurableStateManager</node>
+    <node x="989.0" y="4568.0">bftsmart.tom.util.BatchReader</node>
+    <node x="3577.0" y="3956.0">bftsmart.tom.server.Replier</node>
+    <node x="2900.25" y="927.0">bftsmart.tom.ServiceProxy.HashResponseController</node>
+    <node x="1360.25" y="2277.0">bftsmart.tom.server.defaultservices.DefaultSingleRecoverable</node>
+    <node x="968.25" y="637.0">bftsmart.consensus.messages.ConsensusMessage</node>
+    <node x="2990.25" y="2345.0">bftsmart.tom.server.defaultservices.durability.DurableStateLog</node>
+    <node x="1217.0" y="4733.0">bftsmart.tom.core.ReplyThread</node>
+    <node x="3942.0" y="3956.0">bftsmart.tom.RequestContext</node>
+    <node x="1028.0" y="4295.0">bftsmart.tom.core.Synchronizer</node>
+    <node x="350.0" y="4295.0">bftsmart.communication.client.netty.NettyClientServerSession</node>
+    <node x="2737.5" y="0.0">bftsmart.communication.client.ReplyReceiver</node>
+    <node x="1024.0" y="4733.0">bftsmart.communication.server.Test</node>
+    <node x="4293.0" y="2818.0">bftsmart.statemanagement.strategy.durability.CSTRequest</node>
+    <node x="4778.833333333333" y="3489.0">bftsmart.clientsmanagement.RequestList</node>
+    <node x="40.5" y="980.0">bftsmart.reconfiguration.util.TOMConfiguration</node>
+    <node x="1395.25" y="0.0">bftsmart.communication.SystemMessage</node>
+    <node x="519.0" y="3956.0">bftsmart.tom.core.DeliveryThread</node>
+    <node x="4188.25" y="606.0">bftsmart.reconfiguration.ClientViewController</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="bftsmart.tom.ServiceProxy" target="bftsmart.tom.core.TOMSender">
+      <point x="0.0" y="-158.0" />
+      <point x="0.0" y="180.0" />
+    </edge>
+    <edge source="bftsmart.statemanagement.strategy.durability.CSTRequestF1" target="bftsmart.statemanagement.strategy.durability.CSTRequest">
+      <point x="0.0" y="-114.0" />
+      <point x="4523.0" y="3005.0" />
+      <point x="4458.0" y="3005.0" />
+      <point x="55.0" y="81.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.defaultservices.DefaultRecoverable" target="bftsmart.tom.server.Recoverable">
+      <point x="-94.75" y="-180.0" />
+      <point x="0.0" y="93.0" />
+    </edge>
+    <edge source="bftsmart.consensus.messages.ConsensusMessage" target="bftsmart.communication.SystemMessage">
+      <point x="0.0" y="-169.0" />
+      <point x="1102.25" y="256.0" />
+      <point x="1451.0" y="256.0" />
+      <point x="-55.75" y="113.0" />
+    </edge>
+    <edge source="bftsmart.statemanagement.strategy.BaseStateManager" target="bftsmart.statemanagement.StateManager">
+      <point x="0.0" y="-180.0" />
+      <point x="0.0" y="148.0" />
+    </edge>
+    <edge source="bftsmart.communication.server.ServersCommunicationLayer.PendingConnection" target="bftsmart.communication.server.ServersCommunicationLayer">
+      <point x="0.0" y="-60.0" />
+      <point x="0.0" y="126.0" />
+    </edge>
+    <edge source="bftsmart.reconfiguration.util.RSAKeyLoader" target="bftsmart.tom.util.KeyLoader">
+      <point x="0.0" y="-92.0" />
+      <point x="0.0" y="71.0" />
+    </edge>
+    <edge source="bftsmart.statemanagement.strategy.durability.CSTRequestFGT1" target="bftsmart.statemanagement.strategy.durability.CSTRequest">
+      <point x="0.0" y="-92.0" />
+      <point x="4283.0" y="3005.0" />
+      <point x="4348.0" y="3005.0" />
+      <point x="-55.0" y="81.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.SingleExecutable" target="bftsmart.tom.server.Executable">
+      <point x="0.0" y="-28.0" />
+      <point x="1443.5" y="1994.0" />
+      <point x="1786.125" y="1994.0" />
+      <point x="-78.0" y="28.0" />
+    </edge>
+    <edge source="bftsmart.statemanagement.strategy.StandardStateManager" target="bftsmart.statemanagement.strategy.BaseStateManager">
+      <point x="0.0" y="-72.0" />
+      <point x="3382.25" y="731.0" />
+      <point x="3464.5" y="731.0" />
+      <point x="-73.75" y="180.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.defaultservices.durability.DurableStateLog" target="bftsmart.tom.server.defaultservices.StateLog">
+      <point x="0.0" y="-125.0" />
+      <point x="3182.75" y="2320.0" />
+      <point x="3291.0" y="2320.0" />
+      <point x="-89.25" y="191.0" />
+    </edge>
+    <edge source="bftsmart.communication.client.netty.NettyClientServerCommunicationSystemClientSide.SyncListener" target="bftsmart.communication.client.netty.NettyClientServerCommunicationSystemClientSide">
+      <point x="0.0" y="-60.0" />
+      <point x="0.0" y="180.0" />
+    </edge>
+    <edge source="bftsmart.tom.leaderchange.LCMessage" target="bftsmart.communication.SystemMessage">
+      <point x="0.0" y="-135.0" />
+      <point x="2279.75" y="246.0" />
+      <point x="1599.6666666666667" y="246.0" />
+      <point x="92.91666666666674" y="113.0" />
+    </edge>
+    <edge source="bftsmart.reconfiguration.VMMessage" target="bftsmart.communication.SystemMessage">
+      <point x="0.0" y="-103.0" />
+      <point x="1374.25" y="266.0" />
+      <point x="1488.1666666666667" y="266.0" />
+      <point x="-18.583333333333258" y="113.0" />
+    </edge>
+    <edge source="bftsmart.reconfiguration.ServerViewController" target="bftsmart.reconfiguration.ViewController">
+      <point x="0.0" y="-234.0" />
+      <point x="4026.75" y="407.0" />
+      <point x="4114.5" y="407.0" />
+      <point x="-63.0" y="191.0" />
+    </edge>
+    <edge source="bftsmart.statemanagement.strategy.durability.DurableStateManager" target="bftsmart.statemanagement.strategy.BaseStateManager">
+      <point x="0.0" y="-61.0" />
+      <point x="3694.25" y="731.0" />
+      <point x="3612.0" y="731.0" />
+      <point x="73.75" y="180.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.defaultservices.durability.DurabilityCoordinator" target="bftsmart.tom.server.Recoverable">
+      <point x="-83.25" y="-202.0" />
+      <point x="2195.5" y="2225.0" />
+      <point x="1898.3333333333333" y="2225.0" />
+      <point x="90.33333333333326" y="93.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.defaultservices.DiskStateLog" target="bftsmart.tom.server.defaultservices.StateLog">
+      <point x="0.0" y="-125.0" />
+      <point x="3577.75" y="2320.0" />
+      <point x="3469.5" y="2320.0" />
+      <point x="89.25" y="191.0" />
+    </edge>
+    <edge source="bftsmart.tom.ServiceProxy.HashResponseController" target="bftsmart.tom.ServiceProxy">
+      <point x="0.0" y="-70.0" />
+      <point x="3045.75" y="857.0" />
+      <point x="2954.0" y="857.0" />
+      <point x="102.0" y="158.0" />
+    </edge>
+    <edge source="bftsmart.statemanagement.strategy.durability.CSTState" target="bftsmart.statemanagement.ApplicationState">
+      <point x="0.0" y="-180.0" />
+      <point x="4516.75" y="2146.0" />
+      <point x="4364.5" y="2146.0" />
+      <point x="92.5" y="104.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.defaultservices.durability.DurabilityCoordinator" target="bftsmart.tom.server.BatchExecutable">
+      <point x="83.25" y="-202.0" />
+      <point x="77.25" y="28.0" />
+    </edge>
+    <edge source="bftsmart.tom.core.messages.ForwardedMessage" target="bftsmart.communication.SystemMessage">
+      <point x="0.0" y="-92.0" />
+      <point x="1639.25" y="266.0" />
+      <point x="1525.3333333333333" y="266.0" />
+      <point x="18.583333333333258" y="113.0" />
+    </edge>
+    <edge source="bftsmart.tom.core.TOMLayer" target="bftsmart.communication.client.RequestReceiver">
+      <point x="0.0" y="-377.0" />
+      <point x="0.0" y="28.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.defaultservices.DefaultReplier" target="bftsmart.tom.server.Replier">
+      <point x="0.0" y="-49.0" />
+      <point x="0.0" y="49.0" />
+    </edge>
+    <edge source="bftsmart.reconfiguration.util.HostsConfig.Config" target="bftsmart.reconfiguration.util.HostsConfig">
+      <point x="0.0" y="-71.0" />
+      <point x="0.0" y="158.0" />
+    </edge>
+    <edge source="bftsmart.statemanagement.strategy.durability.CSTSMMessage" target="bftsmart.statemanagement.SMMessage">
+      <point x="0.0" y="-92.0" />
+      <point x="615.5" y="1351.0" />
+      <point x="781.0" y="1351.0" />
+      <point x="-55.75" y="136.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.defaultservices.FileRecoverer.FileListFilter" target="bftsmart.tom.server.defaultservices.FileRecoverer">
+      <point x="0.0" y="-49.0" />
+      <point x="0.0" y="158.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.defaultservices.DefaultSingleRecoverable" target="bftsmart.tom.server.Recoverable">
+      <point x="83.25" y="-180.0" />
+      <point x="1610.0" y="2235.0" />
+      <point x="1717.6666666666667" y="2235.0" />
+      <point x="-90.33333333333326" y="93.0" />
+    </edge>
+    <edge source="bftsmart.tom.core.messages.TOMMessage" target="bftsmart.communication.SystemMessage">
+      <point x="0.0" y="-520.0" />
+      <point x="1967.25" y="256.0" />
+      <point x="1562.5" y="256.0" />
+      <point x="55.75" y="113.0" />
+    </edge>
+    <edge source="bftsmart.tom.core.TOMSender" target="bftsmart.communication.client.ReplyReceiver">
+      <point x="0.0" y="-180.0" />
+      <point x="0.0" y="28.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.defaultservices.DefaultSingleRecoverable" target="bftsmart.tom.server.SingleExecutable">
+      <point x="-83.25" y="-180.0" />
+      <point x="0.0" y="28.0" />
+    </edge>
+    <edge source="bftsmart.tom.AsynchServiceProxy" target="bftsmart.tom.ServiceProxy">
+      <point x="0.0" y="-115.0" />
+      <point x="2658.25" y="857.0" />
+      <point x="2750.0" y="857.0" />
+      <point x="-102.0" y="158.0" />
+    </edge>
+    <edge source="bftsmart.communication.client.netty.NettyClientServerCommunicationSystemClientSide" target="bftsmart.communication.client.CommunicationSystemClientSide">
+      <point x="0.0" y="-180.0" />
+      <point x="0.0" y="82.0" />
+    </edge>
+    <edge source="bftsmart.tom.leaderchange.RequestsTimer.RequestTimerTask" target="bftsmart.tom.leaderchange.RequestsTimer">
+      <point x="0.0" y="-28.0" />
+      <point x="2540.25" y="3247.0" />
+      <point x="2528.75" y="3247.0" />
+      <point x="-116.75" y="202.0" />
+    </edge>
+    <edge source="bftsmart.reconfiguration.util.DefaultVMServices" target="bftsmart.reconfiguration.VMServices">
+      <point x="0.0" y="-28.0" />
+      <point x="0.0" y="71.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.defaultservices.DefaultRecoverable" target="bftsmart.tom.server.BatchExecutable">
+      <point x="94.75" y="-180.0" />
+      <point x="1997.5" y="2235.0" />
+      <point x="2207.5" y="2235.0" />
+      <point x="-77.25" y="28.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.BatchExecutable" target="bftsmart.tom.server.Executable">
+      <point x="0.0" y="-28.0" />
+      <point x="2284.75" y="1994.0" />
+      <point x="1942.125" y="1994.0" />
+      <point x="78.0" y="28.0" />
+    </edge>
+    <edge source="bftsmart.communication.server.ServerConnection.ReceiverThread" target="bftsmart.communication.server.ServerConnection">
+      <point x="0.0" y="-49.0" />
+      <point x="2662.3333333333335" y="3698.0" />
+      <point x="2670.0" y="3698.0" />
+      <point x="0.0" y="92.0" />
+    </edge>
+    <edge source="bftsmart.statemanagement.strategy.StandardSMMessage" target="bftsmart.statemanagement.SMMessage">
+      <point x="0.0" y="-92.0" />
+      <point x="1058.0" y="1351.0" />
+      <point x="892.5" y="1351.0" />
+      <point x="55.75" y="136.0" />
+    </edge>
+    <edge source="bftsmart.communication.client.netty.NettyClientServerCommunicationSystemServerSide" target="bftsmart.communication.client.CommunicationSystemServerSide">
+      <point x="0.0" y="-125.0" />
+      <point x="0.0" y="71.0" />
+    </edge>
+    <edge source="bftsmart.statemanagement.SMMessage" target="bftsmart.communication.SystemMessage">
+      <point x="0.0" y="-136.0" />
+      <point x="836.75" y="246.0" />
+      <point x="1413.8333333333333" y="246.0" />
+      <point x="-92.91666666666674" y="113.0" />
+    </edge>
+    <edge source="bftsmart.tom.leaderchange.RequestsTimer.SendStopTask" target="bftsmart.tom.leaderchange.RequestsTimer">
+      <point x="0.0" y="-49.0" />
+      <point x="2750.75" y="3247.0" />
+      <point x="2762.25" y="3247.0" />
+      <point x="116.75" y="202.0" />
+    </edge>
+    <edge source="bftsmart.reconfiguration.ClientViewController" target="bftsmart.reconfiguration.ViewController">
+      <point x="0.0" y="-60.0" />
+      <point x="4328.25" y="407.0" />
+      <point x="4240.5" y="407.0" />
+      <point x="63.0" y="191.0" />
+    </edge>
+    <edge source="bftsmart.communication.server.ServerConnection.TTPReceiverThread" target="bftsmart.communication.server.ServerConnection">
+      <point x="0.0" y="-49.0" />
+      <point x="2886.3333333333335" y="3698.0" />
+      <point x="2878.6666666666665" y="3698.0" />
+      <point x="208.66666666666652" y="92.0" />
+    </edge>
+    <edge source="bftsmart.reconfiguration.views.DefaultViewStorage" target="bftsmart.reconfiguration.views.ViewStorage">
+      <point x="0.0" y="-82.0" />
+      <point x="0.0" y="39.0" />
+    </edge>
+    <edge source="bftsmart.communication.server.ServerConnection.SenderThread" target="bftsmart.communication.server.ServerConnection">
+      <point x="0.0" y="-49.0" />
+      <point x="2480.3333333333335" y="3698.0" />
+      <point x="2461.3333333333335" y="3698.0" />
+      <point x="-208.66666666666652" y="92.0" />
+    </edge>
+    <edge source="bftsmart.reconfiguration.util.TOMConfiguration" target="bftsmart.reconfiguration.util.Configuration">
+      <point x="0.0" y="-444.0" />
+      <point x="0.0" y="465.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.defaultservices.DefaultApplicationState" target="bftsmart.statemanagement.ApplicationState">
+      <point x="0.0" y="-191.0" />
+      <point x="4027.25" y="2146.0" />
+      <point x="4179.5" y="2146.0" />
+      <point x="-92.5" y="104.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.14098565190268247" x="2505.5" y="2394.5" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Inner Classes</Category>
+    <Category>Properties</Category>
+    <Category>Methods</Category>
+    <Category>Constructors</Category>
+    <Category>Fields</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>public</VISIBILITY>
+</Diagram>
+
