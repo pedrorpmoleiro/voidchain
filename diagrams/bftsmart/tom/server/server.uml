@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>bftsmart.tom.server</OriginalElement>
+  <nodes>
+    <node x="513.5" y="342.0">bftsmart.tom.server.defaultservices</node>
+    <node x="631.0" y="171.0">bftsmart.tom.server.BatchExecutable</node>
+    <node x="960.0" y="171.0">bftsmart.tom.server.SingleExecutable</node>
+    <node x="340.0" y="106.0">bftsmart.tom.server.Recoverable</node>
+    <node x="790.7916666666667" y="0.0">bftsmart.tom.server.Executable</node>
+    <node x="0.0" y="419.0">bftsmart.tom.server.RequestVerifier</node>
+    <node x="0.0" y="150.0">bftsmart.tom.server.Replier</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="bftsmart.tom.server.defaultservices" target="bftsmart.tom.server.Replier">
+      <point x="-87.75" y="-16.0" />
+      <point x="542.75" y="322.0" />
+      <point x="160.0" y="322.0" />
+      <point x="0.0" y="49.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.defaultservices" target="bftsmart.tom.server.SingleExecutable">
+      <point x="87.75" y="-16.0" />
+      <point x="718.25" y="322.0" />
+      <point x="1109.5" y="322.0" />
+      <point x="0.0" y="28.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.SingleExecutable" target="bftsmart.tom.server.Executable">
+      <point x="0.0" y="-28.0" />
+      <point x="1109.5" y="81.0" />
+      <point x="1024.7916666666667" y="81.0" />
+      <point x="78.0" y="28.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.defaultservices" target="bftsmart.tom.server.Recoverable">
+      <point x="-29.25" y="-16.0" />
+      <point x="601.25" y="312.0" />
+      <point x="475.5" y="312.0" />
+      <point x="0.0" y="93.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.BatchExecutable" target="bftsmart.tom.server.Executable">
+      <point x="0.0" y="-28.0" />
+      <point x="785.5" y="81.0" />
+      <point x="868.7916666666667" y="81.0" />
+      <point x="-78.0" y="28.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.defaultservices" target="bftsmart.tom.server.BatchExecutable">
+      <point x="29.25" y="-16.0" />
+      <point x="659.75" y="312.0" />
+      <point x="785.5" y="312.0" />
+      <point x="0.0" y="28.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.9218139171227522" x="629.5" y="237.5" />
+  <SelectedNodes>
+    <node>bftsmart.tom.server.Replier</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Constructors</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>public</VISIBILITY>
+</Diagram>
+

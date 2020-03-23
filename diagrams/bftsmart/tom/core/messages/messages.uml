@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>bftsmart.tom.core.messages</OriginalElement>
+  <nodes>
+    <node x="661.0" y="0.0">bftsmart.tom.core.messages.ForwardedMessage</node>
+    <node x="0.0" y="0.0">bftsmart.tom.core.messages.TOMMessage</node>
+    <node x="407.0" y="0.0">bftsmart.tom.core.messages.TOMMessageType</node>
+  </nodes>
+  <notes />
+  <edges />
+  <settings layout="Hierarchic Group" zoom="0.6396226415094339" x="457.5" y="520.0" />
+  <SelectedNodes>
+    <node>bftsmart.tom.core.messages.ForwardedMessage</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Constructors</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>public</VISIBILITY>
+</Diagram>
+

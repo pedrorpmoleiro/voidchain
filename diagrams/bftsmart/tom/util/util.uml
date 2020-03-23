@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>bftsmart.tom.util</OriginalElement>
+  <nodes>
+    <node x="399.0" y="858.0">bftsmart.tom.util.ShutdownHookThread</node>
+    <node x="0.0" y="1001.0">bftsmart.tom.util.SignatureTest</node>
+    <node x="671.0" y="671.0">bftsmart.tom.util.RSAKeyPairGenerator</node>
+    <node x="0.0" y="671.0">bftsmart.tom.util.KeyLoader</node>
+    <node x="244.0" y="671.0">bftsmart.tom.util.BatchBuilder</node>
+    <node x="676.0" y="858.0">bftsmart.tom.util.Extractor</node>
+    <node x="680.0" y="0.0">bftsmart.tom.util.DebugInfo</node>
+    <node x="0.0" y="858.0">bftsmart.tom.util.BatchReader</node>
+    <node x="433.0" y="0.0">bftsmart.tom.util.Storage</node>
+    <node x="0.0" y="0.0">bftsmart.tom.util.TOMUtil</node>
+  </nodes>
+  <notes />
+  <edges />
+  <settings layout="Hierarchic Group" zoom="0.6295264623955432" x="506.0" y="518.5" />
+  <SelectedNodes>
+    <node>bftsmart.tom.util.ShutdownHookThread</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Constructors</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>public</VISIBILITY>
+</Diagram>
+

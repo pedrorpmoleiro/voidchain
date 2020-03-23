@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>bftsmart.communication.client</OriginalElement>
+  <nodes>
+    <node x="0.0" y="515.0">bftsmart.communication.client.CommunicationSystemServerSideFactory</node>
+    <node x="0.0" y="291.0">bftsmart.communication.client.ReplyListener</node>
+    <node x="0.0" y="414.0">bftsmart.communication.client.CommunicationSystemClientSideFactory</node>
+    <node x="0.0" y="11.0">bftsmart.communication.client.CommunicationSystemServerSide</node>
+    <node x="323.0" y="0.0">bftsmart.communication.client.CommunicationSystemClientSide</node>
+    <node x="0.0" y="616.0">bftsmart.communication.client.RequestReceiver</node>
+    <node x="287.0" y="616.0">bftsmart.communication.client.ReplyReceiver</node>
+    <node x="240.0" y="214.0">bftsmart.communication.client.netty</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="bftsmart.communication.client.netty" target="bftsmart.communication.client.CommunicationSystemServerSide">
+      <point x="-36.5" y="-16.0" />
+      <point x="276.5" y="189.0" />
+      <point x="151.5" y="189.0" />
+      <point x="0.0" y="71.0" />
+    </edge>
+    <edge source="bftsmart.communication.client.netty" target="bftsmart.communication.client.CommunicationSystemClientSide">
+      <point x="36.5" y="-16.0" />
+      <point x="349.5" y="189.0" />
+      <point x="474.5" y="189.0" />
+      <point x="0.0" y="82.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="313.0" y="336.0" />
+  <SelectedNodes>
+    <node>bftsmart.communication.client.CommunicationSystemServerSideFactory</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Constructors</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>public</VISIBILITY>
+</Diagram>
+

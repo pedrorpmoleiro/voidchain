@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>bftsmart.reconfiguration</OriginalElement>
+  <nodes>
+    <node x="946.0" y="0.0">bftsmart.reconfiguration.View</node>
+    <node x="260.0" y="1262.0">bftsmart.reconfiguration.views</node>
+    <node x="0.0" y="945.0">bftsmart.reconfiguration.ReconfigureRequest</node>
+    <node x="1144.0" y="945.0">bftsmart.reconfiguration.VMMessage</node>
+    <node x="586.0" y="945.0">bftsmart.reconfiguration.Reconfiguration</node>
+    <node x="887.0" y="945.0">bftsmart.reconfiguration.VMServices</node>
+    <node x="924.5" y="1137.0">bftsmart.reconfiguration.util</node>
+    <node x="279.0" y="945.0">bftsmart.reconfiguration.ReconfigureReply</node>
+    <node x="0.0" y="1262.0">bftsmart.reconfiguration.ReconfigurationTest</node>
+    <node x="166.25" y="0.0">bftsmart.reconfiguration.ViewController</node>
+    <node x="0.0" y="432.0">bftsmart.reconfiguration.ServerViewController</node>
+    <node x="628.0" y="0.0">bftsmart.reconfiguration.ViewManager</node>
+    <node x="303.0" y="606.0">bftsmart.reconfiguration.ClientViewController</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="bftsmart.reconfiguration.ServerViewController" target="bftsmart.reconfiguration.ViewController">
+      <point x="0.0" y="-234.0" />
+      <point x="141.5" y="407.0" />
+      <point x="229.25" y="407.0" />
+      <point x="-63.0" y="191.0" />
+    </edge>
+    <edge source="bftsmart.reconfiguration.ClientViewController" target="bftsmart.reconfiguration.ViewController">
+      <point x="0.0" y="-60.0" />
+      <point x="443.0" y="407.0" />
+      <point x="355.25" y="407.0" />
+      <point x="63.0" y="191.0" />
+    </edge>
+    <edge source="bftsmart.reconfiguration.util" target="bftsmart.reconfiguration.VMServices">
+      <point x="0.0" y="-16.0" />
+      <point x="0.0" y="71.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.48359486447931527" x="690.0" y="691.0" />
+  <SelectedNodes>
+    <node>bftsmart.reconfiguration.View</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Constructors</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>public</VISIBILITY>
+</Diagram>
+
