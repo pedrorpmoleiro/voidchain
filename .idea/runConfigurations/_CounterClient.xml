@@ -2,7 +2,7 @@
   <configuration default="false" name="_CounterClient" type="Application" factoryName="Application" nameIsGenerated="true">
     <option name="MAIN_CLASS_NAME" value="voidchain.demo.counter._CounterClient" />
     <module name="voidchain" />
-    <option name="PROGRAM_PARAMETERS" value="4 1 10" />
+    <option name="PROGRAM_PARAMETERS" value="4 1 1000" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="voidchain.demo.counter.*" />

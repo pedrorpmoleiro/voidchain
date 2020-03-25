@@ -8,5 +8,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="bft-smart" />
+    <orderEntry type="library" name="bcprov-jdk15on-164" level="project" />
   </component>
 </module>
