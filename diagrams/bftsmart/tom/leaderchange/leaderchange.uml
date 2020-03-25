@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>bftsmart.tom.leaderchange</OriginalElement>
+  <nodes>
+    <node x="507.0" y="867.0">bftsmart.tom.leaderchange.CertifiedDecision</node>
+    <node x="467.0" y="0.0">bftsmart.tom.leaderchange.RequestsTimer</node>
+    <node x="0.0" y="0.0">bftsmart.tom.leaderchange.LCManager</node>
+    <node x="911.0" y="867.0">bftsmart.tom.leaderchange.LCMessage</node>
+    <node x="0.0" y="867.0">bftsmart.tom.leaderchange.CollectData</node>
+  </nodes>
+  <notes />
+  <edges />
+  <settings layout="Hierarchic Group" zoom="0.5635910224438903" x="567.0" y="591.5" />
+  <SelectedNodes>
+    <node>bftsmart.tom.leaderchange.CertifiedDecision</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Constructors</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>public</VISIBILITY>
+</Diagram>
+

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>bftsmart.reconfiguration.util</OriginalElement>
+  <nodes>
+    <node x="396.0" y="0.0">bftsmart.reconfiguration.util.HostsConfig</node>
+    <node x="0.0" y="0.0">bftsmart.reconfiguration.util.Configuration</node>
+    <node x="792.0" y="0.0">bftsmart.reconfiguration.util.RSAKeyLoader</node>
+    <node x="40.5" y="980.0">bftsmart.reconfiguration.util.TOMConfiguration</node>
+    <node x="1111.0" y="0.0">bftsmart.reconfiguration.util.DefaultVMServices</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="bftsmart.reconfiguration.util.TOMConfiguration" target="bftsmart.reconfiguration.util.Configuration">
+      <point x="0.0" y="-444.0" />
+      <point x="0.0" y="465.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="171.0" y="134.0" />
+  <SelectedNodes>
+    <node>bftsmart.reconfiguration.util.HostsConfig</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Constructors</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>public</VISIBILITY>
+</Diagram>
+

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>bftsmart.communication</OriginalElement>
+  <nodes>
+    <node x="484.0" y="425.0">bftsmart.communication.client</node>
+    <node x="268.0" y="425.0">bftsmart.communication.MessageHandler</node>
+    <node x="0.0" y="696.0">bftsmart.communication.server</node>
+    <node x="0.0" y="425.0">bftsmart.communication.SystemMessage</node>
+    <node x="0.0" y="0.0">bftsmart.communication.ServerCommunicationSystem</node>
+  </nodes>
+  <notes />
+  <edges />
+  <settings layout="Hierarchic Group" zoom="0.9064171122994652" x="319.5" y="364.0" />
+  <SelectedNodes>
+    <node>bftsmart.communication.client</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Constructors</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>public</VISIBILITY>
+</Diagram>
+
