@@ -1,8 +1,9 @@
 package voidchain.blockchain;
 
+import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
+import org.bouncycastle.util.encoders.Base64;
+
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,18 +34,13 @@ public class Block {
     }
 
     private void updateHash() {
-        String data = this.transactions.toString() + this.timestamp + Util.convertByteArrayToHexString(this.previousHash);
+        String data = this.transactions.toString() + this.timestamp + Base64.toBase64String(this.previousHash);
 
-        try {
-            MessageDigest sha = MessageDigest.getInstance("SHA-256");
+        RIPEMD160.Digest hash = new RIPEMD160.Digest();
 
-            byte[] currentBytes = data.getBytes(StandardCharsets.UTF_8);
+        byte[] currentBytes = data.getBytes(StandardCharsets.UTF_8);
 
-            this.hash = sha.digest(currentBytes);
-
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
+        this.hash = hash.digest(currentBytes);
     }
 
     public void addTransaction(Transaction transaction) {
