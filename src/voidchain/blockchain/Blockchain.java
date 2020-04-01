@@ -1,55 +1,69 @@
 package voidchain.blockchain;
 
+import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
+
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
+/**
+ * The type Blockchain.
+ */
 public class Blockchain {
-    private ArrayList<Block> blockchain;
-    private int blockHeight;
+    private static final float PROTOCOL_VERSION = 0.1f;
 
+    // TODO: Stack
+    private List<Block> blocks;
+
+    /**
+     * Instantiates a new Blockchain.
+     */
     public Blockchain() {
-        this.blockchain = new ArrayList<>();
+        var genesisBytes = "What to Know and What to Do About the Global Pandemic".getBytes(StandardCharsets.UTF_8);
+        RIPEMD160.Digest hash = new RIPEMD160.Digest();
 
-        String aux = "GENESIS";
-        Block genesisBlock = new Block(aux.getBytes(StandardCharsets.UTF_8));
-        this.blockchain.add(genesisBlock);
+        Block genesisBlock = new Block(hash.digest(genesisBytes), PROTOCOL_VERSION, 0);
 
-        Block secondBlock = new Block(genesisBlock.getHash());
-        this.blockchain.add(secondBlock);
+        this.blocks = new LinkedList<>();
+        this.blocks.add(genesisBlock);
 
-        this.blockHeight = 2;
+        this.createBlock();
     }
 
+    /**
+     * Is chain valid boolean.
+     *
+     * @return the boolean
+     */
     public Boolean isChainValid() {
-        Block currentBlock;
-        Block previousBlock;
+        Block currentBlock = this.getCurrentBlock();
+        Block previousBlock = this.blocks.get(1);
 
-        for (int i = 1; i < blockchain.size(); i++) {
-            currentBlock = blockchain.get(i);
-            previousBlock = blockchain.get(i - 1);
-
-            if (!Arrays.equals(previousBlock.getHash(), currentBlock.getPreviousHash())) {
-                return false;
-            }
-        }
-
-        return true;
+        return Arrays.equals(currentBlock.getPreviousBlockHash(), previousBlock.getHash());
     }
 
+    /**
+     * Gets current block.
+     *
+     * @return the current block
+     */
     public Block getCurrentBlock() {
-        return this.blockchain.get(this.blockHeight - 1);
+        return this.blocks.get(0);
     }
 
-    public void createBlock() {
-        Block newBlock = new Block(this.getCurrentBlock().getHash());
+    /**
+     * Create block block.
+     *
+     * @return the block
+     */
+    public Block createBlock() {
+        Block auxBlock = this.getCurrentBlock();
 
-        this.blockchain.add(newBlock);
+        Block block = new Block(auxBlock.getHash(), PROTOCOL_VERSION, auxBlock.getBlockHeight() + 1);
 
-        this.blockHeight++;
-    }
+        this.blocks.add(0, block);
 
-    public int getBlockHeight() {
-        return blockHeight;
+        return block;
     }
 }

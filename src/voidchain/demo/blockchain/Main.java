@@ -21,7 +21,7 @@ public class Main {
 
         System.out.println("AFTER CREATE NEW BLOCK: " + Base64.toBase64String(voidchain.getCurrentBlock().getHash()));
 
-        System.out.println("NUMBER OF BLOCKS: " + voidchain.getBlockHeight());
+        System.out.println("NUMBER OF BLOCKS: " + voidchain.getBlockNum());
 
         voidchain.getCurrentBlock().addTransaction(new Transaction("NEW TRANSACTION"));
 
