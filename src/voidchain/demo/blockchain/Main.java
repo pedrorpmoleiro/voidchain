@@ -1,13 +1,8 @@
 package voidchain.demo.blockchain;
 
-import org.bouncycastle.util.encoders.Base64;
-import voidchain.blockchain.Block;
-import voidchain.blockchain.Blockchain;
-import voidchain.blockchain.Transaction;
-
 public class Main {
     public static void main(String[] args) {
-        Blockchain voidchain = new Blockchain();
+        /*Blockchain voidchain = new Blockchain();
 
         System.out.println("GENESIS HASH: " + Base64.toBase64String(voidchain.getCurrentBlock().getPreviousHash()));
         System.out.println("BEFORE ADD TRANSACTION, BLOCK: " + Base64.toBase64String(voidchain.getCurrentBlock().getHash()));
@@ -32,6 +27,6 @@ public class Main {
         System.out.println("ALTERING SECOND BLOCK (ADDING TRANSACTION)");
         midBlock.addTransaction(new Transaction("BREAKING TRANSACTION"));
 
-        System.out.println("IS BLOCKCHAIN VALID: " + voidchain.isChainValid());
+        System.out.println("IS BLOCKCHAIN VALID: " + voidchain.isChainValid());*/
     }
 }
