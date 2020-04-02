@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_bft-smart" default="compile.module.bft-smart">
+  <dirname property="module.bft-smart.basedir" file="${ant.file.module_bft-smart}"/>
+  
+  <property name="module.jdk.home.bft-smart" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.bft-smart" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.bft-smart" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.bft-smart" value="-encoding UTF-8 -source 14 -target 14 ${compiler.args}"/>
+  
+  <property name="bft-smart.output.dir" value="${module.bft-smart.basedir}/target/classes"/>
+  <property name="bft-smart.testoutput.dir" value="${module.bft-smart.basedir}/target/test-classes"/>
+  
+  <path id="bft-smart.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="bft-smart.module.production.classpath">
+    <path refid="${module.jdk.classpath.bft-smart}"/>
+    <path refid="library.maven:_commons-codec:commons-codec:1.11.classpath"/>
+    <path refid="library.maven:_ch.qos.logback:logback-core:1.2.3.classpath"/>
+    <path refid="library.maven:_io.netty:netty-all:4.1.30.final.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.core-0.1.4.classpath"/>
+  </path>
+  
+  <path id="bft-smart.runtime.production.module.classpath">
+    <pathelement location="${bft-smart.output.dir}"/>
+    <path refid="library.maven:_commons-codec:commons-codec:1.11.classpath"/>
+    <path refid="library.maven:_ch.qos.logback:logback-core:1.2.3.classpath"/>
+    <path refid="library.maven:_io.netty:netty-all:4.1.30.final.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.core-0.1.4.classpath"/>
+  </path>
+  
+  <path id="bft-smart.module.classpath">
+    <path refid="${module.jdk.classpath.bft-smart}"/>
+    <pathelement location="${bft-smart.output.dir}"/>
+    <path refid="library.maven:_commons-codec:commons-codec:1.11.classpath"/>
+    <path refid="library.maven:_ch.qos.logback:logback-core:1.2.3.classpath"/>
+    <path refid="library.maven:_ch.qos.logback:logback-classic:1.2.3.classpath"/>
+    <path refid="library.maven:_io.netty:netty-all:4.1.30.final.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.core-0.1.4.classpath"/>
+  </path>
+  
+  <path id="bft-smart.runtime.module.classpath">
+    <pathelement location="${bft-smart.testoutput.dir}"/>
+    <pathelement location="${bft-smart.output.dir}"/>
+    <path refid="library.maven:_commons-codec:commons-codec:1.11.classpath"/>
+    <path refid="library.maven:_ch.qos.logback:logback-core:1.2.3.classpath"/>
+    <path refid="library.maven:_ch.qos.logback:logback-classic:1.2.3.classpath"/>
+    <path refid="library.maven:_io.netty:netty-all:4.1.30.final.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.core-0.1.4.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.bft-smart">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.bft-smart">
+    <patternset refid="excluded.from.module.bft-smart"/>
+  </patternset>
+  
+  <path id="bft-smart.module.sourcepath">
+    <dirset dir="${module.bft-smart.basedir}">
+      <include name="src/main/java"/>
+      <include name="src/main/resources"/>
+    </dirset>
+  </path>
+  
+  <path id="bft-smart.module.test.sourcepath">
+    <dirset dir="${module.bft-smart.basedir}">
+      <include name="src/test/java"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.bft-smart" depends="compile.module.bft-smart.production,compile.module.bft-smart.tests" description="Compile module bft-smart"/>
+  
+  <target name="compile.module.bft-smart.production" depends="register.custom.compilers" description="Compile module bft-smart; production classes">
+    <mkdir dir="${bft-smart.output.dir}"/>
+    <javac2 destdir="${bft-smart.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.bft-smart}/javac">
+      <compilerarg line="${compiler.args.bft-smart}"/>
+      <bootclasspath refid="bft-smart.module.bootclasspath"/>
+      <classpath refid="bft-smart.module.production.classpath"/>
+      <src refid="bft-smart.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.bft-smart"/>
+    </javac2>
+    
+    <copy todir="${bft-smart.output.dir}">
+      <fileset dir="${module.bft-smart.basedir}/src/main/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.bft-smart.basedir}/src/main/resources">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.bft-smart.tests" depends="register.custom.compilers,compile.module.bft-smart.production" description="compile module bft-smart; test classes" unless="skip.tests">
+    <mkdir dir="${bft-smart.testoutput.dir}"/>
+    <javac2 destdir="${bft-smart.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.bft-smart}/javac">
+      <compilerarg line="${compiler.args.bft-smart}"/>
+      <bootclasspath refid="bft-smart.module.bootclasspath"/>
+      <classpath refid="bft-smart.module.classpath"/>
+      <src refid="bft-smart.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.bft-smart"/>
+    </javac2>
+    
+    <copy todir="${bft-smart.testoutput.dir}">
+      <fileset dir="${module.bft-smart.basedir}/src/test/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="clean.module.bft-smart" description="cleanup module">
+    <delete dir="${bft-smart.output.dir}"/>
+    <delete dir="${bft-smart.testoutput.dir}"/>
+  </target>
+</project>
