@@ -5,7 +5,7 @@
     <option name="PROGRAM_PARAMETERS" value="0" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="voidchain.demo.counter.*" />
+        <option name="PATTERN" value="pt.ipleiria.estg.dei.pi.voidchain.demo.counter.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
