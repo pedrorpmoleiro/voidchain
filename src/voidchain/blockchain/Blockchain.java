@@ -11,7 +11,7 @@ import java.util.List;
  * The type Blockchain.
  */
 public class Blockchain {
-    private static final float PROTOCOL_VERSION = 0.1f;
+    public static final float PROTOCOL_VERSION = 0.1f;
 
     // TODO: Stack
     private List<Block> blocks;
@@ -36,6 +36,7 @@ public class Blockchain {
      *
      * @return the boolean
      */
+    @Deprecated
     public Boolean isChainValid() {
         Block currentBlock = this.getCurrentBlock();
         Block previousBlock = this.blocks.get(1);

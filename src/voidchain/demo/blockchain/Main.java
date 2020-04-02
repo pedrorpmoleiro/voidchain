@@ -1,32 +1,34 @@
 package voidchain.demo.blockchain;
 
+import org.bouncycastle.util.encoders.Base64;
+import voidchain.blockchain.Block;
+import voidchain.blockchain.Blockchain;
+import voidchain.blockchain.Transaction;
+
+import java.nio.charset.StandardCharsets;
+
 public class Main {
     public static void main(String[] args) {
-        /*Blockchain voidchain = new Blockchain();
+        Blockchain voidchain = new Blockchain();
 
-        System.out.println("GENESIS HASH: " + Base64.toBase64String(voidchain.getCurrentBlock().getPreviousHash()));
-        System.out.println("BEFORE ADD TRANSACTION, BLOCK: " + Base64.toBase64String(voidchain.getCurrentBlock().getHash()));
+        voidchain.getCurrentBlock().addTransaction(
+                new Transaction("FIRST TRANSACTION".getBytes(StandardCharsets.UTF_8), Blockchain.PROTOCOL_VERSION));
 
-        voidchain.getCurrentBlock().addTransaction(new Transaction("FIRST TRANSACTION"));
+        Block midBlock = voidchain.getCurrentBlock(); // SECOND BLOCK
 
-        System.out.println("AFTER ADD TRANSACTION AND BEFORE CREATE BLOCK: " + Base64.toBase64String(voidchain.getCurrentBlock().getHash()));
+        voidchain.createBlock().addTransaction(new Transaction("NEW TRANSACTION".getBytes(StandardCharsets.UTF_8), Blockchain.PROTOCOL_VERSION));
+        voidchain.createBlock().addTransaction(new Transaction("NEW TRANSACTION".getBytes(StandardCharsets.UTF_8), Blockchain.PROTOCOL_VERSION));
+        voidchain.createBlock().addTransaction(new Transaction("NEW TRANSACTION".getBytes(StandardCharsets.UTF_8), Blockchain.PROTOCOL_VERSION));
 
-        Block midBlock = voidchain.getCurrentBlock();
-        voidchain.createBlock();
+        System.out.println("NUMBER OF BLOCKS: " + voidchain.getCurrentBlock().getBlockHeight() + 1);
 
-        System.out.println("AFTER CREATE NEW BLOCK: " + Base64.toBase64String(voidchain.getCurrentBlock().getHash()));
-
-        System.out.println("NUMBER OF BLOCKS: " + voidchain.getBlockNum());
-
-        voidchain.getCurrentBlock().addTransaction(new Transaction("NEW TRANSACTION"));
-
-        System.out.println("AFTER CREATE TRANSACTION ON NEW BLOCK: " + Base64.toBase64String(voidchain.getCurrentBlock().getHash()));
+        voidchain.getCurrentBlock().addTransaction(new Transaction("NEW TRANSACTION".getBytes(StandardCharsets.UTF_8), Blockchain.PROTOCOL_VERSION));
 
         System.out.println("IS BLOCKCHAIN VALID: " + voidchain.isChainValid());
 
         System.out.println("ALTERING SECOND BLOCK (ADDING TRANSACTION)");
-        midBlock.addTransaction(new Transaction("BREAKING TRANSACTION"));
+        midBlock.addTransaction(new Transaction("BREAKING TRANSACTION".getBytes(StandardCharsets.UTF_8), Blockchain.PROTOCOL_VERSION));
 
-        System.out.println("IS BLOCKCHAIN VALID: " + voidchain.isChainValid());*/
+        System.out.println("IS BLOCKCHAIN VALID: " + voidchain.isChainValid());
     }
 }
