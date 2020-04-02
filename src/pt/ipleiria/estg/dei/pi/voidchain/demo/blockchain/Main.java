@@ -1,9 +1,8 @@
-package voidchain.demo.blockchain;
+package pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain;
 
-import org.bouncycastle.util.encoders.Base64;
-import voidchain.blockchain.Block;
-import voidchain.blockchain.Blockchain;
-import voidchain.blockchain.Transaction;
+import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
+import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
+import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 
 import java.nio.charset.StandardCharsets;
 

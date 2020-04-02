@@ -1,4 +1,4 @@
-package voidchain.blockchain;
+package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
 import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
 import org.bouncycastle.jcajce.provider.digest.SHA256;

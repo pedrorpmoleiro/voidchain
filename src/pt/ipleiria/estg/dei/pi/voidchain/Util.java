@@ -1,4 +1,4 @@
-package voidchain;
+package pt.ipleiria.estg.dei.pi.voidchain;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;

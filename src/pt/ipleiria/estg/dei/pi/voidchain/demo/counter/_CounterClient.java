@@ -1,4 +1,4 @@
-package voidchain.demo.counter;
+package pt.ipleiria.estg.dei.pi.voidchain.demo.counter;
 
 import bftsmart.demo.counter.CounterClient;
 

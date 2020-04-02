@@ -1,4 +1,4 @@
-package voidchain.blockchain;
+package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
 import org.bouncycastle.util.encoders.Base64;
 
