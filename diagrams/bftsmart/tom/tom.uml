@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>bftsmart.tom</OriginalElement>
+  <nodes>
+    <node x="909.0" y="1128.0">bftsmart.tom.util</node>
+    <node x="18.0" y="82.0">bftsmart.tom.ServiceProxy</node>
+    <node x="489.0" y="0.0">bftsmart.tom.MessageContext</node>
+    <node x="570.0" y="723.0">bftsmart.tom.RequestContext</node>
+    <node x="709.0" y="1128.0">bftsmart.tom.server</node>
+    <node x="0.0" y="448.0">bftsmart.tom.AsynchServiceProxy</node>
+    <node x="0.0" y="723.0">bftsmart.tom.ServiceReplica</node>
+    <node x="0.0" y="1128.0">bftsmart.tom.ReplicaContext</node>
+    <node x="153.5" y="0.0">bftsmart.tom.core</node>
+    <node x="456.0" y="1128.0">bftsmart.tom.leaderchange</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="bftsmart.tom.ServiceProxy" target="bftsmart.tom.core">
+      <point x="0.0" y="-158.0" />
+      <point x="0.0" y="16.0" />
+    </edge>
+    <edge source="bftsmart.tom.AsynchServiceProxy" target="bftsmart.tom.ServiceProxy">
+      <point x="0.0" y="-115.0" />
+      <point x="0.0" y="158.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.5167682926829268" x="644.0" y="646.0" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Constructors</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>public</VISIBILITY>
+</Diagram>
+

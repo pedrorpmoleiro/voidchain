@@ -7,12 +7,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="BFT-SMaRt" level="project" />
-    <orderEntry type="library" name="commons-codec-1.11" level="project" />
-    <orderEntry type="library" name="core-0.1.4" level="project" />
-    <orderEntry type="library" name="logback-classic-1.2.3" level="project" />
-    <orderEntry type="library" name="logback-core-1.2.3" level="project" />
-    <orderEntry type="library" name="netty-all-4.1.30.Final" level="project" />
-    <orderEntry type="library" name="slf4j-api-1.7.25" level="project" />
+    <orderEntry type="module" module-name="bft-smart" />
+    <orderEntry type="library" name="bcprov-jdk15on-164" level="project" />
   </component>
 </module>

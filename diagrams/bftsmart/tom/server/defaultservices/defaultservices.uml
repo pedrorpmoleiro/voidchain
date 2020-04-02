@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>bftsmart.tom.server.defaultservices</OriginalElement>
+  <nodes>
+    <node x="0.0" y="1132.0">bftsmart.tom.server.defaultservices.DefaultReplier</node>
+    <node x="65.25" y="0.0">bftsmart.tom.server.defaultservices.StateLog</node>
+    <node x="0.0" y="727.0">bftsmart.tom.server.defaultservices.DefaultRecoverable</node>
+    <node x="1158.0" y="727.0">bftsmart.tom.server.defaultservices.CommandsInfo</node>
+    <node x="210.0" y="432.0">bftsmart.tom.server.defaultservices.DiskStateLog</node>
+    <node x="802.0" y="727.0">bftsmart.tom.server.defaultservices.FileRecoverer</node>
+    <node x="0.0" y="541.0">bftsmart.tom.server.defaultservices.durability</node>
+    <node x="620.0" y="0.0">bftsmart.tom.server.defaultservices.DefaultApplicationState</node>
+    <node x="424.0" y="727.0">bftsmart.tom.server.defaultservices.DefaultSingleRecoverable</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="bftsmart.tom.server.defaultservices.durability" target="bftsmart.tom.server.defaultservices.StateLog">
+      <point x="0.0" y="-16.0" />
+      <point x="95.0" y="407.0" />
+      <point x="154.5" y="407.0" />
+      <point x="-89.25" y="191.0" />
+    </edge>
+    <edge source="bftsmart.tom.server.defaultservices.DiskStateLog" target="bftsmart.tom.server.defaultservices.StateLog">
+      <point x="0.0" y="-125.0" />
+      <point x="392.5" y="407.0" />
+      <point x="333.0" y="407.0" />
+      <point x="89.25" y="191.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.5424" x="719.0" y="615.0" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Constructors</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>public</VISIBILITY>
+</Diagram>
+

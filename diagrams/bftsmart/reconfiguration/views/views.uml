@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>bftsmart.reconfiguration.views</OriginalElement>
+  <nodes>
+    <node x="301.0" y="128.0">bftsmart.reconfiguration.views.DefaultViewStorage</node>
+    <node x="0.0" y="361.0">bftsmart.reconfiguration.views.TestViewSerialization</node>
+    <node x="313.5" y="0.0">bftsmart.reconfiguration.views.ViewStorage</node>
+    <node x="0.0" y="0.0">bftsmart.reconfiguration.views.View</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="bftsmart.reconfiguration.views.DefaultViewStorage" target="bftsmart.reconfiguration.views.ViewStorage">
+      <point x="0.0" y="-82.0" />
+      <point x="0.0" y="39.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="116.0" y="134.0" />
+  <SelectedNodes>
+    <node>bftsmart.reconfiguration.views.ViewStorage</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Constructors</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>public</VISIBILITY>
+</Diagram>
+

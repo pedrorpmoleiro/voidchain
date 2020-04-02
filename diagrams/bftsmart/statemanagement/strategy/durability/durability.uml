@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>bftsmart.statemanagement.strategy.durability</OriginalElement>
+  <nodes>
+    <node x="0.0" y="485.0">bftsmart.statemanagement.strategy.durability.CSTState</node>
+    <node x="540.0" y="485.0">bftsmart.statemanagement.strategy.durability.CSTSMMessage</node>
+    <node x="0.0" y="212.0">bftsmart.statemanagement.strategy.durability.CSTRequestF1</node>
+    <node x="242.0" y="890.0">bftsmart.statemanagement.strategy.durability.StateSender</node>
+    <node x="0.0" y="890.0">bftsmart.statemanagement.strategy.durability.StateSenderServer</node>
+    <node x="446.0" y="890.0">bftsmart.statemanagement.strategy.durability.DurableStateManager</node>
+    <node x="120.0" y="0.0">bftsmart.statemanagement.strategy.durability.CSTRequest</node>
+    <node x="240.0" y="234.0">bftsmart.statemanagement.strategy.durability.CSTRequestFGT1</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="bftsmart.statemanagement.strategy.durability.CSTRequestF1" target="bftsmart.statemanagement.strategy.durability.CSTRequest">
+      <point x="0.0" y="-114.0" />
+      <point x="110.0" y="187.0" />
+      <point x="175.0" y="187.0" />
+      <point x="-55.0" y="81.0" />
+    </edge>
+    <edge source="bftsmart.statemanagement.strategy.durability.CSTRequestFGT1" target="bftsmart.statemanagement.strategy.durability.CSTRequest">
+      <point x="0.0" y="-92.0" />
+      <point x="350.0" y="187.0" />
+      <point x="285.0" y="187.0" />
+      <point x="55.0" y="81.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.6197440585009141" x="489.5" y="537.0" />
+  <SelectedNodes>
+    <node>bftsmart.statemanagement.strategy.durability.CSTState</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Constructors</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>public</VISIBILITY>
+</Diagram>
+

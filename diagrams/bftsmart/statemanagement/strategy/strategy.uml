@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>bftsmart.statemanagement.strategy</OriginalElement>
+  <nodes>
+    <node x="210.0" y="410.0">bftsmart.statemanagement.strategy.StandardStateManager</node>
+    <node x="0.0" y="466.0">bftsmart.statemanagement.strategy.durability</node>
+    <node x="0.0" y="599.0">bftsmart.statemanagement.strategy.StandardSMMessage</node>
+    <node x="78.0" y="0.0">bftsmart.statemanagement.strategy.BaseStateManager</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="bftsmart.statemanagement.strategy.durability" target="bftsmart.statemanagement.strategy.BaseStateManager">
+      <point x="0.0" y="-16.0" />
+      <point x="95.0" y="385.0" />
+      <point x="151.75" y="385.0" />
+      <point x="-73.75" y="180.0" />
+    </edge>
+    <edge source="bftsmart.statemanagement.strategy.StandardStateManager" target="bftsmart.statemanagement.strategy.BaseStateManager">
+      <point x="0.0" y="-72.0" />
+      <point x="356.0" y="385.0" />
+      <point x="299.25" y="385.0" />
+      <point x="73.75" y="180.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.8443337484433375" x="251.0" y="391.5" />
+  <SelectedNodes>
+    <node>bftsmart.statemanagement.strategy.BaseStateManager</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Constructors</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>public</VISIBILITY>
+</Diagram>
+

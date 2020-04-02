@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>bftsmart.clientsmanagement</OriginalElement>
+  <nodes>
+    <node x="0.0" y="383.0">bftsmart.clientsmanagement.ClientsManager</node>
+    <node x="517.0" y="383.0">bftsmart.clientsmanagement.RequestList</node>
+    <node x="0.0" y="0.0">bftsmart.clientsmanagement.ClientData</node>
+  </nodes>
+  <notes />
+  <edges />
+  <settings layout="Hierarchic Group" zoom="0.9429763560500696" x="372.0" y="349.5" />
+  <SelectedNodes>
+    <node>bftsmart.clientsmanagement.ClientsManager</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Constructors</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>public</VISIBILITY>
+</Diagram>
+
