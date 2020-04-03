@@ -8,16 +8,20 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * The type Blockchain.
+ * Blockchain data structure is an ordered, back-linked list of blocks of transactions/data.
+ * BFT-Smart runs on top of this blockchain, and by running on top of a blockchain,
+ *      is more secure and robust.
  */
 public class Blockchain {
+    /* Attributes */
     public static final float PROTOCOL_VERSION = 0.1f;
 
     // TODO: Stack
     private List<Block> blocks;
 
     /**
-     * Instantiates a new Blockchain.
+     * Instantiates the Blockchain data structure.
+     * Keep in mind that can only exist a valid "chain".
      */
     public Blockchain() {
         var genesisBytes = "What to Know and What to Do About the Global Pandemic".getBytes(StandardCharsets.UTF_8);
@@ -31,8 +35,9 @@ public class Blockchain {
         this.createBlock();
     }
 
+    /* Methods */
     /**
-     * Is chain valid boolean.
+     * Tests if this blockchain is a valid blockchain
      *
      * @return the boolean
      */
@@ -45,7 +50,7 @@ public class Blockchain {
     }
 
     /**
-     * Gets current block.
+     * Gets the last added block to the chain, or in other words, the highest block in the blockchain
      *
      * @return the current block
      */
@@ -54,7 +59,7 @@ public class Blockchain {
     }
 
     /**
-     * Create block block.
+     * Creates a new block, then adds it to the chain
      *
      * @return the block
      */
