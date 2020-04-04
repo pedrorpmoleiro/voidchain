@@ -10,12 +10,11 @@ import java.util.List;
 /**
  * Blockchain data structure is an ordered, back-linked list of blocks of transactions/data.
  * BFT-Smart runs on top of this blockchain, and by running on top of a blockchain,
- *      is more secure and robust.
+ * is more secure and robust.
  */
 public class Blockchain {
     /* Attributes */
     public static final float PROTOCOL_VERSION = 0.1f;
-
     // TODO: Stack
     private List<Block> blocks;
 
@@ -36,6 +35,7 @@ public class Blockchain {
     }
 
     /* Methods */
+
     /**
      * Tests if this blockchain is a valid blockchain
      *
@@ -47,15 +47,6 @@ public class Blockchain {
         Block previousBlock = this.blocks.get(1);
 
         return Arrays.equals(currentBlock.getPreviousBlockHash(), previousBlock.getHash());
-    }
-
-    /**
-     * Gets the last added block to the chain, or in other words, the highest block in the blockchain
-     *
-     * @return the current block
-     */
-    public Block getCurrentBlock() {
-        return this.blocks.get(0);
     }
 
     /**
@@ -71,5 +62,16 @@ public class Blockchain {
         this.blocks.add(0, block);
 
         return block;
+    }
+
+    /* Getters */
+
+    /**
+     * Gets the last added block to the chain, or in other words, the highest block in the blockchain
+     *
+     * @return the current block
+     */
+    public Block getCurrentBlock() {
+        return this.blocks.get(0);
     }
 }

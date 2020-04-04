@@ -7,7 +7,8 @@ import java.sql.Timestamp;
 import java.util.Random;
 
 /**
- * The type Block header.
+ * The block header is a section of a block.
+ * The hash of the block header is what IDs a block in the blockchain
  */
 public class BlockHeader {
     /* Attributes */
@@ -30,6 +31,9 @@ public class BlockHeader {
     }
 
     /* Methods */
+
+    /* Getters */
+
     /**
      * Gets the time the block was created
      *
@@ -59,7 +63,7 @@ public class BlockHeader {
     }
 
     /**
-     * Gets nonce.
+     * Gets nonce. A random int
      *
      * @return the nonce (int)
      */
@@ -79,7 +83,7 @@ public class BlockHeader {
     /**
      * Gets the data/transactions that are stored in the block
      *
-     * @return  the data (byte [ ])
+     * @return the data (byte [ ])
      */
     public byte[] getData() {
         var aux = this.protocolVersion + this.timestamp + Base64.toBase64String(this.previousBlockHash) + this.nonce;
