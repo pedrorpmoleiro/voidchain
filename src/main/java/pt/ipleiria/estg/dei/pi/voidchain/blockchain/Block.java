@@ -8,9 +8,16 @@ import java.util.Hashtable;
 import java.util.Map;
 
 /**
- * The type Block.
+ * A block is where the transactions/data are stored in,
+ * and then the block is added to the blockchain, if it's valid
+ * The structure of a block follows: version, a header (which is its own class),
+ * size, transaction counter and its height
+ * In the blockchain, what identifies a block is its ID, which is the hash of its header (block header)
+ * Keep in mind that the block hash is not stored in the blocks data structure nor in the blockchain,
+ * it needs to be calculated if needed.
  */
 public class Block {
+    /* Attributes */
     private Map<String, Transaction> transactions;
     private BlockHeader blockHeader;
     private long size;
@@ -25,7 +32,7 @@ public class Block {
      * @param blockHeight       the block height
      */
     public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight) {
-        this.blockHeader = new BlockHeader(previousBlockHash,protocolVersion);
+        this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion);
         this.blockHeight = blockHeight;
         this.transactionCounter = 0;
         this.transactions = new Hashtable<>();
@@ -41,7 +48,7 @@ public class Block {
      * @param transactions      the transactions
      */
     public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight, Map<String, Transaction> transactions) {
-        this.blockHeader = new BlockHeader(previousBlockHash,protocolVersion);
+        this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion);
         this.blockHeight = blockHeight;
 
         this.transactionCounter = transactions.size();
@@ -51,10 +58,26 @@ public class Block {
         this.size = this.blockHeader.getSize() + (Integer.SIZE * 2) + this.transactions.size();
     }
 
+    /* Methods */
+
     /**
-     * Gets transactions.
+     * Adds transactions/data the newly created block
      *
-     * @return the transactions
+     * @param transaction the transaction
+     */
+    public void addTransaction(Transaction transaction) {
+        this.transactions.put(Base64.toBase64String(transaction.getHash()), transaction);
+        this.transactionCounter++;
+    }
+
+    /* Getters */
+
+    /**
+     * Gets all the transactions that are stored in a block
+     * For security reasons, we do not give direct access to the transactions,
+     * we return a copy of it.
+     *
+     * @return the transactions (Map<String, Transaction>)
      */
     public Map<String, Transaction> getTransactions() {
         Map<String, Transaction> transactions = new Hashtable<>();
@@ -64,7 +87,7 @@ public class Block {
     }
 
     /**
-     * Gets size.
+     * Gets size of the block
      *
      * @return the size
      */
@@ -73,9 +96,9 @@ public class Block {
     }
 
     /**
-     * Gets transaction counter.
+     * Gets the number of transactions inside a block.
      *
-     * @return the transaction counter
+     * @return the transaction counter (long)
      */
     public int getTransactionCounter() {
         return transactionCounter;
@@ -84,16 +107,17 @@ public class Block {
     /**
      * Gets block height.
      *
-     * @return the block height
+     * @return the block height (int)
      */
     public int getBlockHeight() {
         return blockHeight;
     }
 
     /**
-     * Get previous block hash byte [ ].
+     * Gets the hash of the last block in the chain.
+     * Or in other words, it gets the blocks parent.
      *
-     * @return the byte [ ]
+     * @return the previous block hash/ parent hash (byte [ ])
      */
     public byte[] getPreviousBlockHash() {
         return this.blockHeader.getPreviousBlockHash();
@@ -102,7 +126,7 @@ public class Block {
     /**
      * Gets protocol version.
      *
-     * @return the protocol version
+     * @return the protocol version (float)
      */
     public float getProtocolVersion() {
         return this.blockHeader.getProtocolVersion();
@@ -111,16 +135,18 @@ public class Block {
     /**
      * Gets nonce.
      *
-     * @return the nonce
+     * @return the nonce (int)
      */
     public int getNonce() {
         return this.blockHeader.getNonce();
     }
 
     /**
-     * Get hash byte [ ].
+     * Gets calculates the hash of the block.
+     * To calculate the hash of a block, we double hash its header (block header)
+     * SHA256(RIPEMD160(blockHeader))
      *
-     * @return the byte [ ]
+     * @return the block hash / black header hash 8byte [ ])
      */
     public byte[] getHash() {
         var aux = this.blockHeader.getData();
@@ -132,15 +158,5 @@ public class Block {
         var hash = sha256.digest(aux);
 
         return ripemd160.digest(hash);
-    }
-
-    /**
-     * Add transaction.
-     *
-     * @param transaction the transaction
-     */
-    public void addTransaction(Transaction transaction) {
-        this.transactions.put(Base64.toBase64String(transaction.getHash()), transaction);
-        this.transactionCounter++;
     }
 }

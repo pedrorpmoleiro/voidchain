@@ -8,9 +8,11 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 
 /**
- * The type Transaction.
+ * The transaction contains data of the operations performed by the replicas.
+ * In the 'transactions' section of a block, transactions get recorded.
  */
 public class Transaction {
+    /* Attributes */
     private long timestamp;
     private byte[] data;
     private int size;
@@ -41,8 +43,12 @@ public class Transaction {
         this.hash = ripemd160.digest(this.hash);
     }
 
+    /* Methods */
+
+    /* Getters */
+
     /**
-     * Gets timestamp.
+     * Gets timestamp of when a transaction was created.
      *
      * @return the timestamp
      */
@@ -51,7 +57,7 @@ public class Transaction {
     }
 
     /**
-     * Get data byte [ ].
+     * Gets the data of a transaction.
      *
      * @return the byte [ ]
      */
@@ -60,7 +66,7 @@ public class Transaction {
     }
 
     /**
-     * Gets size.
+     * Gets the size of a transaction (in MB).
      *
      * @return the size
      */
@@ -69,7 +75,7 @@ public class Transaction {
     }
 
     /**
-     * Get hash byte [ ].
+     * Gets the hash of a transaction ( SHA256(TX) ).
      *
      * @return the byte [ ]
      */
