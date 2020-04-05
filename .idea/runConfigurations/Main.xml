@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Main" type="Application" factoryName="Application" nameIsGenerated="true">
-    <option name="MAIN_CLASS_NAME" value="voidchain.demo.blockchain.Main" />
+    <option name="MAIN_CLASS_NAME" value="pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.Main" />
     <module name="voidchain" />
     <extension name="coverage">
       <pattern>
