@@ -47,7 +47,7 @@ public class BlockHeader {
      * Gets the hash of the last block in the chain.
      * Or in other words, it gets the blocks parent.
      *
-     * @return the previous block hash/ parent hash (byte [ ])
+     * @return the previous block hash/ parent hash (byte[])
      */
     public byte[] getPreviousBlockHash() {
         return previousBlockHash;
@@ -83,7 +83,7 @@ public class BlockHeader {
     /**
      * Gets the data/transactions that are stored in the block
      *
-     * @return the data (byte [ ])
+     * @return the data (byte[])
      */
     public byte[] getData() {
         var aux = this.protocolVersion + this.timestamp + Base64.toBase64String(this.previousBlockHash) + this.nonce;

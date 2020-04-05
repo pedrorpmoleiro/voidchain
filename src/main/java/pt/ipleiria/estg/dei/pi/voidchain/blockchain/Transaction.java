@@ -1,7 +1,7 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
 import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
-import org.bouncycastle.jcajce.provider.digest.SHA256;
+import org.bouncycastle.jcajce.provider.digest.SHA3;
 import org.bouncycastle.util.encoders.Base64;
 
 import java.nio.charset.StandardCharsets;
@@ -35,11 +35,10 @@ public class Transaction {
         var aux = this.protocolVersion + this.timestamp + this.size + Base64.toBase64String(this.data);
         var auxBytes = aux.getBytes(StandardCharsets.UTF_8);
 
-        // TODO: SHA3 256
-        SHA256.Digest sha256 = new SHA256.Digest();
+        SHA3.Digest512 sha3_512 = new SHA3.Digest512();
         RIPEMD160.Digest ripemd160 = new RIPEMD160.Digest();
 
-        this.hash = sha256.digest(auxBytes);
+        this.hash = sha3_512.digest(auxBytes);
         this.hash = ripemd160.digest(this.hash);
     }
 

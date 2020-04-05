@@ -1,7 +1,7 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
 import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
-import org.bouncycastle.jcajce.provider.digest.SHA256;
+import org.bouncycastle.jcajce.provider.digest.SHA3;
 import org.bouncycastle.util.encoders.Base64;
 
 import java.util.Hashtable;
@@ -52,14 +52,12 @@ public class Block {
         this.blockHeight = blockHeight;
 
         this.transactionCounter = transactions.size();
-        this.transactions = new Hashtable<>();
-        this.transactions.putAll(transactions);
+        this.transactions = new Hashtable<>(transactions);
 
         this.size = this.blockHeader.getSize() + (Integer.SIZE * 2) + this.transactions.size();
     }
 
     /* Methods */
-
     /**
      * Adds transactions/data the newly created block
      *
@@ -80,10 +78,7 @@ public class Block {
      * @return the transactions (Map<String, Transaction>)
      */
     public Map<String, Transaction> getTransactions() {
-        Map<String, Transaction> transactions = new Hashtable<>();
-        transactions.putAll(this.transactions);
-
-        return transactions;
+        return new Hashtable<>(this.transactions);
     }
 
     /**
@@ -144,18 +139,17 @@ public class Block {
     /**
      * Gets calculates the hash of the block.
      * To calculate the hash of a block, we double hash its header (block header)
-     * SHA256(RIPEMD160(blockHeader))
+     * SHA3_512(RIPEMD160(blockHeader))
      *
-     * @return the block hash / black header hash 8byte [ ])
+     * @return the block hash / block header hash (byte[])
      */
     public byte[] getHash() {
         var aux = this.blockHeader.getData();
 
-        // TODO: SHA3 256
-        SHA256.Digest sha256 = new SHA256.Digest();
+        SHA3.Digest512 sha3_512 = new SHA3.Digest512();
         RIPEMD160.Digest ripemd160 = new RIPEMD160.Digest();
 
-        var hash = sha256.digest(aux);
+        var hash = sha3_512.digest(aux);
 
         return ripemd160.digest(hash);
     }
