@@ -19,7 +19,7 @@ public class Main {
         voidchain.createBlock().addTransaction(new Transaction("NEW TRANSACTION".getBytes(StandardCharsets.UTF_8), Blockchain.PROTOCOL_VERSION));
         voidchain.createBlock().addTransaction(new Transaction("NEW TRANSACTION".getBytes(StandardCharsets.UTF_8), Blockchain.PROTOCOL_VERSION));
 
-        System.out.println("NUMBER OF BLOCKS: " + voidchain.getCurrentBlock().getBlockHeight() + 1);
+        System.out.println("NUMBER OF BLOCKS: " + (voidchain.getCurrentBlock().getBlockHeight() + 1));
 
         voidchain.getCurrentBlock().addTransaction(new Transaction("NEW TRANSACTION".getBytes(StandardCharsets.UTF_8), Blockchain.PROTOCOL_VERSION));
 

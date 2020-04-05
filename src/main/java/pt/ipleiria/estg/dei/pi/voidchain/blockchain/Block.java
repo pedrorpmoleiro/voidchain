@@ -25,7 +25,7 @@ public class Block {
     private int blockHeight;
 
     /**
-     * Instantiates a new Block.
+     * Instantiates a new Block without any initial transactions.
      *
      * @param previousBlockHash the previous block hash
      * @param protocolVersion   the protocol version
@@ -40,7 +40,7 @@ public class Block {
     }
 
     /**
-     * Instantiates a new Block.
+     * Instantiates a new Block with a preset "list" of transactions.
      *
      * @param previousBlockHash the previous block hash
      * @param protocolVersion   the protocol version
@@ -58,8 +58,9 @@ public class Block {
     }
 
     /* Methods */
+
     /**
-     * Adds transactions/data the newly created block
+     * Adds a transaction/data to the block
      *
      * @param transaction the transaction
      */
@@ -82,9 +83,10 @@ public class Block {
     }
 
     /**
-     * Gets size of the block
+     * Gets size of the block in bytes.
+     * Does not include size of transactions.
      *
-     * @return the size
+     * @return the size (long)
      */
     public long getSize() {
         return size;
@@ -109,17 +111,25 @@ public class Block {
     }
 
     /**
-     * Gets the hash of the last block in the chain.
-     * Or in other words, it gets the blocks parent.
+     * Gets the Epoch time the block was created, from the block header
      *
-     * @return the previous block hash/ parent hash (byte [ ])
+     * @return the timestamp (long)
+     */
+    public long getTimestamp() {
+        return this.blockHeader.getTimestamp();
+    }
+
+    /**
+     * Gets the hash of the previous block in the chain, from the block header.
+     *
+     * @return the previous block hash (byte[])
      */
     public byte[] getPreviousBlockHash() {
         return this.blockHeader.getPreviousBlockHash();
     }
 
     /**
-     * Gets protocol version.
+     * Gets protocol version, from the block header.
      *
      * @return the protocol version (float)
      */
@@ -128,7 +138,7 @@ public class Block {
     }
 
     /**
-     * Gets nonce.
+     * Gets nonce, a random int, from the block header.
      *
      * @return the nonce (int)
      */
@@ -137,20 +147,18 @@ public class Block {
     }
 
     /**
-     * Gets calculates the hash of the block.
-     * To calculate the hash of a block, we double hash its header (block header)
+     * Calculates the hash of the block.
+     * To calculate the hash of a block, we double hash it's header (block header)
      * SHA3_512(RIPEMD160(blockHeader))
      *
      * @return the block hash / block header hash (byte[])
      */
     public byte[] getHash() {
-        var aux = this.blockHeader.getData();
+        byte[] blockHeaderData = this.blockHeader.getData();
 
         SHA3.Digest512 sha3_512 = new SHA3.Digest512();
         RIPEMD160.Digest ripemd160 = new RIPEMD160.Digest();
 
-        var hash = sha3_512.digest(aux);
-
-        return ripemd160.digest(hash);
+        return ripemd160.digest(sha3_512.digest(blockHeaderData));
     }
 }

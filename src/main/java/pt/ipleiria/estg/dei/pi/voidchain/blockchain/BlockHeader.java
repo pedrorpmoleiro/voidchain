@@ -1,8 +1,8 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
-import org.bouncycastle.util.encoders.Base64;
+import pt.ipleiria.estg.dei.pi.voidchain.Util;
 
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Random;
 
@@ -31,11 +31,10 @@ public class BlockHeader {
     }
 
     /* Methods */
-
     /* Getters */
 
     /**
-     * Gets the time the block was created
+     * Gets the Epoch time the block was created
      *
      * @return the timestamp (long)
      */
@@ -44,10 +43,9 @@ public class BlockHeader {
     }
 
     /**
-     * Gets the hash of the last block in the chain.
-     * Or in other words, it gets the blocks parent.
+     * Gets the hash of the previous block in the chain.
      *
-     * @return the previous block hash/ parent hash (byte[])
+     * @return the previous block hash (byte[])
      */
     public byte[] getPreviousBlockHash() {
         return previousBlockHash;
@@ -72,7 +70,7 @@ public class BlockHeader {
     }
 
     /**
-     * Gets the size of the block
+     * Calculates the size of the block header in bytes.
      *
      * @return the size (int)
      */
@@ -81,13 +79,52 @@ public class BlockHeader {
     }
 
     /**
-     * Gets the data/transactions that are stored in the block
+     * Calculates all the attributes in byte array format.
      *
      * @return the data (byte[])
      */
     public byte[] getData() {
-        var aux = this.protocolVersion + this.timestamp + Base64.toBase64String(this.previousBlockHash) + this.nonce;
+        byte[] protocolVersionBytes;
+        byte[] timestampBytes;
+        byte[] nonceBytes;
 
-        return aux.getBytes(StandardCharsets.UTF_8);
+        try {
+            protocolVersionBytes = Util.floatToByteArray(this.protocolVersion);
+            timestampBytes = Util.longToByteArray(this.timestamp);
+            nonceBytes = Util.intToByteArray(this.nonce);
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            return null;
+        }
+
+        int size = protocolVersionBytes.length + timestampBytes.length + this.previousBlockHash.length + nonceBytes.length;
+        byte[] dataBytes = new byte[size];
+        int i = 0;
+
+        for (byte b : protocolVersionBytes) {
+            dataBytes[i] = b;
+            i++;
+        }
+        for (byte b : timestampBytes) {
+            dataBytes[i] = b;
+            i++;
+        }
+        for (byte b : this.previousBlockHash) {
+            dataBytes[i] = b;
+            i++;
+        }
+        for (byte b : nonceBytes) {
+            dataBytes[i] = b;
+            i++;
+        }
+
+        if (i != size) {
+            System.out.println("THIS SHOULDN'T RUN");
+
+            return null;
+        }
+
+        return dataBytes;
     }
 }

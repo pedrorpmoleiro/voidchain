@@ -2,9 +2,9 @@ package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
 import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
 import org.bouncycastle.jcajce.provider.digest.SHA3;
-import org.bouncycastle.util.encoders.Base64;
+import pt.ipleiria.estg.dei.pi.voidchain.Util;
 
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 import java.sql.Timestamp;
 
 /**
@@ -31,15 +31,51 @@ public class Transaction {
         this.protocolVersion = protocolVersion;
         this.size = Long.SIZE + this.data.length + Integer.SIZE + Float.SIZE;
 
-        // TODO: Alter for performance
-        var aux = this.protocolVersion + this.timestamp + this.size + Base64.toBase64String(this.data);
-        var auxBytes = aux.getBytes(StandardCharsets.UTF_8);
+        byte[] protocolVersionBytes;
+        byte[] timestampBytes;
+        byte[] sizeBytes;
+
+        try {
+            protocolVersionBytes = Util.floatToByteArray(this.protocolVersion);
+            timestampBytes = Util.longToByteArray(this.timestamp);
+            sizeBytes = Util.intToByteArray(this.size);
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            return;
+        }
+
+        int size = protocolVersionBytes.length + timestampBytes.length + sizeBytes.length + this.data.length;
+        byte[] dataBytes = new byte[size];
+        int i = 0;
+
+        for (byte b : protocolVersionBytes) {
+            dataBytes[i] = b;
+            i++;
+        }
+        for (byte b : timestampBytes) {
+            dataBytes[i] = b;
+            i++;
+        }
+        for (byte b : sizeBytes) {
+            dataBytes[i] = b;
+            i++;
+        }
+        for (byte b : this.data) {
+            dataBytes[i] = b;
+            i++;
+        }
+
+        if (i != size) {
+            System.out.println("THIS SHOULDN'T RUN");
+
+            return;
+        }
 
         SHA3.Digest512 sha3_512 = new SHA3.Digest512();
         RIPEMD160.Digest ripemd160 = new RIPEMD160.Digest();
 
-        this.hash = sha3_512.digest(auxBytes);
-        this.hash = ripemd160.digest(this.hash);
+        this.hash = ripemd160.digest(sha3_512.digest(dataBytes));
     }
 
     /* Methods */
@@ -47,9 +83,9 @@ public class Transaction {
     /* Getters */
 
     /**
-     * Gets timestamp of when a transaction was created.
+     * Gets Epoch time of when a transaction was created.
      *
-     * @return the timestamp
+     * @return the timestamp (long)
      */
     public long getTimestamp() {
         return timestamp;
@@ -58,25 +94,25 @@ public class Transaction {
     /**
      * Gets the data of a transaction.
      *
-     * @return the byte [ ]
+     * @return the data (byte[])
      */
     public byte[] getData() {
         return data;
     }
 
     /**
-     * Gets the size of a transaction (in MB).
+     * Gets the size of a transaction in Bytes.
      *
-     * @return the size
+     * @return the size (int)
      */
     public int getSize() {
         return size;
     }
 
     /**
-     * Gets the hash of a transaction ( SHA256(TX) ).
+     * Gets the hash of a transaction ( SHA3_512(RIPEMD160(TX)) ).
      *
-     * @return the byte [ ]
+     * @return the hash (byte[])
      */
     public byte[] getHash() {
         return hash;
