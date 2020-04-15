@@ -5,18 +5,19 @@ import org.bouncycastle.jcajce.provider.digest.SHA3;
 import pt.ipleiria.estg.dei.pi.voidchain.Util;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 /**
  * The transaction contains data of the operations performed by the replicas.
  * In the 'transactions' section of a block, transactions get recorded.
  */
-public class Transaction {
+public class Transaction implements Serializable {
     /* Attributes */
-    private long timestamp;
-    private byte[] data;
-    private int size;
-    private float protocolVersion;
+    private final long timestamp;
+    private final byte[] data;
+    private final int size;
+    private final float protocolVersion;
     private byte[] hash;
 
     /**

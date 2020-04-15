@@ -2,6 +2,7 @@ package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
 import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
 
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -12,11 +13,11 @@ import java.util.List;
  * BFT-Smart runs on top of this blockchain, and by running on top of a blockchain,
  * is more secure and robust.
  */
-public class Blockchain {
+public class Blockchain implements Serializable {
     /* Attributes */
     public static final float PROTOCOL_VERSION = 0.1f;
     // TODO: Stack
-    private List<Block> blocks;
+    private final List<Block> blocks;
 
     /**
      * Instantiates the Blockchain data structure.

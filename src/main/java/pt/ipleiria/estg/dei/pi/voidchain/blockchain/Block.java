@@ -4,6 +4,7 @@ import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
 import org.bouncycastle.jcajce.provider.digest.SHA3;
 import org.bouncycastle.util.encoders.Base64;
 
+import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -16,13 +17,13 @@ import java.util.Map;
  * Keep in mind that the block hash is not stored in the blocks data structure nor in the blockchain,
  * it needs to be calculated if needed.
  */
-public class Block {
+public class Block implements Serializable {
     /* Attributes */
-    private Map<String, Transaction> transactions;
-    private BlockHeader blockHeader;
-    private long size;
+    private final Map<String, Transaction> transactions;
+    private final BlockHeader blockHeader;
+    private final long size;
     private int transactionCounter;
-    private int blockHeight;
+    private final int blockHeight;
 
     /**
      * Instantiates a new Block without any initial transactions.

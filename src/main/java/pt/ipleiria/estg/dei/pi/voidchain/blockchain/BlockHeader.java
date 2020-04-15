@@ -3,6 +3,7 @@ package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.Util;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Random;
 
@@ -10,12 +11,12 @@ import java.util.Random;
  * The block header is a section of a block.
  * The hash of the block header is what IDs a block in the blockchain
  */
-public class BlockHeader {
+public class BlockHeader implements Serializable {
     /* Attributes */
-    private long timestamp;
-    private byte[] previousBlockHash;
-    private float protocolVersion;
-    private int nonce;
+    private final long timestamp;
+    private final byte[] previousBlockHash;
+    private final float protocolVersion;
+    private final int nonce;
 
     /**
      * Instantiates a new Block header.
