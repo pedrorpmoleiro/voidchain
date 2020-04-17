@@ -1,11 +1,11 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="_CounterServer 0" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="pt.ipleiria.estg.dei.pi.voidchain.demo.counter._CounterServer" />
+  <configuration default="false" name="Replica 0" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.Replica" />
     <module name="voidchain" />
     <option name="PROGRAM_PARAMETERS" value="0" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="pt.ipleiria.estg.dei.pi.voidchain.demo.counter.*" />
+        <option name="PATTERN" value="pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

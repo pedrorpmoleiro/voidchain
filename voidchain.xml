@@ -216,18 +216,28 @@
   </target>
   
   <!-- Modules -->
-  
+
   <import file="${basedir}/bft-smart/module_bft-smart.xml"/>
-  
+
   <import file="${basedir}/module_voidchain.xml"/>
-  
+
   <target name="init" description="Build initialization">
     <!-- Perform any build initialization in this target -->
   </target>
-  
+
   <target name="clean" depends="clean.module.bft-smart, clean.module.voidchain" description="cleanup all"/>
-  
-  <target name="build.modules" depends="init, clean, compile.module.bft-smart, compile.module.voidchain" description="build all modules"/>
-  
+
+  <target name="build.modules" depends="init, clean, compile.module.bft-smart, compile.module.voidchain"
+          description="build all modules"/>
+
   <target name="all" depends="build.modules" description="build all"/>
+
+  <target name="client">
+    <mkdir dir="bin"/>
+    <jar destfile="bin/client.jar" basedir="target/classes">
+      <manifest>
+        <attribute name="Main-Class" value="pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.client.Client"/>
+      </manifest>
+    </jar>
+  </target>
 </project>

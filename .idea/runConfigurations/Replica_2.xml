@@ -1,11 +1,11 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="_MapServer 2" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="pt.ipleiria.estg.dei.pi.voidchain.demo.map._MapServer" />
+  <configuration default="false" name="Replica 2" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.Replica" />
     <module name="voidchain" />
     <option name="PROGRAM_PARAMETERS" value="2" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="pt.ipleiria.estg.dei.pi.voidchain.demo.map.*" />
+        <option name="PATTERN" value="pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
