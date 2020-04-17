@@ -33,7 +33,6 @@ public class BlockHeader implements Serializable {
 
     /* Methods */
     /* Getters */
-
     /**
      * Gets the Epoch time the block was created
      *

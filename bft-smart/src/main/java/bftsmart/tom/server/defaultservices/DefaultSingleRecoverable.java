@@ -106,6 +106,7 @@ public abstract class DefaultSingleRecoverable implements Recoverable, SingleExe
 	        commands = new ArrayList<>();
                 msgContexts = new ArrayList<>();
         }
+
         return reply;
     }
     
