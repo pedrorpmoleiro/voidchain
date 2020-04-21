@@ -32,22 +32,50 @@ public class Transaction implements Serializable {
         this.protocolVersion = protocolVersion;
         this.size = Long.SIZE + this.data.length + Integer.SIZE + Float.SIZE;
 
+        byte[] dataBytes = getDataBytes(this.timestamp, this.data, this.size, this.protocolVersion);
+
+        if (dataBytes == null) {
+            // TODO: ERROR
+            return;
+        }
+
+        this.hash = getHash(dataBytes);
+    }
+
+
+    public Transaction(byte[] data, float protocolVersion, long timestamp) {
+        this.timestamp = timestamp;
+        this.data = data;
+        this.protocolVersion = protocolVersion;
+        this.size = Long.SIZE + this.data.length + Integer.SIZE + Float.SIZE;
+
+        byte[] dataBytes = getDataBytes(this.timestamp, this.data, this.size, this.protocolVersion);
+
+        if (dataBytes == null) {
+            // TODO: ERROR
+            return;
+        }
+
+        this.hash = getHash(dataBytes);
+    }
+
+    /* Methods */
+    private static byte[] getDataBytes(long timestamp, byte[] data, int size, float protocolVersion) {
         byte[] protocolVersionBytes;
         byte[] timestampBytes;
         byte[] sizeBytes;
 
         try {
-            protocolVersionBytes = Util.floatToByteArray(this.protocolVersion);
-            timestampBytes = Util.longToByteArray(this.timestamp);
-            sizeBytes = Util.intToByteArray(this.size);
+            protocolVersionBytes = Util.floatToByteArray(protocolVersion);
+            timestampBytes = Util.longToByteArray(timestamp);
+            sizeBytes = Util.intToByteArray(size);
         } catch (IOException e) {
             e.printStackTrace();
-
-            return;
+            return null;
         }
 
-        int size = protocolVersionBytes.length + timestampBytes.length + sizeBytes.length + this.data.length;
-        byte[] dataBytes = new byte[size];
+        int sizeAux = protocolVersionBytes.length + timestampBytes.length + sizeBytes.length + data.length;
+        byte[] dataBytes = new byte[sizeAux];
         int i = 0;
 
         for (byte b : protocolVersionBytes) {
@@ -62,24 +90,26 @@ public class Transaction implements Serializable {
             dataBytes[i] = b;
             i++;
         }
-        for (byte b : this.data) {
+        for (byte b : data) {
             dataBytes[i] = b;
             i++;
         }
 
-        if (i != size) {
+        if (i != sizeAux) {
             System.out.println("THIS SHOULDN'T RUN");
 
-            return;
+            return null;
         }
 
+        return dataBytes;
+    }
+
+    private static byte[] getHash(byte[] data) {
         SHA3.Digest512 sha3_512 = new SHA3.Digest512();
         RIPEMD160.Digest ripemd160 = new RIPEMD160.Digest();
 
-        this.hash = ripemd160.digest(sha3_512.digest(dataBytes));
+        return ripemd160.digest(sha3_512.digest(data));
     }
-
-    /* Methods */
 
     /* Getters */
 

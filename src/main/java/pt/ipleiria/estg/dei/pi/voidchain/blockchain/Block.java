@@ -40,6 +40,14 @@ public class Block implements Serializable {
         this.size = this.blockHeader.getSize() + (Integer.SIZE * 2);
     }
 
+    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight, long timestamp, int nonce) {
+        this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce);
+        this.blockHeight = blockHeight;
+        this.transactionCounter = 0;
+        this.transactions = new Hashtable<>();
+        this.size = this.blockHeader.getSize() + (Integer.SIZE * 2);
+    }
+
     /**
      * Instantiates a new Block with a preset "list" of transactions.
      *
@@ -50,6 +58,16 @@ public class Block implements Serializable {
      */
     public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight, Map<String, Transaction> transactions) {
         this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion);
+        this.blockHeight = blockHeight;
+
+        this.transactionCounter = transactions.size();
+        this.transactions = new Hashtable<>(transactions);
+
+        this.size = this.blockHeader.getSize() + (Integer.SIZE * 2) + this.transactions.size();
+    }
+
+    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight, Map<String, Transaction> transactions, long timestamp, int nonce) {
+        this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce);
         this.blockHeight = blockHeight;
 
         this.transactionCounter = transactions.size();

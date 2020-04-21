@@ -65,8 +65,17 @@ public class Blockchain implements Serializable {
         return block;
     }
 
-    /* Getters */
+    public Block createBlock(long timestamp, int nonce) {
+        Block auxBlock = this.getCurrentBlock();
 
+        Block block = new Block(auxBlock.getHash(), PROTOCOL_VERSION, auxBlock.getBlockHeight() + 1, timestamp, nonce);
+
+        this.blocks.add(0, block);
+
+        return block;
+    }
+
+    /* Getters */
     /**
      * Gets the last added block to the chain, or in other words, the highest block in the blockchain
      *

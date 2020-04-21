@@ -4,7 +4,7 @@ import bftsmart.tom.ServiceProxy;
 import org.bouncycastle.util.encoders.Base64;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
-import pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.OrderedInputData;
+import pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.Request;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -57,7 +57,7 @@ public class Client {
                 try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                      ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                    OrderedInputData req = new OrderedInputData(1);
+                    Request req = new Request(1);
                     objOut.writeObject(req);
 
                     objOut.flush();
@@ -93,7 +93,7 @@ public class Client {
                 try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                      ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                    OrderedInputData req = new OrderedInputData(2);
+                    Request req = new Request(2);
                     objOut.writeObject(req);
 
                     objOut.flush();
@@ -124,7 +124,7 @@ public class Client {
                 try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                      ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                    OrderedInputData req = new OrderedInputData(3);
+                    Request req = new Request(3);
                     objOut.writeObject(req);
 
                     objOut.flush();
@@ -160,7 +160,7 @@ public class Client {
                 try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                      ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                    OrderedInputData req = new OrderedInputData(4);
+                    Request req = new Request(4);
                     objOut.writeObject(req);
 
                     objOut.flush();
@@ -199,7 +199,7 @@ public class Client {
                     String string = "Hello World";
                     byte[] data = string.getBytes(StandardCharsets.UTF_8);
 
-                    OrderedInputData req = new OrderedInputData(5, data);
+                    Request req = new Request(5, data);
                     objOut.writeObject(req);
 
                     objOut.flush();
@@ -235,7 +235,7 @@ public class Client {
                 try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                      ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                    OrderedInputData req = new OrderedInputData(6);
+                    Request req = new Request(6);
                     objOut.writeObject(req);
 
                     objOut.flush();

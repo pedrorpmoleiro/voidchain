@@ -28,7 +28,16 @@ public class BlockHeader implements Serializable {
         this.previousBlockHash = previousBlockHash;
         this.protocolVersion = protocolVersion;
         this.timestamp = new Timestamp(System.currentTimeMillis()).getTime();
+        // TODO: IMPROVE SECURITY
         this.nonce = new Random().nextInt();
+    }
+
+
+    public BlockHeader(byte[] previousBlockHash, float protocolVersion, long timestamp, int nonce) {
+        this.previousBlockHash = previousBlockHash;
+        this.protocolVersion = protocolVersion;
+        this.timestamp = timestamp;
+        this.nonce = nonce;
     }
 
     /* Methods */
