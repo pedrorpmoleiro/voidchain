@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Blockchain data structure is an ordered, back-linked list of blocks of transactions/data.
@@ -15,9 +16,9 @@ import java.util.List;
  */
 public class Blockchain implements Serializable {
     /* Attributes */
-    public static final float PROTOCOL_VERSION = 0.1f;
+    public static float PROTOCOL_VERSION = 0.1f;
     // TODO: Stack
-    private final List<Block> blocks;
+    private List<Block> blocks;
 
     /**
      * Instantiates the Blockchain data structure.
@@ -83,5 +84,28 @@ public class Blockchain implements Serializable {
      */
     public Block getCurrentBlock() {
         return this.blocks.get(0);
+    }
+
+    @Override
+    public String toString() {
+        return "Blockchain{" +
+                "blocks=" + blocks +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Blockchain that = (Blockchain) o;
+
+        return Objects.equals(blocks, that.blocks);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(blocks);
     }
 }

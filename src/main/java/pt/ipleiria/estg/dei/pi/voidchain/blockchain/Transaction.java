@@ -1,12 +1,13 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
-import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
-import org.bouncycastle.jcajce.provider.digest.SHA3;
+import org.bouncycastle.util.encoders.Base64;
 import pt.ipleiria.estg.dei.pi.voidchain.Util;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * The transaction contains data of the operations performed by the replicas.
@@ -14,10 +15,10 @@ import java.sql.Timestamp;
  */
 public class Transaction implements Serializable {
     /* Attributes */
-    private final long timestamp;
-    private final byte[] data;
-    private final int size;
-    private final float protocolVersion;
+    private long timestamp;
+    private byte[] data;
+    private int size;
+    private float protocolVersion;
     private byte[] hash;
 
     /**
@@ -39,7 +40,7 @@ public class Transaction implements Serializable {
             return;
         }
 
-        this.hash = getHash(dataBytes);
+        this.hash = Util.calculateHash(dataBytes);
     }
 
 
@@ -56,7 +57,7 @@ public class Transaction implements Serializable {
             return;
         }
 
-        this.hash = getHash(dataBytes);
+        this.hash = Util.calculateHash(dataBytes);
     }
 
     /* Methods */
@@ -104,13 +105,6 @@ public class Transaction implements Serializable {
         return dataBytes;
     }
 
-    private static byte[] getHash(byte[] data) {
-        SHA3.Digest512 sha3_512 = new SHA3.Digest512();
-        RIPEMD160.Digest ripemd160 = new RIPEMD160.Digest();
-
-        return ripemd160.digest(sha3_512.digest(data));
-    }
-
     /* Getters */
 
     /**
@@ -156,5 +150,42 @@ public class Transaction implements Serializable {
      */
     public float getProtocolVersion() {
         return protocolVersion;
+    }
+
+    @Override
+    public String toString() {
+        return "Transaction{" +
+                "timestamp=" + timestamp +
+                ", data=" + Base64.toBase64String(data) +
+                ", size=" + size +
+                ", protocolVersion=" + protocolVersion +
+                ", hash=" + Base64.toBase64String(hash) +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Transaction that = (Transaction) o;
+
+        // return Arrays.equals(hash, that.hash);
+        return timestamp == that.timestamp &&
+                size == that.size &&
+                Float.compare(that.protocolVersion, protocolVersion) == 0 &&
+                Arrays.equals(data, that.data) &&
+                Arrays.equals(hash, that.hash);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(timestamp, size, protocolVersion);
+        result = 31 * result + Arrays.hashCode(data);
+        result = 31 * result + Arrays.hashCode(hash);
+
+        // return Util.convertByteArrayToInt(hash);
+        return result;
     }
 }

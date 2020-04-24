@@ -1,12 +1,12 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
-import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
-import org.bouncycastle.jcajce.provider.digest.SHA3;
 import org.bouncycastle.util.encoders.Base64;
+import pt.ipleiria.estg.dei.pi.voidchain.Util;
 
 import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * A block is where the transactions/data are stored in,
@@ -19,11 +19,11 @@ import java.util.Map;
  */
 public class Block implements Serializable {
     /* Attributes */
-    private final Map<String, Transaction> transactions;
-    private final BlockHeader blockHeader;
-    private final long size;
+    private Map<String, Transaction> transactions;
+    private BlockHeader blockHeader;
+    private long size;
     private int transactionCounter;
-    private final int blockHeight;
+    private int blockHeight;
 
     /**
      * Instantiates a new Block without any initial transactions.
@@ -173,11 +173,38 @@ public class Block implements Serializable {
      * @return the block hash / block header hash (byte[])
      */
     public byte[] getHash() {
-        byte[] blockHeaderData = this.blockHeader.getData();
+        return Util.calculateHash(this.blockHeader.getData());
+    }
 
-        SHA3.Digest512 sha3_512 = new SHA3.Digest512();
-        RIPEMD160.Digest ripemd160 = new RIPEMD160.Digest();
+    @Override
+    public String toString() {
+        return "Block{" +
+                "transactions=" + transactions.values() +
+                ", blockHeader=" + blockHeader +
+                ", size=" + size +
+                ", transactionCounter=" + transactionCounter +
+                ", blockHeight=" + blockHeight +
+                ", hash=" + Base64.toBase64String(getHash()) +
+                '}';
+    }
 
-        return ripemd160.digest(sha3_512.digest(blockHeaderData));
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Block block = (Block) o;
+
+        return size == block.size &&
+                transactionCounter == block.transactionCounter &&
+                blockHeight == block.blockHeight &&
+                Objects.equals(transactions, block.transactions) &&
+                Objects.equals(blockHeader, block.blockHeader);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(transactions, blockHeader, size, transactionCounter, blockHeight);
     }
 }

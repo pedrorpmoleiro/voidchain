@@ -15,7 +15,6 @@ import java.util.Hashtable;
 import java.util.Map;
 
 public class Client {
-    ServiceProxy serviceProxy;
     private JButton getCurrentBlockButton;
     private JButton getCurrentBlockHashButton;
     private JButton getCurrentBlockHeightButton;
@@ -23,6 +22,8 @@ public class Client {
     private JButton addTransactionButton;
     private JButton createBlockButton;
     private JPanel Panel;
+
+    private ServiceProxy serviceProxy;
 
     public Client(int clientId) {
         this.serviceProxy = new ServiceProxy(clientId);
@@ -180,7 +181,7 @@ public class Client {
                         transactions = (Hashtable<String, Transaction>) objIn.readObject();
                     }
 
-                    System.out.println("Transactions: " + transactions.toString());
+                    System.out.println("Transactions: " + transactions.values().toString());
 
                 } catch (IOException | ClassNotFoundException ex) {
                     ex.printStackTrace();

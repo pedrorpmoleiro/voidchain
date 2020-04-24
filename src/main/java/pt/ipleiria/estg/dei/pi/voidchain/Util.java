@@ -1,5 +1,8 @@
 package pt.ipleiria.estg.dei.pi.voidchain;
 
+import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
+import org.bouncycastle.jcajce.provider.digest.SHA3;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -89,5 +92,12 @@ public class Util {
         ByteBuffer byteBuffer = ByteBuffer.wrap(floatBytes);
         byteBuffer.flip();
         return byteBuffer.getLong();
+    }
+
+    public static byte[] calculateHash(byte[] data) {
+        SHA3.Digest512 sha3_512 = new SHA3.Digest512();
+        RIPEMD160.Digest ripemd160 = new RIPEMD160.Digest();
+
+        return ripemd160.digest(sha3_512.digest(data));
     }
 }

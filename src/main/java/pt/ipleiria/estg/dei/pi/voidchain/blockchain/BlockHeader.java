@@ -1,10 +1,13 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
+import org.bouncycastle.util.encoders.Base64;
 import pt.ipleiria.estg.dei.pi.voidchain.Util;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Random;
 
 /**
@@ -13,10 +16,10 @@ import java.util.Random;
  */
 public class BlockHeader implements Serializable {
     /* Attributes */
-    private final long timestamp;
-    private final byte[] previousBlockHash;
-    private final float protocolVersion;
-    private final int nonce;
+    private long timestamp;
+    private byte[] previousBlockHash;
+    private float protocolVersion;
+    private int nonce;
 
     /**
      * Instantiates a new Block header.
@@ -135,5 +138,39 @@ public class BlockHeader implements Serializable {
         }
 
         return dataBytes;
+    }
+
+    @Override
+    public String toString() {
+        return "BlockHeader{" +
+                "timestamp=" + timestamp +
+                ", previousBlockHash=" + Base64.toBase64String(previousBlockHash) +
+                ", protocolVersion=" + protocolVersion +
+                ", nonce=" + nonce +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        BlockHeader that = (BlockHeader) o;
+
+        // return Arrays.equals(Util.calculateHash(getData()), Util.calculateHash(that.getData()));
+        return timestamp == that.timestamp &&
+                Float.compare(that.protocolVersion, protocolVersion) == 0 &&
+                nonce == that.nonce &&
+                Arrays.equals(previousBlockHash, that.previousBlockHash);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(timestamp, protocolVersion, nonce);
+        result = 31 * result + Arrays.hashCode(previousBlockHash);
+
+        // return Util.convertByteArrayToInt(Util.calculateHash(getData()));
+        return result;
     }
 }

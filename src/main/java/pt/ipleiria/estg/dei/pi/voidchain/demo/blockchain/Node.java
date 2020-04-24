@@ -311,11 +311,9 @@ public class Node implements Recoverable, SingleExecutable {
         int lastCID = -1;
 
         if (recvState instanceof DefaultApplicationState) {
-
             DefaultApplicationState state = (DefaultApplicationState) recvState;
 
             this.logger.info("Last CID in state: " + state.getLastCID());
-
             this.logLock.lock();
 
             initLog();
@@ -376,7 +374,7 @@ public class Node implements Recoverable, SingleExecutable {
 
     @Override
     public void setReplicaContext(ReplicaContext replicaContext) {
-        /*this.replicaContext = replicaContext;
+        this.replicaContext = replicaContext;
         this.config = replicaContext.getStaticConfiguration();
         this.controller = replicaContext.getSVController();
 
@@ -396,11 +394,11 @@ public class Node implements Recoverable, SingleExecutable {
                     getStateManager().setLastCID(storedState.getLastCID());
                 }
             } else {
-                this.log = log = new StateLog(this.config.getProcessId(), this.checkpointPeriod, state, computeHash(state));
+                this.log = new StateLog(this.config.getProcessId(), this.checkpointPeriod, state, computeHash(state));
             }
         }
 
-        getStateManager().askCurrentConsensusId();*/
+        getStateManager().askCurrentConsensusId();
     }
 
     @Override
