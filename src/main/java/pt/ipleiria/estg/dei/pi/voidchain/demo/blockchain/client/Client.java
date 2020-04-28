@@ -21,7 +21,11 @@ public class Client {
     private JButton getTransactionsButton;
     private JButton addTransactionButton;
     private JButton createBlockButton;
-    private JPanel Panel;
+    private JPanel mainPanel;
+    private JPanel buttonPanel;
+    private JPanel transactionPanel;
+    private JButton buttonQuit;
+    private JTextArea transactionDataTextArea;
 
     private ServiceProxy serviceProxy;
 
@@ -29,6 +33,7 @@ public class Client {
         this.serviceProxy = new ServiceProxy(clientId);
     }
 
+    // TODO: Frame size
     public static void main(String[] args) {
         if (args.length < 1) {
             System.out.println("Usage: pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.client.Client <client id>");
@@ -48,9 +53,16 @@ public class Client {
         client.addTransactionButton.addActionListener(client.addTransactionButtonActionListener());
         client.createBlockButton.addActionListener(client.createBlockButtonActionListener());
 
+        client.buttonQuit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+
         JFrame frame = new JFrame("Client");
-        frame.setContentPane(client.Panel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setContentPane(client.mainPanel);
         frame.pack();
         frame.setVisible(true);
     }
@@ -194,6 +206,7 @@ public class Client {
         };
     }
 
+    // TODO: Get Data from TextArea and convert into byte[]
     public ActionListener addTransactionButtonActionListener() {
         return new ActionListener() {
             @Override
