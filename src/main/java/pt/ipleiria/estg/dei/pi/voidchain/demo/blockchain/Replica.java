@@ -104,8 +104,9 @@ public class Replica extends DefaultSingleRecoverable {
                     hasReply = true;
                     break;
                 case 6:
-                    // TODO: IMPROVE SECURITY
-                    this.blockchain.createBlock(msgCtx.getTimestamp(), new Random().nextInt());
+                    // TODO: IMPROVE SECURITY & NONCE
+                    // this.blockchain.createBlock(msgCtx.getTimestamp(), new Random().nextInt());
+                    this.blockchain.createBlock(msgCtx.getTimestamp(), 0);
 
                     objOut.writeBoolean(true);
                     hasReply = true;

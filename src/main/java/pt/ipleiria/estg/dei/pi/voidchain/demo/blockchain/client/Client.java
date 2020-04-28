@@ -34,6 +34,10 @@ public class Client {
             System.out.println("Usage: pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.client.Client <client id>");
         }
 
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception ignored) {}
+
         int clientId = Integer.parseInt(args[0]);
         Client client = new Client(clientId);
 

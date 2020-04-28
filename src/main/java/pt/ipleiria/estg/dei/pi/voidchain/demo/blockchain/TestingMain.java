@@ -6,6 +6,7 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 
 import java.nio.charset.StandardCharsets;
 
+@Deprecated
 public class TestingMain {
     public static void main(String[] args) {
         Blockchain voidchain = new Blockchain();

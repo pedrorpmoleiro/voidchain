@@ -207,6 +207,7 @@ public class Node implements Recoverable, SingleExecutable {
             this.checkpointPeriod = this.config.getCheckpointPeriod();
             byte[] state = getSnapshot();
 
+            /*
             if (this.config.isToLog() && this.config.logToDisk()) {
                 this.log = new DiskStateLog(this.config.getProcessId(), state,
                         computeHash(state), this.config.isToLog(),
@@ -215,6 +216,7 @@ public class Node implements Recoverable, SingleExecutable {
                 this.log = new StateLog(this.controller.getStaticConf().getProcessId(),
                         this.checkpointPeriod, state, computeHash(state));
             }
+            */
         }
     }
 
@@ -382,6 +384,7 @@ public class Node implements Recoverable, SingleExecutable {
             this.checkpointPeriod = config.getCheckpointPeriod();
             byte[] state = getSnapshot();
 
+            /*
             if (config.isToLog() && config.logToDisk()) {
                 this.log = new DiskStateLog(this.config.getProcessId(), state,
                         computeHash(state), this.config.isToLog(),
@@ -396,6 +399,7 @@ public class Node implements Recoverable, SingleExecutable {
             } else {
                 this.log = new StateLog(this.config.getProcessId(), this.checkpointPeriod, state, computeHash(state));
             }
+            */
         }
 
         getStateManager().askCurrentConsensusId();

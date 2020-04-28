@@ -28,12 +28,10 @@ public class Blockchain implements Serializable {
         var genesisBytes = "What to Know and What to Do About the Global Pandemic".getBytes(StandardCharsets.UTF_8);
         RIPEMD160.Digest hash = new RIPEMD160.Digest();
 
-        Block genesisBlock = new Block(hash.digest(genesisBytes), PROTOCOL_VERSION, 0);
+        Block genesisBlock = new Block(hash.digest(genesisBytes), PROTOCOL_VERSION, 0, 0L, 0);
 
         this.blocks = new LinkedList<>();
         this.blocks.add(genesisBlock);
-
-        this.createBlock();
     }
 
     /* Methods */
