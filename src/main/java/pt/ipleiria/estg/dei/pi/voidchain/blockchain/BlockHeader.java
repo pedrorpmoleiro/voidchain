@@ -149,28 +149,4 @@ public class BlockHeader implements Serializable {
                 ", nonce=" + nonce +
                 '}';
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-
-        if (o == null || getClass() != o.getClass()) return false;
-
-        BlockHeader that = (BlockHeader) o;
-
-        // return Arrays.equals(Util.calculateHash(getData()), Util.calculateHash(that.getData()));
-        return timestamp == that.timestamp &&
-                Float.compare(that.protocolVersion, protocolVersion) == 0 &&
-                nonce == that.nonce &&
-                Arrays.equals(previousBlockHash, that.previousBlockHash);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = Objects.hash(timestamp, protocolVersion, nonce);
-        result = 31 * result + Arrays.hashCode(previousBlockHash);
-
-        // return Util.convertByteArrayToInt(Util.calculateHash(getData()));
-        return result;
-    }
 }

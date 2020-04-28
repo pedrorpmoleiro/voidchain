@@ -162,30 +162,4 @@ public class Transaction implements Serializable {
                 ", hash=" + Base64.toBase64String(hash) +
                 '}';
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Transaction that = (Transaction) o;
-
-        // return Arrays.equals(hash, that.hash);
-        return timestamp == that.timestamp &&
-                size == that.size &&
-                Float.compare(that.protocolVersion, protocolVersion) == 0 &&
-                Arrays.equals(data, that.data) &&
-                Arrays.equals(hash, that.hash);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = Objects.hash(timestamp, size, protocolVersion);
-        result = 31 * result + Arrays.hashCode(data);
-        result = 31 * result + Arrays.hashCode(hash);
-
-        // return Util.convertByteArrayToInt(hash);
-        return result;
-    }
 }

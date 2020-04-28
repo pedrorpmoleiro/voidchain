@@ -187,24 +187,4 @@ public class Block implements Serializable {
                 ", hash=" + Base64.toBase64String(getHash()) +
                 '}';
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Block block = (Block) o;
-
-        return size == block.size &&
-                transactionCounter == block.transactionCounter &&
-                blockHeight == block.blockHeight &&
-                Objects.equals(transactions, block.transactions) &&
-                Objects.equals(blockHeader, block.blockHeader);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(transactions, blockHeader, size, transactionCounter, blockHeight);
-    }
 }
