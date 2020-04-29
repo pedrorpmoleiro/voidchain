@@ -32,6 +32,8 @@ import bftsmart.tom.server.SingleExecutable;
 import bftsmart.tom.server.defaultservices.DiskStateLog;
 import bftsmart.tom.server.defaultservices.StateLog;
 
+// TODO: UPDATE
+@Deprecated
 public class Node implements Recoverable, SingleExecutable {
     /* Attributes */
     private Blockchain blockchain;

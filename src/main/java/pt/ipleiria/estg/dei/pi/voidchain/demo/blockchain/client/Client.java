@@ -218,8 +218,7 @@ public class Client {
                 try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                      ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                    String string = transactionDataTextArea.getText();
-                    byte[] data = string.getBytes(StandardCharsets.UTF_8);
+                    byte[] data = transactionDataTextArea.getText().getBytes(StandardCharsets.UTF_8);
 
                     System.out.println("Data bytes: " + Base64.toBase64String(data));
 

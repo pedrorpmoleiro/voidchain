@@ -149,15 +149,6 @@ public class Transaction implements Serializable {
     }
 
     /**
-     * Gets hash of the transaction in Base64 format.
-     *
-     * @return the hash base64 string
-     */
-    public String getHashBase64() {
-        return Base64.toBase64String(hash);
-    }
-
-    /**
      * Gets protocol version.
      *
      * @return the protocol version

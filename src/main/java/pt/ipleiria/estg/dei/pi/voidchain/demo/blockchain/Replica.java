@@ -128,6 +128,7 @@ public class Replica extends DefaultSingleRecoverable {
         return reply;
     }
 
+    // TODO: UPDATE
     @Deprecated
     @Override
     public byte[] appExecuteUnordered(byte[] command, MessageContext msgCtx) {

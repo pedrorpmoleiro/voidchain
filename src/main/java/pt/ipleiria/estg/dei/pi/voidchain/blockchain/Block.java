@@ -18,6 +18,7 @@ import java.util.Map;
  */
 public class Block implements Serializable {
     /* Attributes */
+    // TODO: SIZE TO INCLUDE TRANSACTIONS
     private final Map<String, Transaction> transactions;
     private final BlockHeader blockHeader;
     private final long size;
