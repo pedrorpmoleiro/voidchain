@@ -6,8 +6,6 @@ import pt.ipleiria.estg.dei.pi.voidchain.Util;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.Random;
 
 /**
@@ -16,10 +14,10 @@ import java.util.Random;
  */
 public class BlockHeader implements Serializable {
     /* Attributes */
-    private long timestamp;
-    private byte[] previousBlockHash;
-    private float protocolVersion;
-    private int nonce;
+    private final long timestamp;
+    private final byte[] previousBlockHash;
+    private final float protocolVersion;
+    private final int nonce;
 
     /**
      * Instantiates a new Block header.
@@ -36,6 +34,14 @@ public class BlockHeader implements Serializable {
     }
 
 
+    /**
+     * Instantiates a new Block header.
+     *
+     * @param previousBlockHash the previous block hash
+     * @param protocolVersion   the protocol version
+     * @param timestamp         the timestamp
+     * @param nonce             the nonce
+     */
     public BlockHeader(byte[] previousBlockHash, float protocolVersion, long timestamp, int nonce) {
         this.previousBlockHash = previousBlockHash;
         this.protocolVersion = protocolVersion;
@@ -45,6 +51,7 @@ public class BlockHeader implements Serializable {
 
     /* Methods */
     /* Getters */
+
     /**
      * Gets the Epoch time the block was created
      *
@@ -142,11 +149,11 @@ public class BlockHeader implements Serializable {
 
     @Override
     public String toString() {
-        return "BlockHeader{" +
-                "timestamp=" + timestamp +
-                ", previousBlockHash=" + Base64.toBase64String(previousBlockHash) +
-                ", protocolVersion=" + protocolVersion +
-                ", nonce=" + nonce +
-                '}';
+        return "Block Header: {" + System.lineSeparator() +
+                "timestamp: " + timestamp + System.lineSeparator() +
+                "previous block hash: " + Base64.toBase64String(previousBlockHash) + System.lineSeparator() +
+                "protocol version: " + protocolVersion + System.lineSeparator() +
+                "nonce: " + nonce + System.lineSeparator() +
+                "}";
     }
 }

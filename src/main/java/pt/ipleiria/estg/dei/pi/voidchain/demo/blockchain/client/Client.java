@@ -34,7 +34,6 @@ public class Client {
         this.serviceProxy = new ServiceProxy(clientId);
     }
 
-    // TODO: Frame size
     public static void main(String[] args) {
         if (args.length < 1) {
             System.out.println("Usage: pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.client.Client <client id>");
@@ -96,7 +95,7 @@ public class Client {
                         currentBlock = (Block) objIn.readObject();
                     }
 
-                    System.out.println("Block: " + currentBlock.toString());
+                    System.out.println(currentBlock.toString());
                     JOptionPane.showMessageDialog(null, currentBlock.toString(), "Current Block Data", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException | ClassNotFoundException ex) {
@@ -129,7 +128,7 @@ public class Client {
                     byte[] blockHash = reply;
 
                     System.out.println("Block hash: " + Base64.toBase64String(blockHash));
-                    JOptionPane.showMessageDialog(null, Base64.toBase64String(blockHash), "Current Block Hash", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Block hash: " + Base64.toBase64String(blockHash), "Current Block Hash", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -166,7 +165,7 @@ public class Client {
                     }
 
                     System.out.println("Block height: " + blockHeight);
-                    JOptionPane.showMessageDialog(null, blockHeight, "Current Block Height", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Block height: " + blockHeight, "Current Block Height", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -202,7 +201,7 @@ public class Client {
                         transactions = (Hashtable<String, Transaction>) objIn.readObject();
                     }
 
-                    System.out.println("Transactions: " + transactions.values().toString());
+                    System.out.println(transactions.values().toString());
                     JOptionPane.showMessageDialog(null, transactions.values().toString(), "Current Block Transactions", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException | ClassNotFoundException ex) {
@@ -245,7 +244,7 @@ public class Client {
                     }
 
                     System.out.println("Transaction added: " + added);
-                    JOptionPane.showMessageDialog(null, added, "Transaction added", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Transaction added: " + added, "Transaction added", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -282,7 +281,7 @@ public class Client {
                     }
 
                     System.out.println("Block created: " + added);
-                    JOptionPane.showMessageDialog(null, added, "Block Created", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Block created: " + added, "Block Created", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException ex) {
                     ex.printStackTrace();

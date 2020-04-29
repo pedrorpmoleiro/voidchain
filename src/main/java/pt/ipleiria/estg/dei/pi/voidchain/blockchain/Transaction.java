@@ -6,8 +6,6 @@ import pt.ipleiria.estg.dei.pi.voidchain.Util;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * The transaction contains data of the operations performed by the replicas.
@@ -15,10 +13,10 @@ import java.util.Objects;
  */
 public class Transaction implements Serializable {
     /* Attributes */
-    private long timestamp;
-    private byte[] data;
-    private int size;
-    private float protocolVersion;
+    private final long timestamp;
+    private final byte[] data;
+    private final int size;
+    private final float protocolVersion;
     private byte[] hash;
 
     /**
@@ -44,6 +42,13 @@ public class Transaction implements Serializable {
     }
 
 
+    /**
+     * Instantiates a new Transaction.
+     *
+     * @param data            the data
+     * @param protocolVersion the protocol version
+     * @param timestamp       the timestamp
+     */
     public Transaction(byte[] data, float protocolVersion, long timestamp) {
         this.timestamp = timestamp;
         this.data = data;
@@ -135,12 +140,21 @@ public class Transaction implements Serializable {
     }
 
     /**
-     * Gets the hash of a transaction ( SHA3_512(RIPEMD160(TX)) ).
+     * Gets the hash of the transaction ( SHA3_512(RIPEMD160(TX)) ).
      *
      * @return the hash (byte[])
      */
     public byte[] getHash() {
         return hash;
+    }
+
+    /**
+     * Gets hash of the transaction in Base64 format.
+     *
+     * @return the hash base64 string
+     */
+    public String getHashBase64() {
+        return Base64.toBase64String(hash);
     }
 
     /**
@@ -154,12 +168,12 @@ public class Transaction implements Serializable {
 
     @Override
     public String toString() {
-        return "Transaction{" +
-                "timestamp=" + timestamp +
-                ", data=" + Base64.toBase64String(data) +
-                ", size=" + size +
-                ", protocolVersion=" + protocolVersion +
-                ", hash=" + Base64.toBase64String(hash) +
-                '}';
+        return "Transaction: {" + System.lineSeparator() +
+                "timestamp: " + timestamp + System.lineSeparator() +
+                "data: " + Base64.toBase64String(data) + System.lineSeparator() +
+                "size: " + size + System.lineSeparator() +
+                "protocol version: " + protocolVersion + System.lineSeparator() +
+                "hash: " + Base64.toBase64String(hash) + System.lineSeparator() +
+                "}" + System.lineSeparator();
     }
 }

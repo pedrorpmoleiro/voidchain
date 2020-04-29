@@ -7,7 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Blockchain data structure is an ordered, back-linked list of blocks of transactions/data.
@@ -17,8 +16,8 @@ import java.util.Objects;
 public class Blockchain implements Serializable {
     /* Attributes */
     public static float PROTOCOL_VERSION = 0.1f;
-    // TODO: Stack
-    private List<Block> blocks;
+    // TODO: Stack (?)
+    private final List<Block> blocks;
 
     /**
      * Instantiates the Blockchain data structure.
@@ -64,6 +63,13 @@ public class Blockchain implements Serializable {
         return block;
     }
 
+    /**
+     * Creates a new block with predefined timestamp and nonce, then adds it to the chain.
+     *
+     * @param timestamp the timestamp
+     * @param nonce     the nonce
+     * @return the block
+     */
     public Block createBlock(long timestamp, int nonce) {
         Block auxBlock = this.getCurrentBlock();
 
@@ -75,6 +81,7 @@ public class Blockchain implements Serializable {
     }
 
     /* Getters */
+
     /**
      * Gets the last added block to the chain, or in other words, the highest block in the blockchain
      *
@@ -86,8 +93,8 @@ public class Blockchain implements Serializable {
 
     @Override
     public String toString() {
-        return "Blockchain{" +
-                "blocks=" + blocks +
-                '}';
+        return "Blockchain: {" + System.lineSeparator() +
+                "blocks: " + blocks + System.lineSeparator() +
+                "}";
     }
 }

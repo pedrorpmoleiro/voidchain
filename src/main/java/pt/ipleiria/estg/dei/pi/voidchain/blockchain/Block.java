@@ -6,7 +6,6 @@ import pt.ipleiria.estg.dei.pi.voidchain.Util;
 import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * A block is where the transactions/data are stored in,
@@ -19,11 +18,11 @@ import java.util.Objects;
  */
 public class Block implements Serializable {
     /* Attributes */
-    private Map<String, Transaction> transactions;
-    private BlockHeader blockHeader;
-    private long size;
+    private final Map<String, Transaction> transactions;
+    private final BlockHeader blockHeader;
+    private final long size;
     private int transactionCounter;
-    private int blockHeight;
+    private final int blockHeight;
 
     /**
      * Instantiates a new Block without any initial transactions.
@@ -40,6 +39,15 @@ public class Block implements Serializable {
         this.size = this.blockHeader.getSize() + (Integer.SIZE * 2);
     }
 
+    /**
+     * Instantiates a new Block without any initial transactions and with predefined timestamp and nonce.
+     *
+     * @param previousBlockHash the previous block hash
+     * @param protocolVersion   the protocol version
+     * @param blockHeight       the block height
+     * @param timestamp         the timestamp
+     * @param nonce             the nonce
+     */
     public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight, long timestamp, int nonce) {
         this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce);
         this.blockHeight = blockHeight;
@@ -49,7 +57,7 @@ public class Block implements Serializable {
     }
 
     /**
-     * Instantiates a new Block with a preset "list" of transactions.
+     * Instantiates a new Block with a preset "list" of transactions and with predefined timestamp and nonce.
      *
      * @param previousBlockHash the previous block hash
      * @param protocolVersion   the protocol version
@@ -66,6 +74,16 @@ public class Block implements Serializable {
         this.size = this.blockHeader.getSize() + (Integer.SIZE * 2) + this.transactions.size();
     }
 
+    /**
+     * Instantiates a new Block with a preset "list" of transactions.
+     *
+     * @param previousBlockHash the previous block hash
+     * @param protocolVersion   the protocol version
+     * @param blockHeight       the block height
+     * @param transactions      the transactions
+     * @param timestamp         the timestamp
+     * @param nonce             the nonce
+     */
     public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight, Map<String, Transaction> transactions, long timestamp, int nonce) {
         this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce);
         this.blockHeight = blockHeight;
@@ -79,7 +97,7 @@ public class Block implements Serializable {
     /* Methods */
 
     /**
-     * Adds a transaction/data to the block
+     * Adds a transaction to the block
      *
      * @param transaction the transaction
      */
@@ -88,8 +106,17 @@ public class Block implements Serializable {
         this.transactionCounter++;
     }
 
-    /* Getters */
+    /**
+     * Adds transactions to the block.
+     *
+     * @param transactions the transactions
+     */
+    public void addTransactions(Map<String, Transaction> transactions) {
+        this.transactions.putAll(transactions);
+        this.transactionCounter += transactions.size();
+    }
 
+    /* Getters */
     /**
      * Gets all the transactions that are stored in a block
      * For security reasons, we do not give direct access to the transactions,
@@ -178,13 +205,13 @@ public class Block implements Serializable {
 
     @Override
     public String toString() {
-        return "Block{" +
-                "transactions=" + transactions.values() +
-                ", blockHeader=" + blockHeader +
-                ", size=" + size +
-                ", transactionCounter=" + transactionCounter +
-                ", blockHeight=" + blockHeight +
-                ", hash=" + Base64.toBase64String(getHash()) +
-                '}';
+        return "Block: {" + System.lineSeparator() +
+                "transactions: " + transactions.values() + System.lineSeparator() +
+                blockHeader + System.lineSeparator() +
+                "size: " + size + System.lineSeparator() +
+                "transaction counter: " + transactionCounter + System.lineSeparator() +
+                "block height: " + blockHeight + System.lineSeparator() +
+                "hash: " + Base64.toBase64String(getHash()) + System.lineSeparator() +
+                "}";
     }
 }
