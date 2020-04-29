@@ -7,6 +7,7 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.Request;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
@@ -61,6 +62,7 @@ public class Client {
         });
 
         JFrame frame = new JFrame("Client");
+        frame.setPreferredSize(new Dimension(600, 300));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setContentPane(client.mainPanel);
         frame.pack();
@@ -95,6 +97,7 @@ public class Client {
                     }
 
                     System.out.println("Block: " + currentBlock.toString());
+                    JOptionPane.showMessageDialog(null, currentBlock.toString(), "Current Block Data", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException | ClassNotFoundException ex) {
                     ex.printStackTrace();
@@ -126,6 +129,7 @@ public class Client {
                     byte[] blockHash = reply;
 
                     System.out.println("Block hash: " + Base64.toBase64String(blockHash));
+                    JOptionPane.showMessageDialog(null, Base64.toBase64String(blockHash), "Current Block Hash", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -162,6 +166,7 @@ public class Client {
                     }
 
                     System.out.println("Block height: " + blockHeight);
+                    JOptionPane.showMessageDialog(null, blockHeight, "Current Block Height", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -198,6 +203,7 @@ public class Client {
                     }
 
                     System.out.println("Transactions: " + transactions.values().toString());
+                    JOptionPane.showMessageDialog(null, transactions.values().toString(), "Current Block Transactions", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException | ClassNotFoundException ex) {
                     ex.printStackTrace();
@@ -206,7 +212,6 @@ public class Client {
         };
     }
 
-    // TODO: Get Data from TextArea and convert into byte[]
     public ActionListener addTransactionButtonActionListener() {
         return new ActionListener() {
             @Override
@@ -214,8 +219,10 @@ public class Client {
                 try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                      ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                    String string = "Hello World";
+                    String string = transactionDataTextArea.getText();
                     byte[] data = string.getBytes(StandardCharsets.UTF_8);
+
+                    System.out.println("Data bytes: " + Base64.toBase64String(data));
 
                     Request req = new Request(5, data);
                     objOut.writeObject(req);
@@ -238,6 +245,7 @@ public class Client {
                     }
 
                     System.out.println("Transaction added: " + added);
+                    JOptionPane.showMessageDialog(null, added, "Transaction added", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -274,6 +282,7 @@ public class Client {
                     }
 
                     System.out.println("Block created: " + added);
+                    JOptionPane.showMessageDialog(null, added, "Block Created", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException ex) {
                     ex.printStackTrace();
