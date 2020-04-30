@@ -1,11 +1,11 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
-import org.bouncycastle.util.encoders.Base64;
 import pt.ipleiria.estg.dei.pi.voidchain.Util;
+
+import org.bouncycastle.util.encoders.Base64;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.sql.Timestamp;
 
 /**
  * The transaction contains data of the operations performed by the replicas.
@@ -18,29 +18,6 @@ public class Transaction implements Serializable {
     private final int size;
     private final float protocolVersion;
     private byte[] hash;
-
-    /**
-     * Instantiates a new Transaction.
-     *
-     * @param data            the data
-     * @param protocolVersion the protocol version
-     */
-    public Transaction(byte[] data, float protocolVersion) {
-        this.timestamp = new Timestamp(System.currentTimeMillis()).getTime();
-        this.data = data;
-        this.protocolVersion = protocolVersion;
-        this.size = Long.SIZE + this.data.length + Integer.SIZE + Float.SIZE;
-
-        byte[] dataBytes = getDataBytes(this.timestamp, this.data, this.size, this.protocolVersion);
-
-        if (dataBytes == null) {
-            // TODO: ERROR
-            return;
-        }
-
-        this.hash = Util.calculateHash(dataBytes);
-    }
-
 
     /**
      * Instantiates a new Transaction.
@@ -102,8 +79,8 @@ public class Transaction implements Serializable {
         }
 
         if (i != sizeAux) {
+            // TODO: ERROR
             System.out.println("THIS SHOULDN'T RUN");
-
             return null;
         }
 
@@ -111,7 +88,6 @@ public class Transaction implements Serializable {
     }
 
     /* Getters */
-
     /**
      * Gets Epoch time of when a transaction was created.
      *

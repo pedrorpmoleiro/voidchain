@@ -1,7 +1,5 @@
 package pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain;
 
-import bftsmart.tom.server.defaultservices.CommandsInfo;
-import bftsmart.tom.server.defaultservices.DefaultApplicationState;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
@@ -10,7 +8,6 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
@@ -29,8 +26,9 @@ import bftsmart.tom.ReplicaContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.Recoverable;
 import bftsmart.tom.server.SingleExecutable;
-import bftsmart.tom.server.defaultservices.DiskStateLog;
 import bftsmart.tom.server.defaultservices.StateLog;
+import bftsmart.tom.server.defaultservices.CommandsInfo;
+import bftsmart.tom.server.defaultservices.DefaultApplicationState;
 
 // TODO: UPDATE
 @Deprecated
@@ -120,7 +118,7 @@ public class Node implements Recoverable, SingleExecutable {
                 case 6:
                     if (ordered) {
                         // TODO: IMPROVE SECURITY
-                        this.blockchain.createBlock(msgCtx.getTimestamp(), new Random().nextInt());
+                        //this.blockchain.createBlock(msgCtx.getTimestamp(), new Random().nextInt());
 
                         objOut.writeBoolean(true);
                         hasReply = true;

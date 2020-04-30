@@ -1,7 +1,8 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
-import org.bouncycastle.util.encoders.Base64;
 import pt.ipleiria.estg.dei.pi.voidchain.Util;
+
+import org.bouncycastle.util.encoders.Base64;
 
 import java.io.Serializable;
 import java.util.Hashtable;
@@ -18,27 +19,12 @@ import java.util.Map;
  */
 public class Block implements Serializable {
     /* Attributes */
-    // TODO: SIZE TO INCLUDE TRANSACTIONS
-    private final Map<String, Transaction> transactions;
+    // TODO: SIZE TO INCLUDE TRANSACTIONS & CHANGE HASHTABLE
+    private final Map<byte[], Transaction> transactions;
     private final BlockHeader blockHeader;
     private final long size;
     private int transactionCounter;
     private final int blockHeight;
-
-    /**
-     * Instantiates a new Block without any initial transactions.
-     *
-     * @param previousBlockHash the previous block hash
-     * @param protocolVersion   the protocol version
-     * @param blockHeight       the block height
-     */
-    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight) {
-        this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion);
-        this.blockHeight = blockHeight;
-        this.transactionCounter = 0;
-        this.transactions = new Hashtable<>();
-        this.size = this.blockHeader.getSize() + (Integer.SIZE * 2);
-    }
 
     /**
      * Instantiates a new Block without any initial transactions and with predefined timestamp and nonce.
@@ -49,30 +35,12 @@ public class Block implements Serializable {
      * @param timestamp         the timestamp
      * @param nonce             the nonce
      */
-    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight, long timestamp, int nonce) {
+    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight, long timestamp, byte[] nonce) {
         this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce);
         this.blockHeight = blockHeight;
         this.transactionCounter = 0;
         this.transactions = new Hashtable<>();
         this.size = this.blockHeader.getSize() + (Integer.SIZE * 2);
-    }
-
-    /**
-     * Instantiates a new Block with a preset "list" of transactions and with predefined timestamp and nonce.
-     *
-     * @param previousBlockHash the previous block hash
-     * @param protocolVersion   the protocol version
-     * @param blockHeight       the block height
-     * @param transactions      the transactions
-     */
-    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight, Map<String, Transaction> transactions) {
-        this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion);
-        this.blockHeight = blockHeight;
-
-        this.transactionCounter = transactions.size();
-        this.transactions = new Hashtable<>(transactions);
-
-        this.size = this.blockHeader.getSize() + (Integer.SIZE * 2) + this.transactions.size();
     }
 
     /**
@@ -85,26 +53,25 @@ public class Block implements Serializable {
      * @param timestamp         the timestamp
      * @param nonce             the nonce
      */
-    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight, Map<String, Transaction> transactions, long timestamp, int nonce) {
+    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight,
+                 Map<byte[], Transaction> transactions, long timestamp, byte[] nonce) {
         this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce);
         this.blockHeight = blockHeight;
-
         this.transactionCounter = transactions.size();
         this.transactions = new Hashtable<>(transactions);
-
         this.size = this.blockHeader.getSize() + (Integer.SIZE * 2) + this.transactions.size();
     }
 
     /* Methods */
-
     /**
      * Adds a transaction to the block
      *
      * @param transaction the transaction
      */
     public void addTransaction(Transaction transaction) {
-        this.transactions.put(Base64.toBase64String(transaction.getHash()), transaction);
+        this.transactions.put(transaction.getHash(), transaction);
         this.transactionCounter++;
+        this.blockHeader.merkleRoot = Util.getMerkleRoot(this.transactions.keySet());
     }
 
     /**
@@ -112,9 +79,10 @@ public class Block implements Serializable {
      *
      * @param transactions the transactions
      */
-    public void addTransactions(Map<String, Transaction> transactions) {
+    public void addTransactions(Map<byte[], Transaction> transactions) {
         this.transactions.putAll(transactions);
         this.transactionCounter += transactions.size();
+        this.blockHeader.merkleRoot = Util.getMerkleRoot(this.transactions.keySet());
     }
 
     /* Getters */
@@ -125,7 +93,7 @@ public class Block implements Serializable {
      *
      * @return the transactions (Map<String, Transaction>)
      */
-    public Map<String, Transaction> getTransactions() {
+    public Map<byte[], Transaction> getTransactions() {
         return new Hashtable<>(this.transactions);
     }
 
@@ -163,7 +131,7 @@ public class Block implements Serializable {
      * @return the timestamp (long)
      */
     public long getTimestamp() {
-        return this.blockHeader.getTimestamp();
+        return this.blockHeader.timestamp;
     }
 
     /**
@@ -172,7 +140,7 @@ public class Block implements Serializable {
      * @return the previous block hash (byte[])
      */
     public byte[] getPreviousBlockHash() {
-        return this.blockHeader.getPreviousBlockHash();
+        return this.blockHeader.previousBlockHash;
     }
 
     /**
@@ -181,7 +149,7 @@ public class Block implements Serializable {
      * @return the protocol version (float)
      */
     public float getProtocolVersion() {
-        return this.blockHeader.getProtocolVersion();
+        return this.blockHeader.protocolVersion;
     }
 
     /**
@@ -189,8 +157,8 @@ public class Block implements Serializable {
      *
      * @return the nonce (int)
      */
-    public int getNonce() {
-        return this.blockHeader.getNonce();
+    public byte[] getNonce() {
+        return this.blockHeader.nonce;
     }
 
     /**
