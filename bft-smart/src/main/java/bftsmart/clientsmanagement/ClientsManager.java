@@ -25,6 +25,15 @@ import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.leaderchange.RequestsTimer;
 import bftsmart.tom.server.RequestVerifier;
+import bftsmart.tom.util.TOMUtil;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Signature;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,12 +50,23 @@ public class ClientsManager {
     private HashMap<Integer, ClientData> clientsData = new HashMap<Integer, ClientData>();
     private RequestVerifier verifier;
     
+    //Used when the intention is to perform benchmarking with signature verification, but
+    //without having to make the clients create one first. Useful to optimize resources
+    private byte[] benchMsg = null;
+    private byte[] benchSig = null;
+    private HashMap<String,Signature> benchEngines = new HashMap<>();
+    
     private ReentrantLock clientsLock = new ReentrantLock();
 
     public ClientsManager(ServerViewController controller, RequestsTimer timer, RequestVerifier verifier) {
         this.controller = controller;
         this.timer = timer;
         this.verifier = verifier;
+        
+        if (controller.getStaticConf().getUseSignatures() == 2) {
+            benchMsg = new byte []{3,5,6,7,4,3,5,6,4,7,4,1,7,7,5,4,3,1,4,85,7,5,7,3};
+            benchSig = TOMUtil.signMessage(controller.getStaticConf().getPrivateKey(), benchMsg);            
+        }
     }
 
     /**
@@ -88,24 +108,36 @@ public class ClientsManager {
      */
     public RequestList getPendingRequests() {
         RequestList allReq = new RequestList();
-
+        
         clientsLock.lock();
         /******* BEGIN CLIENTS CRITICAL SECTION ******/
         
-        Set<Entry<Integer, ClientData>> clientsEntrySet = clientsData.entrySet();
+        List<Entry<Integer, ClientData>> clientsEntryList = new ArrayList<>(clientsData.entrySet().size());
+        clientsEntryList.addAll(clientsData.entrySet());
+        
+        if (controller.getStaticConf().getFairBatch()) // ensure fairness
+            Collections.shuffle(clientsEntryList);
+
+        logger.debug("Number of active clients: {}", clientsEntryList.size());
         
         for (int i = 0; true; i++) {
-            Iterator<Entry<Integer, ClientData>> it = clientsEntrySet.iterator();
+                        
+            Iterator<Entry<Integer, ClientData>> it = clientsEntryList.iterator();
             int noMoreMessages = 0;
-
+            
+            logger.debug("Fetching requests with internal index {}", i);
+            
             while (it.hasNext()
                     && allReq.size() < controller.getStaticConf().getMaxBatchSize()
-                    && noMoreMessages < clientsEntrySet.size()) {
+                    && noMoreMessages < clientsEntryList.size()) {
 
                 ClientData clientData = it.next().getValue();
                 RequestList clientPendingRequests = clientData.getPendingRequests();
 
                 clientData.clientLock.lock();
+
+                logger.debug("Number of pending requests for client {}: {}.", clientData.getClientId(), clientPendingRequests.size());
+
                 /******* BEGIN CLIENTDATA CRITICAL SECTION ******/
                 TOMMessage request = (clientPendingRequests.size() > i) ? clientPendingRequests.get(i) : null;
 
@@ -114,6 +146,9 @@ public class ClientsManager {
 
                 if (request != null) {
                     if(!request.alreadyProposed) {
+                        
+                        logger.debug("Selected request with sequence number {} from client {}", request.getSequence(), request.getSender());
+                        
                         //this client have pending message
                         request.alreadyProposed = true;
                         allReq.addLast(request);
@@ -125,7 +160,7 @@ public class ClientsManager {
             }
             
             if(allReq.size() == controller.getStaticConf().getMaxBatchSize() ||
-                    noMoreMessages == clientsEntrySet.size()) {
+                    noMoreMessages == clientsEntryList.size()) {
                 
                 break;
             }
@@ -169,6 +204,38 @@ public class ClientsManager {
         /******* END CLIENTS CRITICAL SECTION ******/
         clientsLock.unlock();
         return havePending;
+    }
+    
+    /**
+     * Retrieves the number of pending requests
+     * @return Number of pending requests
+     */
+    public int countPendingRequests() {
+        int count = 0;
+
+        clientsLock.lock();
+        /******* BEGIN CLIENTS CRITICAL SECTION ******/        
+        
+        Iterator<Entry<Integer, ClientData>> it = clientsData.entrySet().iterator();
+
+        while (it.hasNext()) {
+            ClientData clientData = it.next().getValue();
+            
+            clientData.clientLock.lock();
+            RequestList reqs = clientData.getPendingRequests();
+            if (!reqs.isEmpty()) {
+                for(TOMMessage msg:reqs) {
+                    if(!msg.alreadyProposed) {
+                        count++;
+                    }
+                }
+            }
+            clientData.clientLock.unlock();
+        }
+
+        /******* END CLIENTS CRITICAL SECTION ******/
+        clientsLock.unlock();
+        return count;
     }
 
     /**
@@ -278,11 +345,28 @@ public class ClientsManager {
             //and not an erroneous requests sent by a Byzantine leader.
             boolean isValid = (!controller.getStaticConf().isBFT() || verifier.isValidRequest(request));
 
+            Signature engine = benchEngines.get(Thread.currentThread().getName());
+            
+            if (engine == null) {
+                
+                try {
+                    engine = TOMUtil.getSigEngine();
+                    engine.initVerify(controller.getStaticConf().getPublicKey());
+                    
+                    benchEngines.put(Thread.currentThread().getName(), engine);
+                } catch (NoSuchAlgorithmException | InvalidKeyException ex) {
+                    logger.error("Signature error.",ex);
+                    engine = null;
+                }
+            }
+            
             //it is a valid new message and I have to verify it's signature
             if (isValid &&
-                    (!request.signed ||
+                    ((engine != null && benchMsg != null && benchSig != null && TOMUtil.verifySigForBenchmark(engine, benchMsg, benchSig)) || !request.signed ||
                     clientData.verifySignature(request.serializedMessage,
                             request.serializedMessageSignature))) {
+                
+                logger.debug("Message from client {} is valid", clientData.getClientId());
 
                 //I don't have the message but it is valid, I will
                 //insert it in the pending requests of this client
@@ -298,6 +382,9 @@ public class ClientsManager {
                 }
 
                 accounted = true;
+            } else {
+                
+                logger.warn("Message from client {} is invalid", clientData.getClientId());
             }
         } else {
             //I will not put this message on the pending requests list
@@ -322,6 +409,9 @@ public class ClientsManager {
                 }
                 accounted = true;
             } else {
+                
+                logger.warn("Message from client {} is too forward", clientData.getClientId());
+                
                 //a too forward message... the client must be malicious
                 accounted = false;
             }
@@ -384,5 +474,10 @@ public class ClientsManager {
         clientsLock.unlock();
         logger.info("ClientsManager cleared.");
 
+    }
+    
+    public int numClients() {
+        
+        return clientsData.size();
     }
 }

@@ -27,7 +27,7 @@ import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.reconfiguration.util.TOMConfiguration;
 import bftsmart.statemanagement.ApplicationState;
 import bftsmart.statemanagement.StateManager;
-import bftsmart.statemanagement.strategy.StandardStateManager;
+import bftsmart.statemanagement.standard.StandardStateManager;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ReplicaContext;
 import bftsmart.tom.server.BatchExecutable;
@@ -41,11 +41,11 @@ import org.slf4j.LoggerFactory;
  *
  * This class provides a basic state transfer protocol using the interface
  * 'BatchExecutable'.
- *
+ * 
  * @author Joao Sousa
  */
 public abstract class DefaultRecoverable implements Recoverable, BatchExecutable {
-
+    
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private int checkpointPeriod;
@@ -200,7 +200,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
      */
     private void saveCommands(byte[][] commands, MessageContext[] msgCtx) {
         //if(!config.isToLog())
-        //	return;
+        //	return;        
         if (commands.length != msgCtx.length) {
             logger.debug("SIZE OF COMMANDS AND MESSAGE CONTEXTS IS DIFFERENT----");
             logger.debug("COMMANDS: " + commands.length + ", CONTEXTS: " + msgCtx.length + " ----");
