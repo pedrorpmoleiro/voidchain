@@ -11,8 +11,8 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="bft-smart" target="13" />
-      <module name="voidchain" target="13" />
+      <module name="bft-smart" target="14" />
+      <module name="voidchain" target="14" />
     </bytecodeTargetLevel>
   </component>
 </project>
