@@ -35,6 +35,15 @@ public class BlockHeader implements Serializable {
         this.merkleRoot = new byte[0];
     }
 
+    // FOR USE WITH CLONE
+    private BlockHeader (byte[] previousBlockHash, float protocolVersion, long timestamp, byte[] nonce, byte[] merkleRoot) {
+        this.previousBlockHash = previousBlockHash;
+        this.protocolVersion = protocolVersion;
+        this.timestamp = timestamp;
+        this.nonce = nonce;
+        this.merkleRoot = merkleRoot;
+    }
+
     /* Methods */
     /* Getters */
     /**
@@ -97,6 +106,11 @@ public class BlockHeader implements Serializable {
         }
 
         return dataBytes;
+    }
+
+    protected BlockHeader clone() {
+        return new BlockHeader(this.previousBlockHash, this.protocolVersion, this.timestamp,
+                this.nonce, this.merkleRoot);
     }
 
     @Override

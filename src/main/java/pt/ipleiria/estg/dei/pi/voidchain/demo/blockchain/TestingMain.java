@@ -21,6 +21,13 @@ public class TestingMain {
         System.out.println("Transaction Count: " + block1.getTransactionCounter());
         System.out.println("Merkle Root: " + Base64.toBase64String(Util.getMerkleRoot(block1.getTransactions().keySet())));
 
+        System.out.println("----------------------------------------------------------------------");
+
+        System.out.println("Original 1: " + block1.toString());
+        System.out.println("Clone of 1: " + block1.clone().toString());
+
+        System.out.println("----------------------------------------------------------------------");
+
         block1.addTransaction(new Transaction("TRANSACTION 5".getBytes(StandardCharsets.UTF_8), Blockchain.PROTOCOL_VERSION, 5L));
         var mapTransactions = block1.getTransactions();
         System.out.println("Transaction Count: " + block1.getTransactionCounter());

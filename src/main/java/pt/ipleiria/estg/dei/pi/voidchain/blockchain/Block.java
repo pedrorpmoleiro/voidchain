@@ -60,6 +60,16 @@ public class Block implements Serializable {
         this.transactionCounter = transactions.size();
         this.transactions = new Hashtable<>(transactions);
         this.size = this.blockHeader.getSize() + (Integer.SIZE * 2) + this.transactions.size();
+        this.blockHeader.merkleRoot = Util.getMerkleRoot(this.transactions.keySet());
+    }
+
+    // FOR USE WITH CLONE
+    private Block (int blockHeight, Map<byte[], Transaction> transactions, long size, BlockHeader blockHeader) {
+        this.blockHeader = blockHeader;
+        this.blockHeight = blockHeight;
+        this.transactionCounter = transactions.size();
+        this.transactions = new Hashtable<>(transactions);
+        this.size = size;
     }
 
     /* Methods */
@@ -170,6 +180,10 @@ public class Block implements Serializable {
      */
     public byte[] getHash() {
         return Util.calculateHash(this.blockHeader.getData());
+    }
+
+    public Block clone() {
+        return new Block(this.blockHeight, this.transactions, this.size, this.blockHeader.clone());
     }
 
     @Override
