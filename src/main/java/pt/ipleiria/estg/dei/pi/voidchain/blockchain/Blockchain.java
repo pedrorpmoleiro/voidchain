@@ -13,8 +13,8 @@ import java.util.*;
  */
 public class Blockchain implements Serializable {
     /* Attributes */
-    public static float PROTOCOL_VERSION = 0.1f;
-    private static int TRANSACTION_PER_BLOCK = 5;
+    public static final float PROTOCOL_VERSION = 0.1f;
+    private static final int TRANSACTION_PER_BLOCK = 5;
     // TODO: Stack (?)
     private final List<Block> blocks;
     private final List<Transaction> transactionPool;
