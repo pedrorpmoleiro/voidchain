@@ -4,6 +4,8 @@ import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,6 +14,7 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 
 import java.io.*;
+import java.security.Security;
 
 public class Replica extends DefaultSingleRecoverable {
     private Blockchain blockchain;
@@ -29,6 +32,11 @@ public class Replica extends DefaultSingleRecoverable {
             System.out.println("Usage: pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.Replica <server id>");
             System.exit(-1);
         }
+
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
+
         new Replica(Integer.parseInt(args[0]));
     }
 

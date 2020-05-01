@@ -2,6 +2,7 @@ package pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.client;
 
 import bftsmart.tom.ServiceProxy;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
 
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
@@ -14,6 +15,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.security.Security;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -39,6 +41,10 @@ public class Client {
     public static void main(String[] args) {
         if (args.length < 1) {
             System.out.println("Usage: pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.client.Client <client id>");
+        }
+
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+            Security.addProvider(new BouncyCastleProvider());
         }
 
         try {
