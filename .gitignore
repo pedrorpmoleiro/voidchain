@@ -73,3 +73,5 @@ fabric.properties
 doc/
 target/
 *.class
+
+config/currentView

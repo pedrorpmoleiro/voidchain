@@ -1,11 +1,12 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
+import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Hash;
+
 import org.bouncycastle.util.encoders.Base64;
-import pt.ipleiria.estg.dei.pi.voidchain.Util;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.sql.Timestamp;
 
 /**
  * The transaction contains data of the operations performed by the replicas.
@@ -13,34 +14,12 @@ import java.sql.Timestamp;
  */
 public class Transaction implements Serializable {
     /* Attributes */
+    public static int MAX_SIZE = 1024;
     private final long timestamp;
     private final byte[] data;
     private final int size;
     private final float protocolVersion;
-    private byte[] hash;
-
-    /**
-     * Instantiates a new Transaction.
-     *
-     * @param data            the data
-     * @param protocolVersion the protocol version
-     */
-    public Transaction(byte[] data, float protocolVersion) {
-        this.timestamp = new Timestamp(System.currentTimeMillis()).getTime();
-        this.data = data;
-        this.protocolVersion = protocolVersion;
-        this.size = Long.SIZE + this.data.length + Integer.SIZE + Float.SIZE;
-
-        byte[] dataBytes = getDataBytes(this.timestamp, this.data, this.size, this.protocolVersion);
-
-        if (dataBytes == null) {
-            // TODO: ERROR
-            return;
-        }
-
-        this.hash = Util.calculateHash(dataBytes);
-    }
-
+    private final byte[] hash;
 
     /**
      * Instantiates a new Transaction.
@@ -53,16 +32,15 @@ public class Transaction implements Serializable {
         this.timestamp = timestamp;
         this.data = data;
         this.protocolVersion = protocolVersion;
-        this.size = Long.SIZE + this.data.length + Integer.SIZE + Float.SIZE;
+        this.size = Long.BYTES + this.data.length + Integer.BYTES + Float.BYTES;
 
         byte[] dataBytes = getDataBytes(this.timestamp, this.data, this.size, this.protocolVersion);
 
         if (dataBytes == null) {
             // TODO: ERROR
-            return;
         }
 
-        this.hash = Util.calculateHash(dataBytes);
+        this.hash = Hash.calculateSHA3512RIPEMD160(dataBytes);
     }
 
     /* Methods */
@@ -72,9 +50,9 @@ public class Transaction implements Serializable {
         byte[] sizeBytes;
 
         try {
-            protocolVersionBytes = Util.floatToByteArray(protocolVersion);
-            timestampBytes = Util.longToByteArray(timestamp);
-            sizeBytes = Util.intToByteArray(size);
+            protocolVersionBytes = Converters.floatToByteArray(protocolVersion);
+            timestampBytes = Converters.longToByteArray(timestamp);
+            sizeBytes = Converters.intToByteArray(size);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -102,8 +80,8 @@ public class Transaction implements Serializable {
         }
 
         if (i != sizeAux) {
+            // TODO: ERROR
             System.out.println("THIS SHOULDN'T RUN");
-
             return null;
         }
 
@@ -111,7 +89,6 @@ public class Transaction implements Serializable {
     }
 
     /* Getters */
-
     /**
      * Gets Epoch time of when a transaction was created.
      *

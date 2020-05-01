@@ -163,6 +163,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 			logger.info("maxBatch = " + controller.getStaticConf().getMaxBatchSize());
 			if(controller.getStaticConf().getUseSignatures() == 1) logger.info("Using Signatures");
                         else if (controller.getStaticConf().getUseSignatures() == 2) logger.info("Using benchmark signature verification");
+<<<<<<< HEAD
 			logger.info("Binded replica to IP address " + myAddress);
 			// ******* EDUARDO END **************//
 
@@ -201,6 +202,12 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 		for (NettyClientServerSession ncss : sessions) {
 
 			closeChannelAndEventLoop(ncss.getChannel());
+=======
+                        logger.info("Binded replica to IP address " + myAddress);
+                        //******* EDUARDO END **************//
+                        
+                        mainChannel = f.channel();
+>>>>>>> BlockchainBFTSMART
 
 		}
 

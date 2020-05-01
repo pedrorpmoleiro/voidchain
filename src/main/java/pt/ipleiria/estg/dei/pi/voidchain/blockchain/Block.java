@@ -1,10 +1,12 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
 import org.bouncycastle.util.encoders.Base64;
-import pt.ipleiria.estg.dei.pi.voidchain.Util;
+
+import pt.ipleiria.estg.dei.pi.voidchain.util.*;
 
 import java.io.Serializable;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,27 +20,12 @@ import java.util.Map;
  */
 public class Block implements Serializable {
     /* Attributes */
-    // TODO: SIZE TO INCLUDE TRANSACTIONS
-    private final Map<String, Transaction> transactions;
+    // TODO: SIZE TO INCLUDE TRANSACTIONS & CHANGE HASHTABLE
+    private final Map<byte[], Transaction> transactions;
     private final BlockHeader blockHeader;
     private final long size;
     private int transactionCounter;
     private final int blockHeight;
-
-    /**
-     * Instantiates a new Block without any initial transactions.
-     *
-     * @param previousBlockHash the previous block hash
-     * @param protocolVersion   the protocol version
-     * @param blockHeight       the block height
-     */
-    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight) {
-        this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion);
-        this.blockHeight = blockHeight;
-        this.transactionCounter = 0;
-        this.transactions = new Hashtable<>();
-        this.size = this.blockHeader.getSize() + (Integer.SIZE * 2);
-    }
 
     /**
      * Instantiates a new Block without any initial transactions and with predefined timestamp and nonce.
@@ -49,30 +36,12 @@ public class Block implements Serializable {
      * @param timestamp         the timestamp
      * @param nonce             the nonce
      */
-    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight, long timestamp, int nonce) {
+    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight, long timestamp, byte[] nonce) {
         this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce);
         this.blockHeight = blockHeight;
         this.transactionCounter = 0;
         this.transactions = new Hashtable<>();
-        this.size = this.blockHeader.getSize() + (Integer.SIZE * 2);
-    }
-
-    /**
-     * Instantiates a new Block with a preset "list" of transactions and with predefined timestamp and nonce.
-     *
-     * @param previousBlockHash the previous block hash
-     * @param protocolVersion   the protocol version
-     * @param blockHeight       the block height
-     * @param transactions      the transactions
-     */
-    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight, Map<String, Transaction> transactions) {
-        this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion);
-        this.blockHeight = blockHeight;
-
-        this.transactionCounter = transactions.size();
-        this.transactions = new Hashtable<>(transactions);
-
-        this.size = this.blockHeader.getSize() + (Integer.SIZE * 2) + this.transactions.size();
+        this.size = this.blockHeader.getSize() + (Integer.BYTES * 2);
     }
 
     /**
@@ -85,26 +54,51 @@ public class Block implements Serializable {
      * @param timestamp         the timestamp
      * @param nonce             the nonce
      */
-    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight, Map<String, Transaction> transactions, long timestamp, int nonce) {
+    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight,
+                 Map<byte[], Transaction> transactions, long timestamp, byte[] nonce) {
         this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce);
         this.blockHeight = blockHeight;
-
         this.transactionCounter = transactions.size();
         this.transactions = new Hashtable<>(transactions);
+        this.size = this.blockHeader.getSize() + (Integer.BYTES * 2) + this.transactions.size();
+        this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
+    }
 
-        this.size = this.blockHeader.getSize() + (Integer.SIZE * 2) + this.transactions.size();
+    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight,
+                 List<Transaction> transactions, long timestamp, byte[] nonce) {
+        this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce);
+        this.blockHeight = blockHeight;
+        this.transactionCounter = transactions.size();
+        this.transactions = new Hashtable<>(Converters.transactionListToMap(transactions));
+        this.size = this.blockHeader.getSize() + (Integer.BYTES * 2) + this.transactions.size();
+        this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
+    }
+
+    // FOR USE WITH CLONE
+    private Block (int blockHeight, Map<byte[], Transaction> transactions, long size, BlockHeader blockHeader) {
+        this.blockHeader = blockHeader;
+        this.blockHeight = blockHeight;
+        this.transactionCounter = transactions.size();
+        this.transactions = new Hashtable<>(transactions);
+        this.size = size;
     }
 
     /* Methods */
-
     /**
      * Adds a transaction to the block
      *
      * @param transaction the transaction
      */
-    public void addTransaction(Transaction transaction) {
-        this.transactions.put(Base64.toBase64String(transaction.getHash()), transaction);
+    public boolean addTransaction(Transaction transaction) {
+        if (transaction.getSize() > Transaction.MAX_SIZE) {
+            return false;
+        }
+
+        this.transactions.put(transaction.getHash(), transaction);
         this.transactionCounter++;
+        this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
+
+        return true;
     }
 
     /**
@@ -112,9 +106,22 @@ public class Block implements Serializable {
      *
      * @param transactions the transactions
      */
-    public void addTransactions(Map<String, Transaction> transactions) {
+    // TODO: MAX TRANSACTION SIZE
+    public boolean addTransactions(Map<byte[], Transaction> transactions) {
         this.transactions.putAll(transactions);
         this.transactionCounter += transactions.size();
+        this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
+
+        return true;
+    }
+
+    // TODO: MAX TRANSACTION SIZE
+    public boolean addTransactions(List<Transaction> transactions) {
+        this.transactions.putAll(Converters.transactionListToMap(transactions));
+        this.transactionCounter += transactions.size();
+        this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
+
+        return true;
     }
 
     /* Getters */
@@ -125,7 +132,7 @@ public class Block implements Serializable {
      *
      * @return the transactions (Map<String, Transaction>)
      */
-    public Map<String, Transaction> getTransactions() {
+    public Map<byte[], Transaction> getTransactions() {
         return new Hashtable<>(this.transactions);
     }
 
@@ -163,7 +170,7 @@ public class Block implements Serializable {
      * @return the timestamp (long)
      */
     public long getTimestamp() {
-        return this.blockHeader.getTimestamp();
+        return this.blockHeader.timestamp;
     }
 
     /**
@@ -172,7 +179,7 @@ public class Block implements Serializable {
      * @return the previous block hash (byte[])
      */
     public byte[] getPreviousBlockHash() {
-        return this.blockHeader.getPreviousBlockHash();
+        return this.blockHeader.previousBlockHash;
     }
 
     /**
@@ -181,7 +188,7 @@ public class Block implements Serializable {
      * @return the protocol version (float)
      */
     public float getProtocolVersion() {
-        return this.blockHeader.getProtocolVersion();
+        return this.blockHeader.protocolVersion;
     }
 
     /**
@@ -189,8 +196,8 @@ public class Block implements Serializable {
      *
      * @return the nonce (int)
      */
-    public int getNonce() {
-        return this.blockHeader.getNonce();
+    public byte[] getNonce() {
+        return this.blockHeader.nonce;
     }
 
     /**
@@ -201,7 +208,11 @@ public class Block implements Serializable {
      * @return the block hash / block header hash (byte[])
      */
     public byte[] getHash() {
-        return Util.calculateHash(this.blockHeader.getData());
+        return Hash.calculateSHA3512RIPEMD160(this.blockHeader.getData());
+    }
+
+    public Block clone() {
+        return new Block(this.blockHeight, this.transactions, this.size, this.blockHeader.clone());
     }
 
     @Override

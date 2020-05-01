@@ -104,16 +104,15 @@ public class Replica extends DefaultSingleRecoverable {
                     break;
                 case 5:
                     if (input.hasData()) {
-                        currentBlock.addTransaction(new Transaction(input.getData(), currentBlock.getProtocolVersion(), msgCtx.getTimestamp()));
+                        currentBlock.addTransaction(new Transaction(input.getData(), currentBlock.getProtocolVersion(),
+                                msgCtx.getTimestamp()));
                     }
 
                     objOut.writeBoolean(true);
                     hasReply = true;
                     break;
                 case 6:
-                    // TODO: IMPROVE SECURITY & NONCE
-                    // this.blockchain.createBlock(msgCtx.getTimestamp(), new Random().nextInt());
-                    this.blockchain.createBlock(msgCtx.getTimestamp(), 0);
+                    this.blockchain.createBlock(msgCtx.getTimestamp(), msgCtx.getNonces());
 
                     objOut.writeBoolean(true);
                     hasReply = true;
@@ -135,8 +134,6 @@ public class Replica extends DefaultSingleRecoverable {
         return reply;
     }
 
-    // TODO: UPDATE
-    @Deprecated
     @Override
     public byte[] appExecuteUnordered(byte[] command, MessageContext msgCtx) {
         byte[] reply = null;

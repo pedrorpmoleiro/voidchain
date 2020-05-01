@@ -1,17 +1,16 @@
-package pt.ipleiria.estg.dei.pi.voidchain;
+package pt.ipleiria.estg.dei.pi.voidchain.util;
 
-import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
-import org.bouncycastle.jcajce.provider.digest.SHA3;
+import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-/**
- * Class for useful methods
- */
-public class Util {
+public class Converters {
     /**
      * Converts Long to byte array.
      *
@@ -47,7 +46,7 @@ public class Util {
      * @return the byte[]
      * @throws IOException the io exception
      */
-// https://javadeveloperzone.com/java-basic/java-convert-int-to-byte-array/
+    // https://javadeveloperzone.com/java-basic/java-convert-int-to-byte-array/
     public static byte[] intToByteArray(final int i) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(bos);
@@ -94,10 +93,7 @@ public class Util {
         return byteBuffer.getLong();
     }
 
-    public static byte[] calculateHash(byte[] data) {
-        SHA3.Digest512 sha3_512 = new SHA3.Digest512();
-        RIPEMD160.Digest ripemd160 = new RIPEMD160.Digest();
-
-        return ripemd160.digest(sha3_512.digest(data));
+    public static Map<byte[], Transaction> transactionListToMap(List<Transaction> transactionList) {
+        return transactionList.stream().collect(Collectors.toMap(Transaction::getHash, transaction -> transaction));
     }
 }
