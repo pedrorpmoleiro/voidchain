@@ -25,7 +25,6 @@ public class MapInteractiveClient {
 			System.out.println("4 - Retrieve the size of the map");
 			System.out.println("5 - List all keys available in the table");
 			
-			console.flush();
 			int cmd = Integer.parseInt(console.readLine("Option:"));
 			
 			switch (cmd) {

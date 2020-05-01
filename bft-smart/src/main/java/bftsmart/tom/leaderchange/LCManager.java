@@ -856,6 +856,8 @@ public class LCManager {
                 
                     alreadyCounted.add(consMsg.getSender());
                     countValid++;
+                } else {
+                    logger.error("Invalid MAC in message from " + consMsg.getSender());
                 }
             } else if (consMsg.getProof() instanceof byte[]) { // certificate is made of signatures
                 
@@ -864,10 +866,13 @@ public class LCManager {
                    
                 byte[] signature = (byte[]) consMsg.getProof();
                             
-                if (TOMUtil.verifySignature(pubKey, data, signature) && !alreadyCounted.contains(consMsg.getSender())) {
+                if (Arrays.equals(consMsg.getValue(), hashedValue) &&
+                        TOMUtil.verifySignature(pubKey, data, signature) && !alreadyCounted.contains(consMsg.getSender())) {
                     
                     alreadyCounted.add(consMsg.getSender());
                     countValid++;
+                } else {
+                    logger.error("Invalid signature in message from " + consMsg.getSender());
                 }
    
             } else {
@@ -883,7 +888,10 @@ public class LCManager {
             logger.debug("Computing certificate based on previous view");
         
         //return countValid >= certificateCurrentView;
-        return countValid >=  (certificateLastView != -1 && pubKey != null ? certificateLastView : certificateCurrentView);
+        boolean ret = countValid >=  (certificateLastView != -1 && pubKey != null ? certificateLastView : certificateCurrentView);
+        logger.debug("Proof for CID {} is {} ({} valid messages, needed {})",
+                cDec.getCID(), (ret ? "valid" : "invalid"), countValid, ( pubKey != null ? certificateLastView : certificateCurrentView));
+        return ret;
     }
 
     /**

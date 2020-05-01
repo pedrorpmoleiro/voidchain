@@ -21,7 +21,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import bftsmart.communication.ServerCommunicationSystem;
-import bftsmart.communication.server.ServerConnection;
 import bftsmart.consensus.Consensus;
 import bftsmart.tom.core.ExecutionManager;
 import bftsmart.consensus.Epoch;
@@ -38,6 +37,8 @@ import java.io.ObjectOutputStream;
 import java.security.PrivateKey;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 
@@ -61,8 +62,9 @@ public final class Acceptor {
     private ServerCommunicationSystem communication; // Replicas comunication system
     private TOMLayer tomLayer; // TOM layer
     private ServerViewController controller;
-    //private Cipher cipher;
-    private Mac mac;
+    
+    //thread pool used to paralelise creation of consensus proofs
+    private ExecutorService proofExecutor = null;
 
     /**
      * Creates a new instance of Acceptor.
@@ -75,11 +77,13 @@ public final class Acceptor {
         this.me = controller.getStaticConf().getProcessId();
         this.factory = factory;
         this.controller = controller;
-        try {
-            this.mac = TOMUtil.getMacFactory();
-        } catch (NoSuchAlgorithmException /*| NoSuchPaddingException*/ ex) {
-            logger.error("Failed to get MAC engine",ex);
-        }
+            
+        // use either the same number of Netty workers threads if specified in the configuration
+        // or use a many as the number of cores available
+        int nWorkers = this.controller.getStaticConf().getNumNettyWorkers();
+        nWorkers = nWorkers > 0 ? nWorkers : Runtime.getRuntime().availableProcessors();
+        this.proofExecutor = Executors.newWorkStealingPool(nWorkers);
+            
     }
 
     public MessageFactory getFactory() {
@@ -191,7 +195,7 @@ public final class Acceptor {
             }
             epoch.deserializedPropValue = tomLayer.checkProposedValue(value, true);
 
-            if (epoch.deserializedPropValue != null && !epoch.isWriteSetted(me)) {
+            if (epoch.deserializedPropValue != null && !epoch.isWriteSent()) {
                 if(epoch.getConsensus().getDecision().firstMessageProposed == null) {
                     epoch.getConsensus().getDecision().firstMessageProposed = epoch.deserializedPropValue[0];
                 }
@@ -210,6 +214,7 @@ public final class Acceptor {
                             factory.createWrite(cid, epoch.getTimestamp(), epoch.propValueHash));
 
                     logger.debug("WRITE sent for " + cid);
+                    epoch.writeSent();
                 
                     computeWrite(cid, epoch, epoch.propValueHash);
                 
@@ -226,7 +231,8 @@ public final class Acceptor {
 
                         communication.send(this.controller.getCurrentViewOtherAcceptors(),
  	                    factory.createAccept(cid, epoch.getTimestamp(), epoch.propValueHash));
-
+                        
+                        epoch.acceptSent();
                         computeAccept(cid, epoch, epoch.propValueHash);
                 }
                 executionManager.processOutOfContext(epoch.getConsensus());
@@ -269,7 +275,7 @@ public final class Acceptor {
 
         if (writeAccepted > controller.getQuorum() && Arrays.equals(value, epoch.propValueHash)) {
                         
-            if (!epoch.isAcceptSetted(me)) {
+            if (!epoch.isAcceptSent()) {
                 
                 logger.debug("Sending WRITE for " + cid);
 
@@ -278,27 +284,55 @@ public final class Acceptor {
                 epoch.getConsensus().setQuorumWrites(value);
                 /*****************************************/
                 
-                epoch.setAccept(me, value);
-
                 if(epoch.getConsensus().getDecision().firstMessageProposed!=null) {
 
                         epoch.getConsensus().getDecision().firstMessageProposed.acceptSentTime = System.nanoTime();
                 }
+                
+                ConsensusMessage cm = epoch.fetchAccept();
+                int[] targets = this.controller.getCurrentViewAcceptors();
+                epoch.acceptSent();
+                
+                if (Arrays.equals(cm.getValue(), value)) { //make sure the ACCEPT message generated upon receiving the PROPOSE message
+                                                           //still matches the value that ended up being written...
+
+                    logger.debug("Speculative ACCEPT message for consensus {} matches the written value, sending it to the other replicas", cid);
+
+                    communication.getServersConn().send(targets, cm, true);
+                    
+                } else { //... and if not, create the ACCEPT message again (with the correct value), and send it
+                    
+                    ConsensusMessage correctAccept = factory.createAccept(cid, epoch.getTimestamp(), value);
+
+                    proofExecutor.submit(() -> {
                         
-                ConsensusMessage cm = factory.createAccept(cid, epoch.getTimestamp(), value);
+                        // Create a cryptographic proof for this ACCEPT message
+                        logger.debug("Creating cryptographic proof for the correct ACCEPT message from consensus " + cid);
+                        insertProof(correctAccept, epoch.deserializedPropValue);
+
+                        communication.getServersConn().send(targets, correctAccept, true);
+
+                    }); 
+                }
+                
+            }
+            
+        } else if (!epoch.isAcceptCreated()) { //start creating the ACCEPT message and its respective proof ASAP, to increase performance.
+                                               //since this is done after a PROPOSE message is received, this is done speculatively, hence
+                                               //the value must be verified before sending the ACCEPT message to the other replicas
+            
+            ConsensusMessage cm = factory.createAccept(cid, epoch.getTimestamp(), value);
+            epoch.acceptCreated();
+
+            proofExecutor.submit(() -> {
 
                 // Create a cryptographic proof for this ACCEPT message
-                logger.debug("Creating cryptographic proof for my ACCEPT message from consensus " + cid);
-                insertProof(cm, epoch);
-                
-                int[] targets = this.controller.getCurrentViewOtherAcceptors();
-                communication.getServersConn().send(targets, cm, true);
-                
-                //communication.send(this.reconfManager.getCurrentViewOtherAcceptors(),
-                        //factory.createStrong(cid, epoch.getNumber(), value));
-                epoch.addToProof(cm);
-                computeAccept(cid, epoch, value);
-            }
+                logger.debug("Creating cryptographic proof for speculative ACCEPT message from consensus " + cid);
+                insertProof(cm, epoch.deserializedPropValue);
+
+                epoch.setAcceptMsg(cm);
+
+            });            
         }
     }
 
@@ -311,10 +345,13 @@ public final class Acceptor {
      * @param cm The consensus message to which the proof shall be set
      * @param epoch The epoch during in which the consensus message was created
      */
-    private void insertProof(ConsensusMessage cm, Epoch epoch) {
+    private void insertProof(ConsensusMessage cm, TOMMessage[] msgs) {
         ByteArrayOutputStream bOut = new ByteArrayOutputStream(248);
         try {
-            new ObjectOutputStream(bOut).writeObject(cm);
+            ObjectOutputStream obj = new ObjectOutputStream(bOut);
+            obj.writeObject(cm);
+            obj.flush();
+            bOut.flush();
         } catch (IOException ex) {
             logger.error("Failed to serialize consensus message",ex);
         }
@@ -322,21 +359,24 @@ public final class Acceptor {
         byte[] data = bOut.toByteArray();
 
         // check if consensus contains reconfiguration request
-        TOMMessage[] msgs = epoch.deserializedPropValue;
         boolean hasReconf = false;
 
-        for (TOMMessage msg : msgs) {
-            if (msg.getReqType() == TOMMessageType.RECONFIG
-                    && msg.getViewID() == controller.getCurrentViewId()) {
-                hasReconf = true;
-                break; // no need to continue, exit the loop
+        if (!controller.getStaticConf().getProofType().equalsIgnoreCase("signatures")) {
+        
+            for (TOMMessage msg : msgs) {
+                if (msg.getReqType() == TOMMessageType.RECONFIG
+                        && msg.getViewID() == controller.getCurrentViewId()) {
+                    hasReconf = true;
+                    break; // no need to continue, exit the loop
+                }
             }
         }
-
-        //If this consensus contains a reconfiguration request, we need to use
-        // signatures (there might be replicas that will not be part of the next
-        //consensus instance, and so their MAC will be outdated and useless)
-        if (hasReconf) {
+                
+        if (controller.getStaticConf().getProofType().equalsIgnoreCase("signatures") // if the library is configured to use signatures...
+                
+                || hasReconf) { // ... or if this consensus contains a reconfiguration request, we need to use
+                                // signatures (there might be replicas that will not be part of the next
+                                // consensus instance, and so their MAC will be outdated and useless)...
 
             PrivateKey privKey = controller.getStaticConf().getPrivateKey();
 
@@ -344,7 +384,19 @@ public final class Acceptor {
 
             cm.setProof(signature);
 
-        } else { //... if not, we can use MAC vectores
+        } else { //... otherwise, we must use MAC vectores
+            
+            Mac mac = null;
+            
+            try {
+            
+                mac = TOMUtil.getMacFactory();
+            
+            } catch (NoSuchAlgorithmException ex) {
+                logger.error("Failed to create MAC engine", ex);
+                return;
+            }
+            
             int[] processes = this.controller.getCurrentViewAcceptors();
 
             HashMap<Integer, byte[]> macVector = new HashMap<>();
@@ -366,8 +418,8 @@ public final class Acceptor {
                                             // recovered after a crash, but it still did not concluded
                                             // the diffie helman protocol. Not an elegant solution,
                                             // but for now it will do
-                    this.mac.init(key);
-                    macVector.put(id, this.mac.doFinal(data));
+                    mac.init(key);
+                    macVector.put(id, mac.doFinal(data));
                 } catch (InterruptedException ex) {
                     
                     logger.error("Interruption while sleeping", ex);

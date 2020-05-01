@@ -26,7 +26,7 @@ import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.reconfiguration.util.TOMConfiguration;
 import bftsmart.statemanagement.ApplicationState;
 import bftsmart.statemanagement.StateManager;
-import bftsmart.statemanagement.strategy.StandardStateManager;
+import bftsmart.statemanagement.standard.StandardStateManager;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ReplicaContext;
 import bftsmart.tom.server.Recoverable;
@@ -54,7 +54,7 @@ public abstract class DefaultSingleRecoverable implements Recoverable, SingleExe
     private ReentrantLock stateLock = new ReentrantLock();
     
     private MessageDigest md;
-
+        
     private StateLog log;
     private List<byte[]> commands = new ArrayList<>();
     private List<MessageContext> msgContexts = new ArrayList<>();
@@ -106,7 +106,6 @@ public abstract class DefaultSingleRecoverable implements Recoverable, SingleExe
 	        commands = new ArrayList<>();
                 msgContexts = new ArrayList<>();
         }
-
         return reply;
     }
     

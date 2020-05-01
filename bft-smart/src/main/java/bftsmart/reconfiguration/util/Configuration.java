@@ -54,15 +54,15 @@ public class Configuration {
     public static final String DEFAULT_SIGNATURE_PROVIDER = "SunRsaSign";
     public static final String DEFAULT_HASH_PROVIDER = "SUN";
     
-    private String hmacAlgorithm;
-    private String secretKeyAlgorithm;
-    private String signatureAlgorithm;
-    private String hashAlgorithm;
+    protected String hmacAlgorithm;
+    protected String secretKeyAlgorithm;
+    protected String signatureAlgorithm;
+    protected String hashAlgorithm;
 
-    private String hmacAlgorithmProvider;
-    private String secretKeyAlgorithmProvider;
-    private String signatureAlgorithmProvider;
-    private String hashAlgorithmProvider;
+    protected String hmacAlgorithmProvider;
+    protected String secretKeyAlgorithmProvider;
+    protected String signatureAlgorithmProvider;
+    protected String hashAlgorithmProvider;
     
     protected String configHome = "";
 
@@ -70,6 +70,8 @@ public class Configuration {
     protected static String hostsFileName = "";
 
     protected boolean defaultKeys = false;
+    
+    protected String proofType;
 
     public Configuration(int procId, KeyLoader loader){
         processId = procId;
@@ -186,7 +188,28 @@ public class Configuration {
                 DH_G = new BigInteger(s);
             }
             
-            if (keyLoader == null) keyLoader = new RSAKeyLoader(processId, configHome, defaultKeys, signatureAlgorithm);
+            s = (String) configs.remove("system.totalordermulticast.prooftype");
+            if(s == null || (s != null && !s.equalsIgnoreCase("macvector"))){
+                proofType = "signatures";
+            }else{
+                proofType = s;
+            }
+            
+            if (keyLoader == null) {
+                
+                if (signatureAlgorithm.toLowerCase().contains("ecdsa")) {
+                    logger.debug("Using default ECDSA key loader");
+                    keyLoader = new ECDSAKeyLoader(processId, configHome, defaultKeys, signatureAlgorithm);
+                }
+                else if (signatureAlgorithm.toLowerCase().contains("rsa")) {
+                    logger.debug("Using default RSA key loader");
+                    keyLoader = new RSAKeyLoader(processId, configHome, defaultKeys, signatureAlgorithm);
+                }
+                
+                else {
+                    throw new RuntimeException("Unsupported signature algorithm, custom keyloader required");
+                }
+            }
             
             TOMUtil.init(hmacAlgorithm, secretKeyAlgorithm, keyLoader.getSignatureAlgorithm(), hashAlgorithm,
                     hmacAlgorithmProvider, secretKeyAlgorithmProvider, signatureAlgorithmProvider, hashAlgorithmProvider);
@@ -258,6 +281,10 @@ public class Configuration {
     
     public final String getHashAlgorithmProvider() {
         return hashAlgorithmProvider;
+    }
+    
+    public final String getProofType() {
+        return proofType;
     }
     
     public final String getProperty(String key){
