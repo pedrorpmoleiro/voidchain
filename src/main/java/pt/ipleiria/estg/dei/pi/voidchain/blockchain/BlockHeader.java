@@ -9,7 +9,9 @@ import java.io.Serializable;
 
 /**
  * The block header is a section of a block.
- * The hash of the block header is what IDs a block in the blockchain
+ * The hash of the block header is what IDs a block in the blockchain. It is the block ID.
+ * The structure of the header is: a timestamp, parents block (the block header) hash, the version of the protocol when the block was created,
+ *  a nonce (random byte array) and the root of the merkle tree (which resumes all the transactions stored in the block).
  */
 public class BlockHeader implements Serializable {
     /* Attributes */
@@ -108,6 +110,11 @@ public class BlockHeader implements Serializable {
         return dataBytes;
     }
 
+    /**
+     * Creates a clone/copy of the current (instance) block header.
+     *
+     * @return a clone/copy of the block header
+     */
     protected BlockHeader clone() {
         return new BlockHeader(this.previousBlockHash, this.protocolVersion, this.timestamp,
                 this.nonce, this.merkleRoot);

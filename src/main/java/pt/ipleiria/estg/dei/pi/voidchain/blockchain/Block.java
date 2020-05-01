@@ -211,6 +211,12 @@ public class Block implements Serializable {
         return Hash.calculateSHA3512RIPEMD160(this.blockHeader.getData());
     }
 
+
+    /**
+     * Creates a clone/copy of the current (instance) block.
+     *
+     * @return a clone/copy of this block.
+     */
     public Block clone() {
         return new Block(this.blockHeight, this.transactions, this.size, this.blockHeader.clone());
     }

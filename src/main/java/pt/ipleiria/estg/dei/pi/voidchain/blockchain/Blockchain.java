@@ -8,8 +8,8 @@ import java.util.*;
 
 /**
  * Blockchain data structure is an ordered, back-linked list of blocks of transactions/data.
- * BFT-Smart runs on top of this blockchain, and by running on top of a blockchain,
- * is more secure and robust.
+ * BFT-Smart runs on top of this blockchain (more like blockchain is piece of the puzzle that is BFT-Smart),
+ *  and by running on top of a blockchain, making it more secure and robust.
  */
 public class Blockchain implements Serializable {
     /* Attributes */

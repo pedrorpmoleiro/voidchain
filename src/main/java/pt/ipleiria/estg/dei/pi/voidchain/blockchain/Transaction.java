@@ -11,7 +11,12 @@ import java.io.Serializable;
 /**
  * The transaction contains data of the operations performed by the replicas.
  * In the 'transactions' section of a block, transactions get recorded.
+ * The structure of a transaction is: timestamp (when it was created), its size
+ *  , the version of the protocol when the transaction was created and the hash of the transaction (trasaction ID).
  */
+
+// TODO: Ver se transaction Hash pertecen à estrutura da transacção.
+
 public class Transaction implements Serializable {
     /* Attributes */
     public static int MAX_SIZE = 1024;
