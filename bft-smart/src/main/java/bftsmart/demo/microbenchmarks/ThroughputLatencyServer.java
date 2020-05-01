@@ -31,10 +31,6 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.security.InvalidKeyException;
-<<<<<<< HEAD
-=======
-import java.security.KeyFactory;
->>>>>>> BlockchainBFTSMART
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Security;
@@ -42,12 +38,6 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-<<<<<<< HEAD
-=======
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
->>>>>>> BlockchainBFTSMART
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;

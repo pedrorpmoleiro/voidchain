@@ -181,7 +181,6 @@ public class ServerConnection {
     /**
      * Used to send packets to the remote server.
      */
-<<<<<<< HEAD
     public final void send(byte[] data) throws InterruptedException {
     	if (useSenderThread) {
 			// only enqueue messages if there queue is not full
@@ -193,26 +192,6 @@ public class ServerConnection {
 			sendBytes(data);
 			sendLock.unlock();
 		}
-=======
-    public final void send(byte[] data, boolean useMAC) throws InterruptedException {
-        if (useSenderThread) {
-            //only enqueue messages if there queue is not full
-            if (!useMAC) {
-                logger.debug("Not sending defaultMAC " + System.identityHashCode(data));
-                noMACs.add(System.identityHashCode(data));
-            }
-
-            if (!outQueue.offer(data)) {
-                logger.debug("Out queue for " + remoteId + " full (message discarded).");
-            } else {
-                logger.debug("Inserted message into out queue for process {}.", remoteId);
-            }
-        } else {
-            sendLock.lock();
-            sendBytes(data, useMAC);
-            sendLock.unlock();
-        }
->>>>>>> BlockchainBFTSMART
     }
 
     /**

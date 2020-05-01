@@ -266,7 +266,6 @@ public class ServersCommunicationLayer extends Thread {
         // this shuffling is done to prevent the replica with the lowest ID/index  from being always
         // the last one receiving the messages, which can result in that replica  to become consistently
         // delayed in relation to the others.
-<<<<<<< HEAD
         /*Tulio A. Ribeiro*/
         Integer[] targetsShuffled = Arrays.stream( targets ).boxed().toArray( Integer[]::new );
         Collections.shuffle(Arrays.asList(targetsShuffled), new Random(System.nanoTime())); 
@@ -285,27 +284,6 @@ public class ServersCommunicationLayer extends Thread {
 				logger.error("Interruption while inserting message into inqueue", ex);
 			}
 		}
-=======
-        Integer[] targetsShuffled = Arrays.stream( targets ).boxed().toArray( Integer[]::new );
-        Collections.shuffle(Arrays.asList(targetsShuffled), new Random(System.nanoTime())); 
-
-        for (int i : targetsShuffled) {
-            try {
-                if (i == me) {
-                    sm.authenticated = true;
-                    inQueue.put(sm);
-                } else {
-                    //System.out.println("Going to send message to: "+i);
-                    //******* EDUARDO BEGIN **************//
-                    //connections[i].send(data);
-                    getConnection(i).send(data, useMAC);
-                    //******* EDUARDO END **************//
-                }
-            } catch (InterruptedException ex) {
-                logger.error("Interruption while inserting message into inqueue",ex);
-            }
-        }
->>>>>>> BlockchainBFTSMART
     }
 
     public void shutdown() {

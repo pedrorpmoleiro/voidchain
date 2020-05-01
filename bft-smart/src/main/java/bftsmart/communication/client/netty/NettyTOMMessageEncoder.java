@@ -75,21 +75,4 @@ public class NettyTOMMessageEncoder extends MessageToByteEncoder<TOMMessage> {
         context.flush();
     }
 
-<<<<<<< HEAD
-=======
-    byte[] produceMAC(int id, byte[] data, int me) {
-        
-        rl.readLock().lock();
-        NettyClientServerSession session = (NettyClientServerSession)sessionTable.get(id);
-        rl.readLock().unlock();
-        
-        if(session == null) {
-        	logger.warn("Session for client " + id + " is null");
-        	return null;
-        }
-        Mac macSend = session.getMacSend();
-        return macSend.doFinal(data);
-    }
-
->>>>>>> BlockchainBFTSMART
 }

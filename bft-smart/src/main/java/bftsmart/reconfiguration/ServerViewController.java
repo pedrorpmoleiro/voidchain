@@ -114,41 +114,6 @@ public class ServerViewController extends ViewController {
                     request.toString().getBytes(), request.getSignature())) {
             //if (request.getSender() == getStaticConf().getTTPId()) {
                 this.updates.add(up);
-<<<<<<< HEAD
-=======
-            /*} else {
-                boolean add = true;
-                Iterator<Integer> it = request.getProperties().keySet().iterator();
-                while (it.hasNext()) {
-                    int key = it.next();
-                    String value = request.getProperties().get(key);
-                    if (key == ADD_SERVER) {
-                        StringTokenizer str = new StringTokenizer(value, ":");
-                        if (str.countTokens() > 2) {
-                            int id = Integer.parseInt(str.nextToken());
-                            if(id != request.getSender()){
-                                add = false;
-                            }
-                        }else{
-                            add = false;
-                        }
-                    } else if (key == REMOVE_SERVER) {
-                        if (isCurrentViewMember(Integer.parseInt(value))) {
-                            if(Integer.parseInt(value) != request.getSender()){
-                                add = false;
-                            }
-                        }else{
-                            add = false;
-                        }
-                    } else if (key == CHANGE_F) {
-                        add = false;
-                    }
-                }
-                if(add){
-                    this.updates.add(up);
-                }
-            }*/
->>>>>>> BlockchainBFTSMART
         } else {
             logger.warn("Invalid reconfiguration from {}, discarding", up.getSender());
         }

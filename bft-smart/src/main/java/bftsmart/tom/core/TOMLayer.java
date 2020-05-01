@@ -45,11 +45,8 @@ import bftsmart.tom.server.RequestVerifier;
 import bftsmart.tom.util.BatchBuilder;
 import bftsmart.tom.util.BatchReader;
 import bftsmart.tom.util.TOMUtil;
-<<<<<<< HEAD
 
 import java.util.HashMap;
-=======
->>>>>>> BlockchainBFTSMART
 import java.util.Timer;
 import java.util.TimerTask;
 import org.slf4j.Logger;
@@ -433,12 +430,8 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             // blocks until there are requests to be processed/ordered
             messagesLock.lock();
             if (!clientsManager.havePendingRequests() ||
-<<<<<<< HEAD
                     (controller.getStaticConf().getBatchTimeout() > -1 
                     		&& clientsManager.countPendingRequests() < controller.getStaticConf().getMaxBatchSize())) {
-=======
-                    (controller.getStaticConf().getBatchTimeout() > -1 && clientsManager.countPendingRequests() < controller.getStaticConf().getMaxBatchSize())) {
->>>>>>> BlockchainBFTSMART
                 
                 logger.debug("Waiting for enough requests");
                 haveMessages.awaitUninterruptibly();
@@ -448,11 +441,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             
             if (!doWork) break;
             
-<<<<<<< HEAD
             logger.debug("There are requests to be ordered. I will propose.");
-=======
-            logger.debug("There are requests to be ordered.");
->>>>>>> BlockchainBFTSMART
 
 
             if ((execManager.getCurrentLeader() == this.controller.getStaticConf().getProcessId()) && //I'm the leader
