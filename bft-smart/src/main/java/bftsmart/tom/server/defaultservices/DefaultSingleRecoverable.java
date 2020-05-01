@@ -54,7 +54,7 @@ public abstract class DefaultSingleRecoverable implements Recoverable, SingleExe
     private ReentrantLock stateLock = new ReentrantLock();
     
     private MessageDigest md;
-        
+
     private StateLog log;
     private List<byte[]> commands = new ArrayList<>();
     private List<MessageContext> msgContexts = new ArrayList<>();

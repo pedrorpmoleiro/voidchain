@@ -1,12 +1,15 @@
 package pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.client;
 
 import bftsmart.tom.ServiceProxy;
+
 import org.bouncycastle.util.encoders.Base64;
+
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
-import pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.OrderedInputData;
+import pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.Request;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
@@ -15,14 +18,19 @@ import java.util.Hashtable;
 import java.util.Map;
 
 public class Client {
-    ServiceProxy serviceProxy;
     private JButton getCurrentBlockButton;
     private JButton getCurrentBlockHashButton;
     private JButton getCurrentBlockHeightButton;
     private JButton getTransactionsButton;
     private JButton addTransactionButton;
     private JButton createBlockButton;
-    private JPanel Panel;
+    private JPanel mainPanel;
+    private JPanel buttonPanel;
+    private JPanel transactionPanel;
+    private JButton buttonQuit;
+    private JTextArea transactionDataTextArea;
+
+    private ServiceProxy serviceProxy;
 
     public Client(int clientId) {
         this.serviceProxy = new ServiceProxy(clientId);
@@ -32,6 +40,10 @@ public class Client {
         if (args.length < 1) {
             System.out.println("Usage: pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.client.Client <client id>");
         }
+
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception ignored) {}
 
         int clientId = Integer.parseInt(args[0]);
         Client client = new Client(clientId);
@@ -43,9 +55,17 @@ public class Client {
         client.addTransactionButton.addActionListener(client.addTransactionButtonActionListener());
         client.createBlockButton.addActionListener(client.createBlockButtonActionListener());
 
+        client.buttonQuit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+
         JFrame frame = new JFrame("Client");
-        frame.setContentPane(client.Panel);
+        frame.setPreferredSize(new Dimension(600, 300));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setContentPane(client.mainPanel);
         frame.pack();
         frame.setVisible(true);
     }
@@ -57,7 +77,7 @@ public class Client {
                 try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                      ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                    OrderedInputData req = new OrderedInputData(1);
+                    Request req = new Request(1);
                     objOut.writeObject(req);
 
                     objOut.flush();
@@ -77,7 +97,9 @@ public class Client {
                         currentBlock = (Block) objIn.readObject();
                     }
 
-                    System.out.println("Block: " + currentBlock.toString());
+                    System.out.println(currentBlock.toString());
+                    JOptionPane.showMessageDialog(null, currentBlock.toString(),
+                            "Current Block Data", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException | ClassNotFoundException ex) {
                     ex.printStackTrace();
@@ -93,7 +115,7 @@ public class Client {
                 try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                      ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                    OrderedInputData req = new OrderedInputData(2);
+                    Request req = new Request(2);
                     objOut.writeObject(req);
 
                     objOut.flush();
@@ -109,6 +131,9 @@ public class Client {
                     byte[] blockHash = reply;
 
                     System.out.println("Block hash: " + Base64.toBase64String(blockHash));
+                    JOptionPane.showMessageDialog(null,
+                            "Block hash: " + Base64.toBase64String(blockHash), "Current Block Hash",
+                            JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -124,7 +149,7 @@ public class Client {
                 try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                      ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                    OrderedInputData req = new OrderedInputData(3);
+                    Request req = new Request(3);
                     objOut.writeObject(req);
 
                     objOut.flush();
@@ -145,6 +170,8 @@ public class Client {
                     }
 
                     System.out.println("Block height: " + blockHeight);
+                    JOptionPane.showMessageDialog(null, "Block height: " + blockHeight,
+                            "Current Block Height", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -160,7 +187,7 @@ public class Client {
                 try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                      ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                    OrderedInputData req = new OrderedInputData(4);
+                    Request req = new Request(4);
                     objOut.writeObject(req);
 
                     objOut.flush();
@@ -180,7 +207,9 @@ public class Client {
                         transactions = (Hashtable<String, Transaction>) objIn.readObject();
                     }
 
-                    System.out.println("Transactions: " + transactions.toString());
+                    System.out.println(transactions.values().toString());
+                    JOptionPane.showMessageDialog(null, transactions.values().toString(),
+                            "Current Block Transactions", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException | ClassNotFoundException ex) {
                     ex.printStackTrace();
@@ -196,10 +225,11 @@ public class Client {
                 try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                      ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                    String string = "Hello World";
-                    byte[] data = string.getBytes(StandardCharsets.UTF_8);
+                    byte[] data = transactionDataTextArea.getText().getBytes(StandardCharsets.UTF_8);
 
-                    OrderedInputData req = new OrderedInputData(5, data);
+                    System.out.println("Data bytes: " + Base64.toBase64String(data));
+
+                    Request req = new Request(5, data);
                     objOut.writeObject(req);
 
                     objOut.flush();
@@ -220,6 +250,8 @@ public class Client {
                     }
 
                     System.out.println("Transaction added: " + added);
+                    JOptionPane.showMessageDialog(null, "Transaction added: " + added,
+                            "Transaction added", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -235,7 +267,7 @@ public class Client {
                 try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                      ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                    OrderedInputData req = new OrderedInputData(6);
+                    Request req = new Request(6);
                     objOut.writeObject(req);
 
                     objOut.flush();
@@ -256,6 +288,8 @@ public class Client {
                     }
 
                     System.out.println("Block created: " + added);
+                    JOptionPane.showMessageDialog(null, "Block created: " + added,
+                            "Block Created", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException ex) {
                     ex.printStackTrace();

@@ -1,24 +1,26 @@
 package pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain;
 
-import bftsmart.demo.map.MapServer;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 
 import java.io.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Replica extends DefaultSingleRecoverable {
-    private final Blockchain blockchain;
-    private final Logger logger;
+    private Blockchain blockchain;
+    private Logger logger;
 
     public Replica(int id) {
         this.blockchain = new Blockchain();
-        logger = Logger.getLogger(MapServer.class.getName());
+        this.logger = LoggerFactory.getLogger(this.getClass().getName());
+
         new ServiceReplica(id, this, this);
     }
 
@@ -32,14 +34,33 @@ public class Replica extends DefaultSingleRecoverable {
 
     @Override
     public void installSnapshot(byte[] state) {
-        // NOT YET IMPLEMENTED
+        try (ByteArrayInputStream byteIn = new ByteArrayInputStream(state);
+             ObjectInput objIn = new ObjectInputStream(byteIn)) {
+
+            this.blockchain = (Blockchain) objIn.readObject();
+
+        } catch (IOException | ClassNotFoundException e) {
+            this.logger.error("Error installing snapshot", e);
+        }
     }
 
     @Override
     public byte[] getSnapshot() {
-        // NOT YET IMPLEMENTED
+        byte[] snapshot = null;
 
-        return new byte[0];
+        try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+             ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
+
+            objOut.writeObject(this.blockchain);
+            objOut.flush();
+            byteOut.flush();
+            snapshot = byteOut.toByteArray();
+
+        } catch (IOException e) {
+            this.logger.error("Error getting snapshot", e);
+        }
+
+        return snapshot;
     }
 
     @Override
@@ -52,7 +73,7 @@ public class Replica extends DefaultSingleRecoverable {
              ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
              ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-            OrderedInputData input = (OrderedInputData) objIn.readObject();
+            Request input = (Request) objIn.readObject();
 
             Block currentBlock = this.blockchain.getCurrentBlock();
 
@@ -75,18 +96,21 @@ public class Replica extends DefaultSingleRecoverable {
                     break;
                 case 5:
                     if (input.hasData()) {
-                        currentBlock.addTransaction(new Transaction(input.getData(), currentBlock.getProtocolVersion()));
+                        currentBlock.addTransaction(new Transaction(input.getData(), currentBlock.getProtocolVersion(),
+                                msgCtx.getTimestamp()));
                     }
+
                     objOut.writeBoolean(true);
                     hasReply = true;
                     break;
                 case 6:
-                    this.blockchain.createBlock();
+                    this.blockchain.createBlock(msgCtx.getTimestamp(), msgCtx.getNonces());
+
                     objOut.writeBoolean(true);
                     hasReply = true;
                     break;
                 default:
-                    System.err.println("Error on request");
+                    this.logger.error("Error of request");
             }
 
             if (hasReply) {
@@ -96,7 +120,7 @@ public class Replica extends DefaultSingleRecoverable {
             }
 
         } catch (IOException | ClassNotFoundException e) {
-            logger.log(Level.SEVERE, "ERROR", e);
+            this.logger.error("ERROR", e);
         }
 
         return reply;
@@ -112,11 +136,11 @@ public class Replica extends DefaultSingleRecoverable {
              ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
              ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-            int req = objIn.readInt();
+            Request input = (Request) objIn.readObject();
 
             Block currentBlock = this.blockchain.getCurrentBlock();
 
-            switch (req) {
+            switch (input.getReq()) {
                 case 1:
                     objOut.writeObject(currentBlock);
                     hasReply = true;
@@ -134,7 +158,7 @@ public class Replica extends DefaultSingleRecoverable {
                     hasReply = true;
                     break;
                 default:
-                    System.err.println("Error on request");
+                    this.logger.error("Error of request");
             }
 
             if (hasReply) {
@@ -143,8 +167,8 @@ public class Replica extends DefaultSingleRecoverable {
                 reply = byteOut.toByteArray();
             }
 
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "ERROR", e);
+        } catch (IOException | ClassNotFoundException e) {
+            this.logger.error("ERROR", e);
         }
 
         return reply;

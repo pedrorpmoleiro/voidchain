@@ -2,10 +2,10 @@ package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
 import pt.ipleiria.estg.dei.pi.voidchain.Util;
 
+import org.bouncycastle.util.encoders.Base64;
+
 import java.io.IOException;
 import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.Random;
 
 /**
  * The block header is a section of a block.
@@ -13,69 +13,46 @@ import java.util.Random;
  */
 public class BlockHeader implements Serializable {
     /* Attributes */
-    private final long timestamp;
-    private final byte[] previousBlockHash;
-    private final float protocolVersion;
-    private final int nonce;
+    protected final long timestamp;
+    protected final byte[] previousBlockHash;
+    protected final float protocolVersion;
+    protected final byte[] nonce;
+    protected byte[] merkleRoot;
 
     /**
      * Instantiates a new Block header.
      *
      * @param previousBlockHash the previous block hash
      * @param protocolVersion   the protocol version
+     * @param timestamp         the timestamp
+     * @param nonce             the nonce
      */
-    public BlockHeader(byte[] previousBlockHash, float protocolVersion) {
+    public BlockHeader(byte[] previousBlockHash, float protocolVersion, long timestamp, byte[] nonce) {
         this.previousBlockHash = previousBlockHash;
         this.protocolVersion = protocolVersion;
-        this.timestamp = new Timestamp(System.currentTimeMillis()).getTime();
-        this.nonce = new Random().nextInt();
+        this.timestamp = timestamp;
+        this.nonce = nonce;
+        this.merkleRoot = new byte[0];
+    }
+
+    // FOR USE WITH CLONE
+    private BlockHeader (byte[] previousBlockHash, float protocolVersion, long timestamp, byte[] nonce, byte[] merkleRoot) {
+        this.previousBlockHash = previousBlockHash;
+        this.protocolVersion = protocolVersion;
+        this.timestamp = timestamp;
+        this.nonce = nonce;
+        this.merkleRoot = merkleRoot;
     }
 
     /* Methods */
     /* Getters */
-    /**
-     * Gets the Epoch time the block was created
-     *
-     * @return the timestamp (long)
-     */
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    /**
-     * Gets the hash of the previous block in the chain.
-     *
-     * @return the previous block hash (byte[])
-     */
-    public byte[] getPreviousBlockHash() {
-        return previousBlockHash;
-    }
-
-    /**
-     * Gets protocol version.
-     *
-     * @return the protocol version (float)
-     */
-    public float getProtocolVersion() {
-        return protocolVersion;
-    }
-
-    /**
-     * Gets nonce. A random int
-     *
-     * @return the nonce (int)
-     */
-    public int getNonce() {
-        return nonce;
-    }
-
     /**
      * Calculates the size of the block header in bytes.
      *
      * @return the size (int)
      */
     public int getSize() {
-        return Long.SIZE + previousBlockHash.length + Float.SIZE + Integer.SIZE;
+        return Long.SIZE + Float.SIZE + this.previousBlockHash.length + this.nonce.length + this.merkleRoot.length;
     }
 
     /**
@@ -86,19 +63,18 @@ public class BlockHeader implements Serializable {
     public byte[] getData() {
         byte[] protocolVersionBytes;
         byte[] timestampBytes;
-        byte[] nonceBytes;
 
         try {
             protocolVersionBytes = Util.floatToByteArray(this.protocolVersion);
             timestampBytes = Util.longToByteArray(this.timestamp);
-            nonceBytes = Util.intToByteArray(this.nonce);
         } catch (IOException e) {
             e.printStackTrace();
 
             return null;
         }
 
-        int size = protocolVersionBytes.length + timestampBytes.length + this.previousBlockHash.length + nonceBytes.length;
+        int size = protocolVersionBytes.length + timestampBytes.length + this.previousBlockHash.length +
+                this.nonce.length + this.merkleRoot.length;
         byte[] dataBytes = new byte[size];
         int i = 0;
 
@@ -114,7 +90,11 @@ public class BlockHeader implements Serializable {
             dataBytes[i] = b;
             i++;
         }
-        for (byte b : nonceBytes) {
+        for (byte b : this.nonce) {
+            dataBytes[i] = b;
+            i++;
+        }
+        for (byte b : this.merkleRoot) {
             dataBytes[i] = b;
             i++;
         }
@@ -126,5 +106,21 @@ public class BlockHeader implements Serializable {
         }
 
         return dataBytes;
+    }
+
+    protected BlockHeader clone() {
+        return new BlockHeader(this.previousBlockHash, this.protocolVersion, this.timestamp,
+                this.nonce, this.merkleRoot);
+    }
+
+    @Override
+    public String toString() {
+        return "Block Header: {" + System.lineSeparator() +
+                "timestamp: " + timestamp + System.lineSeparator() +
+                "previous block hash: " + Base64.toBase64String(previousBlockHash) + System.lineSeparator() +
+                "protocol version: " + protocolVersion + System.lineSeparator() +
+                "nonce: " + Base64.toBase64String(nonce) + System.lineSeparator() +
+                "merkle root: " + Base64.toBase64String(merkleRoot) + System.lineSeparator() +
+                "}";
     }
 }

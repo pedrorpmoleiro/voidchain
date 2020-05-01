@@ -1,12 +1,11 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
-import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
-import org.bouncycastle.jcajce.provider.digest.SHA3;
 import pt.ipleiria.estg.dei.pi.voidchain.Util;
+
+import org.bouncycastle.util.encoders.Base64;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.sql.Timestamp;
 
 /**
  * The transaction contains data of the operations performed by the replicas.
@@ -25,29 +24,41 @@ public class Transaction implements Serializable {
      *
      * @param data            the data
      * @param protocolVersion the protocol version
+     * @param timestamp       the timestamp
      */
-    public Transaction(byte[] data, float protocolVersion) {
-        this.timestamp = new Timestamp(System.currentTimeMillis()).getTime();
+    public Transaction(byte[] data, float protocolVersion, long timestamp) {
+        this.timestamp = timestamp;
         this.data = data;
         this.protocolVersion = protocolVersion;
         this.size = Long.SIZE + this.data.length + Integer.SIZE + Float.SIZE;
 
+        byte[] dataBytes = getDataBytes(this.timestamp, this.data, this.size, this.protocolVersion);
+
+        if (dataBytes == null) {
+            // TODO: ERROR
+            return;
+        }
+
+        this.hash = Util.calculateHash(dataBytes);
+    }
+
+    /* Methods */
+    private static byte[] getDataBytes(long timestamp, byte[] data, int size, float protocolVersion) {
         byte[] protocolVersionBytes;
         byte[] timestampBytes;
         byte[] sizeBytes;
 
         try {
-            protocolVersionBytes = Util.floatToByteArray(this.protocolVersion);
-            timestampBytes = Util.longToByteArray(this.timestamp);
-            sizeBytes = Util.intToByteArray(this.size);
+            protocolVersionBytes = Util.floatToByteArray(protocolVersion);
+            timestampBytes = Util.longToByteArray(timestamp);
+            sizeBytes = Util.intToByteArray(size);
         } catch (IOException e) {
             e.printStackTrace();
-
-            return;
+            return null;
         }
 
-        int size = protocolVersionBytes.length + timestampBytes.length + sizeBytes.length + this.data.length;
-        byte[] dataBytes = new byte[size];
+        int sizeAux = protocolVersionBytes.length + timestampBytes.length + sizeBytes.length + data.length;
+        byte[] dataBytes = new byte[sizeAux];
         int i = 0;
 
         for (byte b : protocolVersionBytes) {
@@ -62,27 +73,21 @@ public class Transaction implements Serializable {
             dataBytes[i] = b;
             i++;
         }
-        for (byte b : this.data) {
+        for (byte b : data) {
             dataBytes[i] = b;
             i++;
         }
 
-        if (i != size) {
+        if (i != sizeAux) {
+            // TODO: ERROR
             System.out.println("THIS SHOULDN'T RUN");
-
-            return;
+            return null;
         }
 
-        SHA3.Digest512 sha3_512 = new SHA3.Digest512();
-        RIPEMD160.Digest ripemd160 = new RIPEMD160.Digest();
-
-        this.hash = ripemd160.digest(sha3_512.digest(dataBytes));
+        return dataBytes;
     }
 
-    /* Methods */
-
     /* Getters */
-
     /**
      * Gets Epoch time of when a transaction was created.
      *
@@ -111,7 +116,7 @@ public class Transaction implements Serializable {
     }
 
     /**
-     * Gets the hash of a transaction ( SHA3_512(RIPEMD160(TX)) ).
+     * Gets the hash of the transaction ( SHA3_512(RIPEMD160(TX)) ).
      *
      * @return the hash (byte[])
      */
@@ -126,5 +131,16 @@ public class Transaction implements Serializable {
      */
     public float getProtocolVersion() {
         return protocolVersion;
+    }
+
+    @Override
+    public String toString() {
+        return "Transaction: {" + System.lineSeparator() +
+                "timestamp: " + timestamp + System.lineSeparator() +
+                "data: " + Base64.toBase64String(data) + System.lineSeparator() +
+                "size: " + size + System.lineSeparator() +
+                "protocol version: " + protocolVersion + System.lineSeparator() +
+                "hash: " + Base64.toBase64String(hash) + System.lineSeparator() +
+                "}" + System.lineSeparator();
     }
 }

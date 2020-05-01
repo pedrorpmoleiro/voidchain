@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Blockchain data structure is an ordered, back-linked list of blocks of transactions/data.
@@ -15,8 +16,8 @@ import java.util.List;
  */
 public class Blockchain implements Serializable {
     /* Attributes */
-    public static final float PROTOCOL_VERSION = 0.1f;
-    // TODO: Stack
+    public static float PROTOCOL_VERSION = 0.1f;
+    // TODO: Stack (?)
     private final List<Block> blocks;
 
     /**
@@ -27,12 +28,10 @@ public class Blockchain implements Serializable {
         var genesisBytes = "What to Know and What to Do About the Global Pandemic".getBytes(StandardCharsets.UTF_8);
         RIPEMD160.Digest hash = new RIPEMD160.Digest();
 
-        Block genesisBlock = new Block(hash.digest(genesisBytes), PROTOCOL_VERSION, 0);
+        Block genesisBlock = new Block(hash.digest(genesisBytes), PROTOCOL_VERSION, 0, 0L, new byte[0]);
 
         this.blocks = new LinkedList<>();
         this.blocks.add(genesisBlock);
-
-        this.createBlock();
     }
 
     /* Methods */
@@ -42,7 +41,6 @@ public class Blockchain implements Serializable {
      *
      * @return the boolean
      */
-    @Deprecated
     public Boolean isChainValid() {
         Block currentBlock = this.getCurrentBlock();
         Block previousBlock = this.blocks.get(1);
@@ -51,14 +49,35 @@ public class Blockchain implements Serializable {
     }
 
     /**
-     * Creates a new block, then adds it to the chain
+     * Creates a new block, then adds it to the chain.
      *
+     * @param timestamp the timestamp
+     * @param nonce     the nonce
      * @return the block
      */
-    public Block createBlock() {
+    public Block createBlock(long timestamp, byte[] nonce) {
         Block auxBlock = this.getCurrentBlock();
 
-        Block block = new Block(auxBlock.getHash(), PROTOCOL_VERSION, auxBlock.getBlockHeight() + 1);
+        Block block = new Block(auxBlock.getHash(), PROTOCOL_VERSION, auxBlock.getBlockHeight() + 1,
+                timestamp, nonce);
+
+        this.blocks.add(0, block);
+
+        return block;
+    }
+
+    /**
+     * Creates a new block, with predefined transactions, then adds it to the chain.
+     *
+     * @param timestamp the timestamp
+     * @param nonce     the nonce
+     * @return the block
+     */
+    public Block createBlock(long timestamp, byte[] nonce, Map<byte[], Transaction> transactions) {
+        Block auxBlock = this.getCurrentBlock();
+
+        Block block = new Block(auxBlock.getHash(), PROTOCOL_VERSION, auxBlock.getBlockHeight() + 1,
+                transactions,timestamp, nonce);
 
         this.blocks.add(0, block);
 
@@ -66,7 +85,6 @@ public class Blockchain implements Serializable {
     }
 
     /* Getters */
-
     /**
      * Gets the last added block to the chain, or in other words, the highest block in the blockchain
      *
@@ -74,5 +92,12 @@ public class Blockchain implements Serializable {
      */
     public Block getCurrentBlock() {
         return this.blocks.get(0);
+    }
+
+    @Override
+    public String toString() {
+        return "Blockchain: {" + System.lineSeparator() +
+                "blocks: " + blocks + System.lineSeparator() +
+                "}";
     }
 }
