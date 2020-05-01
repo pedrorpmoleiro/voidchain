@@ -4,10 +4,7 @@ import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
 
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Blockchain data structure is an ordered, back-linked list of blocks of transactions/data.
@@ -17,8 +14,10 @@ import java.util.Map;
 public class Blockchain implements Serializable {
     /* Attributes */
     public static float PROTOCOL_VERSION = 0.1f;
+    private static int TRANSACTION_PER_BLOCK = 5;
     // TODO: Stack (?)
     private final List<Block> blocks;
+    private final List<Transaction> transactionPool;
 
     /**
      * Instantiates the Blockchain data structure.
@@ -30,18 +29,19 @@ public class Blockchain implements Serializable {
 
         Block genesisBlock = new Block(hash.digest(genesisBytes), PROTOCOL_VERSION, 0, 0L, new byte[0]);
 
-        this.blocks = new LinkedList<>();
+        this.blocks = new ArrayList<>();
         this.blocks.add(genesisBlock);
+
+        this.transactionPool = new ArrayList<>();
     }
 
     /* Methods */
-
     /**
      * Tests if this blockchain is a valid blockchain
      *
      * @return the boolean
      */
-    public Boolean isChainValid() {
+    public boolean isChainValid() {
         Block currentBlock = this.getCurrentBlock();
         Block previousBlock = this.blocks.get(1);
 
@@ -82,6 +82,72 @@ public class Blockchain implements Serializable {
         this.blocks.add(0, block);
 
         return block;
+    }
+
+    public Block createBlock(long timestamp, byte[] nonce, List<Transaction> transactions) {
+        Block auxBlock = this.getCurrentBlock();
+
+        Block block = new Block(auxBlock.getHash(), PROTOCOL_VERSION, auxBlock.getBlockHeight() + 1,
+                transactions,timestamp, nonce);
+
+        this.blocks.add(0, block);
+
+        return block;
+    }
+
+    private void processNewBlock() {
+        if (this.transactionPool.size() < TRANSACTION_PER_BLOCK) {
+            return;
+        }
+
+        List<Transaction> transactions = new ArrayList<>();
+
+        while (transactions.size() < TRANSACTION_PER_BLOCK) {
+            transactions.add(this.transactionPool.get(0));
+            this.transactionPool.remove(0);
+        }
+
+        /*
+            TODO: TIMESTAMP & NONCE (?)
+            REPLICAS SHOULD COMMUNICATE TO ADD NEW BLOCK
+            TIMESTAMP AND NONCE WOULD COME FROM MSGCTX
+        */
+
+        this.createBlock(0, new byte[0], transactions);
+    }
+
+    public boolean addTransaction(Transaction transaction) {
+        if (transaction.getSize() > Transaction.MAX_SIZE) {
+            return false;
+        }
+
+        int aux = this.transactionPool.size();
+        this.transactionPool.add(transaction);
+
+        if (aux == this.transactionPool.size() || (aux + 1) != this.transactionPool.size()) {
+            return false;
+        }
+
+        processNewBlock();
+
+        return true;
+    }
+
+    /*
+        TODO: MAX TRANSACTION SIZE
+        MAKE ALL TRANSACTION ADDITIONS A LIST (?)
+    */
+    public boolean addTransactions(List<Transaction> transactions) {
+        int aux = this.transactionPool.size();
+        this.transactionPool.addAll(transactions);
+
+        if (aux == this.transactionPool.size() || (aux + transactions.size()) != this.transactionPool.size()) {
+            return false;
+        }
+
+        processNewBlock();
+
+        return true;
     }
 
     /* Getters */

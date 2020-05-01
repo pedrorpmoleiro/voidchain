@@ -1,6 +1,6 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
-import pt.ipleiria.estg.dei.pi.voidchain.Util;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
 
 import org.bouncycastle.util.encoders.Base64;
 
@@ -52,7 +52,7 @@ public class BlockHeader implements Serializable {
      * @return the size (int)
      */
     public int getSize() {
-        return Long.SIZE + Float.SIZE + this.previousBlockHash.length + this.nonce.length + this.merkleRoot.length;
+        return Long.BYTES + Float.BYTES + this.previousBlockHash.length + this.nonce.length + this.merkleRoot.length;
     }
 
     /**
@@ -65,8 +65,8 @@ public class BlockHeader implements Serializable {
         byte[] timestampBytes;
 
         try {
-            protocolVersionBytes = Util.floatToByteArray(this.protocolVersion);
-            timestampBytes = Util.longToByteArray(this.timestamp);
+            protocolVersionBytes = Converters.floatToByteArray(this.protocolVersion);
+            timestampBytes = Converters.longToByteArray(this.timestamp);
         } catch (IOException e) {
             e.printStackTrace();
 

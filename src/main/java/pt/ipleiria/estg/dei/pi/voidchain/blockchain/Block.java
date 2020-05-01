@@ -1,11 +1,12 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
-import pt.ipleiria.estg.dei.pi.voidchain.Util;
-
 import org.bouncycastle.util.encoders.Base64;
+
+import pt.ipleiria.estg.dei.pi.voidchain.util.*;
 
 import java.io.Serializable;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,7 +41,7 @@ public class Block implements Serializable {
         this.blockHeight = blockHeight;
         this.transactionCounter = 0;
         this.transactions = new Hashtable<>();
-        this.size = this.blockHeader.getSize() + (Integer.SIZE * 2);
+        this.size = this.blockHeader.getSize() + (Integer.BYTES * 2);
     }
 
     /**
@@ -59,8 +60,18 @@ public class Block implements Serializable {
         this.blockHeight = blockHeight;
         this.transactionCounter = transactions.size();
         this.transactions = new Hashtable<>(transactions);
-        this.size = this.blockHeader.getSize() + (Integer.SIZE * 2) + this.transactions.size();
-        this.blockHeader.merkleRoot = Util.getMerkleRoot(this.transactions.keySet());
+        this.size = this.blockHeader.getSize() + (Integer.BYTES * 2) + this.transactions.size();
+        this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
+    }
+
+    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight,
+                 List<Transaction> transactions, long timestamp, byte[] nonce) {
+        this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce);
+        this.blockHeight = blockHeight;
+        this.transactionCounter = transactions.size();
+        this.transactions = new Hashtable<>(Converters.transactionListToMap(transactions));
+        this.size = this.blockHeader.getSize() + (Integer.BYTES * 2) + this.transactions.size();
+        this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
     }
 
     // FOR USE WITH CLONE
@@ -78,10 +89,16 @@ public class Block implements Serializable {
      *
      * @param transaction the transaction
      */
-    public void addTransaction(Transaction transaction) {
+    public boolean addTransaction(Transaction transaction) {
+        if (transaction.getSize() > Transaction.MAX_SIZE) {
+            return false;
+        }
+
         this.transactions.put(transaction.getHash(), transaction);
         this.transactionCounter++;
-        this.blockHeader.merkleRoot = Util.getMerkleRoot(this.transactions.keySet());
+        this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
+
+        return true;
     }
 
     /**
@@ -89,10 +106,22 @@ public class Block implements Serializable {
      *
      * @param transactions the transactions
      */
-    public void addTransactions(Map<byte[], Transaction> transactions) {
+    // TODO: MAX TRANSACTION SIZE
+    public boolean addTransactions(Map<byte[], Transaction> transactions) {
         this.transactions.putAll(transactions);
         this.transactionCounter += transactions.size();
-        this.blockHeader.merkleRoot = Util.getMerkleRoot(this.transactions.keySet());
+        this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
+
+        return true;
+    }
+
+    // TODO: MAX TRANSACTION SIZE
+    public boolean addTransactions(List<Transaction> transactions) {
+        this.transactions.putAll(Converters.transactionListToMap(transactions));
+        this.transactionCounter += transactions.size();
+        this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
+
+        return true;
     }
 
     /* Getters */
@@ -179,7 +208,7 @@ public class Block implements Serializable {
      * @return the block hash / block header hash (byte[])
      */
     public byte[] getHash() {
-        return Util.calculateHash(this.blockHeader.getData());
+        return Hash.calculateSHA3512RIPEMD160(this.blockHeader.getData());
     }
 
     public Block clone() {

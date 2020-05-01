@@ -1,20 +1,16 @@
-package pt.ipleiria.estg.dei.pi.voidchain;
+package pt.ipleiria.estg.dei.pi.voidchain.util;
 
-import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
-import org.bouncycastle.jcajce.provider.digest.SHA3;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-/**
- * Class for useful methods
- */
-public class Util {
+public class Converters {
     /**
      * Converts Long to byte array.
      *
@@ -50,7 +46,7 @@ public class Util {
      * @return the byte[]
      * @throws IOException the io exception
      */
-// https://javadeveloperzone.com/java-basic/java-convert-int-to-byte-array/
+    // https://javadeveloperzone.com/java-basic/java-convert-int-to-byte-array/
     public static byte[] intToByteArray(final int i) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(bos);
@@ -97,57 +93,7 @@ public class Util {
         return byteBuffer.getLong();
     }
 
-    public static byte[] calculateHash(byte[] data) {
-        SHA3.Digest512 sha3_512 = new SHA3.Digest512();
-        RIPEMD160.Digest ripemd160 = new RIPEMD160.Digest();
-
-        return ripemd160.digest(sha3_512.digest(data));
-    }
-
-    // https://medium.com/@vinayprabhu19/merkel-tree-in-java-b45093c8c6bd
-    public static byte[] getMerkleRoot(Set<byte[]> transactionHashList) {
-        return merkleTree(new ArrayList<>(transactionHashList)).get(0);
-    }
-
-    public static ArrayList<byte[]> merkleTree(ArrayList<byte[]> hashList) {
-        if (hashList.size() == 1) {
-            return hashList;
-        }
-
-        ArrayList<byte[]> parentList = new ArrayList<>();
-
-        // Hash the leaf transaction pair to get parent transaction
-        // for (int i = 0; i < hashList.size(); i+=2) {
-        for (int i = 0; i < hashList.size() - 1; i+=2) {
-            byte[] t1Hash = hashList.get(i);
-            byte[] t2hash = hashList.get(i + 1);
-
-            int sizeAux = t1Hash.length + t2hash.length;
-            byte[] aux = new byte[sizeAux];
-            int j = 0;
-
-            for (byte b : t1Hash) {
-                aux[j] = b;
-                j++;
-            }
-            for (byte b : t2hash) {
-                aux[j] = b;
-                j++;
-            }
-
-            if (j != sizeAux) {
-                // TODO: ERROR
-                System.out.println("THIS SHOULDN'T RUN");
-                return null;
-            }
-
-            parentList.add(calculateHash(aux));
-        }
-
-        // If odd number of transactions, add the last transaction again
-        if (hashList.size() % 2 == 1)
-            parentList.add(hashList.get(hashList.size() - 1));
-
-        return merkleTree(parentList);
+    public static Map<byte[], Transaction> transactionListToMap(List<Transaction> transactionList) {
+        return transactionList.stream().collect(Collectors.toMap(Transaction::getHash, transaction -> transaction));
     }
 }
