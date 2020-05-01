@@ -79,10 +79,10 @@ public class RSAKeyLoader implements KeyLoader {
             this.sigAlgorithm = sigAlgorithm;
             
             if (configHome.equals("")) {
-                    path = "config" + System.getProperty("file.separator") + "keysRSA" +
+                    path = "config" + System.getProperty("file.separator") + "keys" +
                                     System.getProperty("file.separator");
             } else {
-                    path = configHome + System.getProperty("file.separator") + "keysRSA" +
+                    path = configHome + System.getProperty("file.separator") + "keys" +
                                     System.getProperty("file.separator");
             }
             

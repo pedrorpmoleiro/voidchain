@@ -29,11 +29,6 @@ import bftsmart.tom.util.TOMUtil;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Signature;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,24 +107,18 @@ public class ClientsManager {
         clientsLock.lock();
         /******* BEGIN CLIENTS CRITICAL SECTION ******/
         
-        List<Entry<Integer, ClientData>> clientsEntryList = new ArrayList<>(clientsData.entrySet().size());
-        clientsEntryList.addAll(clientsData.entrySet());
-        
-        if (controller.getStaticConf().getFairBatch()) // ensure fairness
-            Collections.shuffle(clientsEntryList);
-
-        logger.debug("Number of active clients: {}", clientsEntryList.size());
+        Set<Entry<Integer, ClientData>> clientsEntrySet = clientsData.entrySet();
+        logger.debug("Number of active clients: {}", clientsEntrySet.size());
         
         for (int i = 0; true; i++) {
-                        
-            Iterator<Entry<Integer, ClientData>> it = clientsEntryList.iterator();
+            Iterator<Entry<Integer, ClientData>> it = clientsEntrySet.iterator();
             int noMoreMessages = 0;
             
             logger.debug("Fetching requests with internal index {}", i);
-            
+
             while (it.hasNext()
                     && allReq.size() < controller.getStaticConf().getMaxBatchSize()
-                    && noMoreMessages < clientsEntryList.size()) {
+                    && noMoreMessages < clientsEntrySet.size()) {
 
                 ClientData clientData = it.next().getValue();
                 RequestList clientPendingRequests = clientData.getPendingRequests();
@@ -160,7 +149,7 @@ public class ClientsManager {
             }
             
             if(allReq.size() == controller.getStaticConf().getMaxBatchSize() ||
-                    noMoreMessages == clientsEntryList.size()) {
+                    noMoreMessages == clientsEntrySet.size()) {
                 
                 break;
             }

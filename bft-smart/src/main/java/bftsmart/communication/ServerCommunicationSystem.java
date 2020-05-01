@@ -18,8 +18,6 @@ package bftsmart.communication;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import javax.crypto.SecretKey;
-
 import bftsmart.communication.client.CommunicationSystemServerSide;
 import bftsmart.communication.client.CommunicationSystemServerSideFactory;
 import bftsmart.communication.client.RequestReceiver;
@@ -45,7 +43,6 @@ public class ServerCommunicationSystem extends Thread {
     public final long MESSAGE_WAIT_TIME = 100;
     private LinkedBlockingQueue<SystemMessage> inQueue = null;//new LinkedBlockingQueue<SystemMessage>(IN_QUEUE_SIZE);
     protected MessageHandler messageHandler;
-    
     private ServersCommunicationLayer serversConn;
     private CommunicationSystemServerSide clientsConn;
     private ServerViewController controller;
@@ -54,7 +51,7 @@ public class ServerCommunicationSystem extends Thread {
      * Creates a new instance of ServerCommunicationSystem
      */
     public ServerCommunicationSystem(ServerViewController controller, ServiceReplica replica) throws Exception {
-        super("Server Comm. System");
+        super("Server CS");
 
         this.controller = controller;
         
@@ -62,11 +59,20 @@ public class ServerCommunicationSystem extends Thread {
 
         inQueue = new LinkedBlockingQueue<SystemMessage>(controller.getStaticConf().getInQueueSize());
 
+        //create a new conf, with updated port number for servers
+        //TOMConfiguration serversConf = new TOMConfiguration(conf.getProcessId(),
+        //      Configuration.getHomeDir(), "hosts.config");
+
+        //serversConf.increasePortNumber();
+
         serversConn = new ServersCommunicationLayer(controller, inQueue, replica);
 
         //******* EDUARDO BEGIN **************//
+       // if (manager.isInCurrentView() || manager.isInInitView()) {
             clientsConn = CommunicationSystemServerSideFactory.getCommunicationSystemServerSide(controller);
+       // }
         //******* EDUARDO END **************//
+        //start();
     }
 
     //******* EDUARDO BEGIN **************//
@@ -114,7 +120,7 @@ public class ServerCommunicationSystem extends Thread {
                 SystemMessage sm = inQueue.poll(MESSAGE_WAIT_TIME, TimeUnit.MILLISECONDS);
 
                 if (sm != null) {
-                    logger.debug("<-- receiving, msg:" + sm);
+                    logger.debug("<-------receiving---------- " + sm);
                     messageHandler.processData(sm);
                     count++;
                 } else {                
@@ -141,7 +147,7 @@ public class ServerCommunicationSystem extends Thread {
         if (sm instanceof TOMMessage) {
             clientsConn.send(targets, (TOMMessage) sm, false);
         } else {
-        	logger.debug("--> sending message from: {} -> {}" + sm.getSender(), targets);
+            logger.debug("--------sending----------> " + sm);
             serversConn.send(targets, sm, true);
         }
     }
@@ -167,8 +173,4 @@ public class ServerCommunicationSystem extends Thread {
         clientsConn.shutdown();
         serversConn.shutdown();
     }
-    
-    public SecretKey getSecretKey(int id) {
-		return serversConn.getSecretKey(id);
-	}
 }

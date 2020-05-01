@@ -54,11 +54,11 @@ public class VMServices {
      * @param ipAddress IP address of the server to be added (needs to match the value in config/hosts.config)
      * @param port Port of the server to be added (needs to match the value in config/hosts.config)
      */
-    public void addServer(int id, String ipAddress, int port, int portRR) {
+    public void addServer(int id, String ipAddress, int port) {
         
         ViewManager viewManager = new ViewManager(configDir, keyLoader);
         
-        viewManager.addServer(id, ipAddress, port, portRR);
+        viewManager.addServer(id, ipAddress,port);
         
         execute(viewManager);
 

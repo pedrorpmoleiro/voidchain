@@ -20,7 +20,6 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
 
 import java.util.HashMap;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import bftsmart.reconfiguration.ServerViewController;
@@ -28,11 +27,11 @@ import bftsmart.reconfiguration.ServerViewController;
 public class NettyServerPipelineFactory{
 
     NettyClientServerCommunicationSystemServerSide ncs;
-    ConcurrentHashMap<Integer, NettyClientServerSession>  sessionTable;
+    HashMap sessionTable;
     ServerViewController controller;
     ReentrantReadWriteLock rl;
 
-    public NettyServerPipelineFactory(NettyClientServerCommunicationSystemServerSide ncs, ConcurrentHashMap<Integer, NettyClientServerSession>  sessionTable, ServerViewController controller, ReentrantReadWriteLock rl) {
+    public NettyServerPipelineFactory(NettyClientServerCommunicationSystemServerSide ncs, HashMap sessionTable, ServerViewController controller, ReentrantReadWriteLock rl) {
         this.ncs = ncs;
         this.sessionTable = sessionTable;
         this.controller = controller;
@@ -40,11 +39,11 @@ public class NettyServerPipelineFactory{
     }
 
     public ByteToMessageDecoder getDecoder(){
-    	return new NettyTOMMessageDecoder(false, sessionTable,controller,rl);	
+    	return new NettyTOMMessageDecoder(false, sessionTable,controller,rl,controller.getStaticConf().getUseMACs()==1);	
     }
     
     public MessageToByteEncoder getEncoder(){
-    	return new NettyTOMMessageEncoder(false, sessionTable,rl);	
+    	return new NettyTOMMessageEncoder(false, sessionTable,rl, controller.getStaticConf().getUseMACs()==1);	
     }
     
     public SimpleChannelInboundHandler getHandler(){
