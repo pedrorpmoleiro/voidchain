@@ -1,15 +1,13 @@
 package pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain;
 
-import pt.ipleiria.estg.dei.pi.voidchain.util.MerkleTree;
+import org.bouncycastle.util.encoders.Base64;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
-
-import org.bouncycastle.util.encoders.Base64;
+import pt.ipleiria.estg.dei.pi.voidchain.util.MerkleTree;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 public class TestingMain {
     public static void main(String[] args) {
