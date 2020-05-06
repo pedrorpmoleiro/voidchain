@@ -1,5 +1,6 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
+import jdk.jshell.spi.ExecutionControl;
 import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
 
 import java.io.Serializable;
@@ -16,7 +17,7 @@ public class Blockchain implements Serializable {
     public static final float PROTOCOL_VERSION = 0.1f;
     private static final int TRANSACTION_PER_BLOCK = 5; // THIS VALUE WILL BE CHANGED
     private static final int BLOCKS_IN_MEMORY = 2; // THIS VALUE WILL BE CHANGED
-    // TODO: Stack (?)
+    // TODO: Stack OR MAYBE MAP (?)
     private final List<Block> blocks;
     // TODO: MOVE TRANSACTION POOL TO REPLICA ?
     private final List<Transaction> transactionPool;
@@ -119,10 +120,6 @@ public class Blockchain implements Serializable {
     }
 
     public boolean addTransaction(Transaction transaction) {
-        if (transaction.getSize() > Transaction.MAX_SIZE) {
-            return false;
-        }
-
         int aux = this.transactionPool.size();
         this.transactionPool.add(transaction);
 
@@ -131,14 +128,9 @@ public class Blockchain implements Serializable {
         }
 
         processNewBlock();
-
         return true;
     }
 
-    /*
-        TODO: MAX TRANSACTION SIZE
-        MAKE ALL TRANSACTION ADDITIONS A LIST (?)
-    */
     public boolean addTransactions(List<Transaction> transactions) {
         int aux = this.transactionPool.size();
         this.transactionPool.addAll(transactions);
@@ -148,7 +140,6 @@ public class Blockchain implements Serializable {
         }
 
         processNewBlock();
-
         return true;
     }
 
@@ -160,6 +151,11 @@ public class Blockchain implements Serializable {
      */
     public Block getCurrentBlock() {
         return this.blocks.get(0);
+    }
+
+    // TODO: IMPLEMENT & USE BLOCKS STORED ON DISK
+    public Block getBlock(int blockHeight) throws ExecutionControl.NotImplementedException {
+        throw new ExecutionControl.NotImplementedException("This is not yet implemented 😢");
     }
 
     @Override

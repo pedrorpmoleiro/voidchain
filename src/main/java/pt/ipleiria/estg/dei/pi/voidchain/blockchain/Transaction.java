@@ -34,10 +34,16 @@ public class Transaction implements Serializable {
      * @param timestamp       the timestamp
      */
     public Transaction(byte[] data, float protocolVersion, long timestamp) {
+        this.size = Long.BYTES + data.length + Integer.BYTES + Float.BYTES;
+
+        if (this.size <= MAX_SIZE) {
+            throw new IllegalArgumentException("Transaction size is " + this.size + " but max transaction size is"
+                    + MAX_SIZE);
+        }
+
         this.timestamp = timestamp;
         this.data = data;
         this.protocolVersion = protocolVersion;
-        this.size = Long.BYTES + this.data.length + Integer.BYTES + Float.BYTES;
     }
 
     /* Methods */

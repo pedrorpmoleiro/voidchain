@@ -247,15 +247,26 @@ public class Client {
                         return;
                     }
 
-                    boolean added = false;
+                    boolean added;
+                    String error = null;
 
                     try (ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
                          ObjectInput objIn = new ObjectInputStream(byteIn)) {
                         added = objIn.readBoolean();
+                        if (!added) {
+                            error = objIn.readUTF();
+                        }
                     }
 
-                    System.out.println("Transaction added: " + added);
-                    JOptionPane.showMessageDialog(null, "Transaction added: " + added,
+                    String message;
+                    if (added) {
+                        message = "Transaction added";
+                    } else {
+                        message = "Transaction not added due to: " + error;
+                    }
+
+                    System.out.println(message);
+                    JOptionPane.showMessageDialog(null, message,
                             "Transaction added", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (IOException ex) {

@@ -98,10 +98,6 @@ public class Block implements Serializable {
      * @param transaction the transaction
      */
     public boolean addTransaction(Transaction transaction) {
-        if (transaction.getSize() > Transaction.MAX_SIZE) {
-            return false;
-        }
-
         this.transactions.put(transaction.getHash(), transaction);
         this.transactionCounter++;
         this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
@@ -114,8 +110,6 @@ public class Block implements Serializable {
      *
      * @param transactions the transactions
      */
-    // TODO: MAX TRANSACTION SIZE
-    // DON'T INSERT A TRANSACTION THAT EXCEEDS MAX SIZE
     public boolean addTransactions(Map<byte[], Transaction> transactions) {
         this.transactions.putAll(transactions);
         this.transactionCounter += transactions.size();
@@ -124,8 +118,6 @@ public class Block implements Serializable {
         return true;
     }
 
-    // TODO: MAX TRANSACTION SIZE
-    // DON'T INSERT A TRANSACTION THAT EXCEEDS MAX SIZE
     public boolean addTransactions(List<Transaction> transactions) {
         this.transactions.putAll(Converters.transactionListToMap(transactions));
         this.transactionCounter += transactions.size();

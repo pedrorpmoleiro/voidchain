@@ -95,6 +95,10 @@ public class Replica extends DefaultSingleRecoverable {
 
     @Override
     public byte[] appExecuteOrdered(byte[] command, MessageContext msgCtx) {
+        return execute(command, msgCtx, true);
+    }
+
+    private byte[] execute(byte[] command, MessageContext msgCtx, boolean ordered) {
         byte[] reply = null;
         boolean hasReply = false;
 
@@ -125,19 +129,34 @@ public class Replica extends DefaultSingleRecoverable {
                     hasReply = true;
                     break;
                 case 5:
-                    if (input.hasData()) {
-                        currentBlock.addTransaction(new Transaction(input.getData(), currentBlock.getProtocolVersion(),
-                                msgCtx.getTimestamp()));
+                    if (ordered) {
+                        if (input.hasData()) {
+                            Transaction t = null;
+                            try {
+                                t = new Transaction(input.getData(), currentBlock.getProtocolVersion(),
+                                        msgCtx.getTimestamp());
+                            } catch (IllegalArgumentException e) {
+                                logger.error(e.getMessage(), e);
+                                objOut.writeBoolean(false);
+                                objOut.writeUTF(e.getMessage());
+                            }
+
+                            currentBlock.addTransaction(t);
+                            objOut.writeBoolean(true);
+                        } else {
+                            objOut.writeBoolean(false);
+                            objOut.writeUTF("Transaction cannot be created without any data");
+                        }
+
+                        hasReply = true;
+                        break;
                     }
-
-                    objOut.writeBoolean(true);
-                    hasReply = true;
-                    break;
                 case 6:
-                    this.blockchain.createBlock(msgCtx.getTimestamp(), msgCtx.getNonces());
-
-                    objOut.writeBoolean(true);
-                    hasReply = true;
+                    if (ordered) {
+                        this.blockchain.createBlock(msgCtx.getTimestamp(), msgCtx.getNonces());
+                        objOut.writeBoolean(true);
+                        hasReply = true;
+                    }
                     break;
                 default:
                     this.logger.error("Error of request");
@@ -158,49 +177,6 @@ public class Replica extends DefaultSingleRecoverable {
 
     @Override
     public byte[] appExecuteUnordered(byte[] command, MessageContext msgCtx) {
-        byte[] reply = null;
-        boolean hasReply = false;
-
-        try (ByteArrayInputStream byteIn = new ByteArrayInputStream(command);
-             ObjectInput objIn = new ObjectInputStream(byteIn);
-             ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-             ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
-
-            Request input = (Request) objIn.readObject();
-
-            Block currentBlock = this.blockchain.getCurrentBlock();
-
-            switch (input.getReq()) {
-                case 1:
-                    objOut.writeObject(currentBlock);
-                    hasReply = true;
-                    break;
-                case 2:
-                    objOut.write(currentBlock.getHash());
-                    hasReply = true;
-                    break;
-                case 3:
-                    objOut.writeInt(currentBlock.getBlockHeight());
-                    hasReply = true;
-                    break;
-                case 4:
-                    objOut.writeObject(currentBlock.getTransactions());
-                    hasReply = true;
-                    break;
-                default:
-                    this.logger.error("Error of request");
-            }
-
-            if (hasReply) {
-                objOut.flush();
-                byteOut.flush();
-                reply = byteOut.toByteArray();
-            }
-
-        } catch (IOException | ClassNotFoundException e) {
-            this.logger.error("ERROR", e);
-        }
-
-        return reply;
+        return execute(command, msgCtx, false);
     }
 }
