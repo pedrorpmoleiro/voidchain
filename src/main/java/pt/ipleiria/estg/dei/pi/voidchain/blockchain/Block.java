@@ -42,6 +42,7 @@ public class Block implements Serializable {
      * @param timestamp         the timestamp
      * @param nonce             the nonce
      */
+    // TODO: REMOVE ?
     public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight, long timestamp, byte[] nonce) {
         this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce);
         this.blockHeight = blockHeight;
@@ -81,6 +82,7 @@ public class Block implements Serializable {
     }
 
     // FOR USE WITH CLONE
+    // TODO: REMOVE ?
     private Block (int blockHeight, Map<byte[], Transaction> transactions, long size, BlockHeader blockHeader) {
         this.blockHeader = blockHeader;
         this.blockHeight = blockHeight;
@@ -235,6 +237,7 @@ public class Block implements Serializable {
      *
      * @return a clone/copy of this block.
      */
+    // TODO: REMOVE ?
     public Block clone() {
         return new Block(this.blockHeight, this.transactions, this.size, this.blockHeader.clone());
     }

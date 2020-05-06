@@ -38,6 +38,7 @@ public class BlockHeader implements Serializable {
     }
 
     // FOR USE WITH CLONE
+    // TODO: REMOVE ?
     private BlockHeader (byte[] previousBlockHash, float protocolVersion, long timestamp, byte[] nonce, byte[] merkleRoot) {
         this.previousBlockHash = previousBlockHash;
         this.protocolVersion = protocolVersion;
@@ -115,6 +116,7 @@ public class BlockHeader implements Serializable {
      *
      * @return a clone/copy of the block header
      */
+    // TODO: REMOVE ?
     protected BlockHeader clone() {
         return new BlockHeader(this.previousBlockHash, this.protocolVersion, this.timestamp,
                 this.nonce, this.merkleRoot);

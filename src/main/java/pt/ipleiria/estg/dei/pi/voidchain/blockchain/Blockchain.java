@@ -18,6 +18,7 @@ public class Blockchain implements Serializable {
     private static final int BLOCKS_IN_MEMORY = 2; // THIS VALUE WILL BE CHANGED
     // TODO: Stack (?)
     private final List<Block> blocks;
+    // TODO: MOVE TRANSACTION POOL TO REPLICA ?
     private final List<Transaction> transactionPool;
 
     /**
@@ -109,7 +110,7 @@ public class Blockchain implements Serializable {
         }
 
         /*
-            TODO: TIMESTAMP & NONCE (?)
+            TODO: TIMESTAMP & NONCE (?) & READ BELOW
             REPLICAS SHOULD COMMUNICATE TO ADD NEW BLOCK
             TIMESTAMP AND NONCE WOULD COME FROM MSGCTX
         */

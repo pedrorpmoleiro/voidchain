@@ -3,6 +3,9 @@ package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Hash;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.bouncycastle.util.encoders.Base64;
 
 import java.io.IOException;
@@ -14,15 +17,14 @@ import java.io.Serializable;
  * The structure of a transaction is: timestamp (when it was created), its size
  *  , the version of the protocol when the transaction was created and the hash of the transaction (trasaction ID).
  */
-// TODO: Ver se transaction Hash pertece à estrutura da transacção.
 public class Transaction implements Serializable {
     /* Attributes */
-    public static int MAX_SIZE = 1024; // THIS VALUE WILL BE CHANGED
+    public static final int MAX_SIZE = 1024; // THIS VALUE WILL BE CHANGED
+    private final Logger logger = LoggerFactory.getLogger(Transaction.class.getName());
     private final long timestamp;
     private final byte[] data;
     private final int size;
     private final float protocolVersion;
-    private final byte[] hash;
 
     /**
      * Instantiates a new Transaction.
@@ -36,32 +38,24 @@ public class Transaction implements Serializable {
         this.data = data;
         this.protocolVersion = protocolVersion;
         this.size = Long.BYTES + this.data.length + Integer.BYTES + Float.BYTES;
-
-        byte[] dataBytes = getDataBytes(this.timestamp, this.data, this.size, this.protocolVersion);
-
-        if (dataBytes == null) {
-            // TODO: ERROR
-        }
-
-        this.hash = Hash.calculateSHA3512RIPEMD160(dataBytes);
     }
 
     /* Methods */
-    private static byte[] getDataBytes(long timestamp, byte[] data, int size, float protocolVersion) {
+    public byte[] getDataBytes() {
         byte[] protocolVersionBytes;
         byte[] timestampBytes;
         byte[] sizeBytes;
 
         try {
-            protocolVersionBytes = Converters.floatToByteArray(protocolVersion);
-            timestampBytes = Converters.longToByteArray(timestamp);
-            sizeBytes = Converters.intToByteArray(size);
+            protocolVersionBytes = Converters.floatToByteArray(this.protocolVersion);
+            timestampBytes = Converters.longToByteArray(this.timestamp);
+            sizeBytes = Converters.intToByteArray(this.size);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
 
-        int sizeAux = protocolVersionBytes.length + timestampBytes.length + sizeBytes.length + data.length;
+        int sizeAux = protocolVersionBytes.length + timestampBytes.length + sizeBytes.length + this.data.length;
         byte[] dataBytes = new byte[sizeAux];
         int i = 0;
 
@@ -77,14 +71,14 @@ public class Transaction implements Serializable {
             dataBytes[i] = b;
             i++;
         }
-        for (byte b : data) {
+        for (byte b : this.data) {
             dataBytes[i] = b;
             i++;
         }
 
         if (i != sizeAux) {
-            // TODO: ERROR
-            System.out.println("THIS SHOULDN'T RUN");
+            // THIS SHOULDN'T RUN
+            this.logger.error("Could not write all bytes to array");
             return null;
         }
 
@@ -125,7 +119,7 @@ public class Transaction implements Serializable {
      * @return the hash (byte[])
      */
     public byte[] getHash() {
-        return hash;
+        return Hash.calculateSHA3512RIPEMD160(this.getDataBytes());
     }
 
     /**
@@ -144,7 +138,7 @@ public class Transaction implements Serializable {
                 "data: " + Base64.toBase64String(data) + System.lineSeparator() +
                 "size: " + size + System.lineSeparator() +
                 "protocol version: " + protocolVersion + System.lineSeparator() +
-                "hash: " + Base64.toBase64String(hash) + System.lineSeparator() +
+                "hash: " + Base64.toBase64String(getHash()) + System.lineSeparator() +
                 "}" + System.lineSeparator();
     }
 }

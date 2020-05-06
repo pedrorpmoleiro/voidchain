@@ -1,4 +1,4 @@
-package pt.ipleiria.estg.dei.pi.voidchain.demo.map;
+package pt.ipleiria.estg.dei.pi.voidchain.bftSmartDemos.map;
 
 import bftsmart.demo.map.MapInteractiveClient;
 

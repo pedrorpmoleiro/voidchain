@@ -1,9 +1,14 @@
 package pt.ipleiria.estg.dei.pi.voidchain.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Set;
 
 public class MerkleTree {
+    private static Logger logger = LoggerFactory.getLogger(MerkleTree.class.getName());
+
     // https://medium.com/@vinayprabhu19/merkel-tree-in-java-b45093c8c6bd
     public static byte[] getMerkleRoot(Set<byte[]> transactionHashList) {
         return merkleTree(new ArrayList<>(transactionHashList)).get(0);
@@ -36,8 +41,8 @@ public class MerkleTree {
             }
 
             if (j != sizeAux) {
-                // TODO: ERROR
-                System.out.println("THIS SHOULDN'T RUN");
+                // THIS SHOULDN'T RUN
+                logger.error("Could not write all bytes to array");
                 return null;
             }
 

@@ -1,4 +1,4 @@
-package pt.ipleiria.estg.dei.pi.voidchain.demo.counter;
+package pt.ipleiria.estg.dei.pi.voidchain.bftSmartDemos.counter;
 
 import bftsmart.demo.counter.CounterServer;
 
