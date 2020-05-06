@@ -6,6 +6,7 @@ import org.bouncycastle.util.encoders.Base64;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 
 /**
  * The block header is a section of a block.
@@ -17,7 +18,7 @@ public class BlockHeader implements Serializable {
     /* Attributes */
     protected final long timestamp;
     protected final byte[] previousBlockHash;
-    protected final float protocolVersion;
+    protected final String protocolVersion;
     protected final byte[] nonce;
     protected byte[] merkleRoot;
 
@@ -29,7 +30,7 @@ public class BlockHeader implements Serializable {
      * @param timestamp         the timestamp
      * @param nonce             the nonce
      */
-    public BlockHeader(byte[] previousBlockHash, float protocolVersion, long timestamp, byte[] nonce) {
+    public BlockHeader(byte[] previousBlockHash, String protocolVersion, long timestamp, byte[] nonce) {
         this.previousBlockHash = previousBlockHash;
         this.protocolVersion = protocolVersion;
         this.timestamp = timestamp;
@@ -39,7 +40,7 @@ public class BlockHeader implements Serializable {
 
     // FOR USE WITH CLONE
     // TODO: REMOVE ?
-    private BlockHeader (byte[] previousBlockHash, float protocolVersion, long timestamp, byte[] nonce, byte[] merkleRoot) {
+    private BlockHeader (byte[] previousBlockHash, String protocolVersion, long timestamp, byte[] nonce, byte[] merkleRoot) {
         this.previousBlockHash = previousBlockHash;
         this.protocolVersion = protocolVersion;
         this.timestamp = timestamp;
@@ -64,11 +65,10 @@ public class BlockHeader implements Serializable {
      * @return the data (byte[])
      */
     public byte[] getData() {
-        byte[] protocolVersionBytes;
+        byte[] protocolVersionBytes = this.protocolVersion.getBytes(StandardCharsets.UTF_8);
         byte[] timestampBytes;
 
         try {
-            protocolVersionBytes = Converters.floatToByteArray(this.protocolVersion);
             timestampBytes = Converters.longToByteArray(this.timestamp);
         } catch (IOException e) {
             e.printStackTrace();

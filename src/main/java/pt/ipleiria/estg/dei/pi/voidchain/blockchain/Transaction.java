@@ -1,5 +1,6 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
+import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Hash;
 
@@ -10,21 +11,21 @@ import org.bouncycastle.util.encoders.Base64;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 
 /**
  * The transaction contains data of the operations performed by the replicas.
  * In the 'transactions' section of a block, transactions get recorded.
  * The structure of a transaction is: timestamp (when it was created), its size
- *  , the version of the protocol when the transaction was created and the hash of the transaction (trasaction ID).
+ * , the version of the protocol when the transaction was created and the hash of the transaction (trasaction ID).
  */
 public class Transaction implements Serializable {
     /* Attributes */
-    public static final int MAX_SIZE = 1024; // THIS VALUE WILL BE CHANGED
     private final Logger logger = LoggerFactory.getLogger(Transaction.class.getName());
     private final long timestamp;
     private final byte[] data;
     private final int size;
-    private final float protocolVersion;
+    private final String protocolVersion;
 
     /**
      * Instantiates a new Transaction.
@@ -33,12 +34,13 @@ public class Transaction implements Serializable {
      * @param protocolVersion the protocol version
      * @param timestamp       the timestamp
      */
-    public Transaction(byte[] data, float protocolVersion, long timestamp) {
+    public Transaction(byte[] data, String protocolVersion, long timestamp) {
         this.size = Long.BYTES + data.length + Integer.BYTES + Float.BYTES;
 
-        if (this.size <= MAX_SIZE) {
-            throw new IllegalArgumentException("Transaction size is " + this.size + " but max transaction size is"
-                    + MAX_SIZE);
+        int transactionMaxSize = Configuration.getInstance().getTransactionMaxSize();
+        if (this.size > transactionMaxSize) {
+            throw new IllegalArgumentException("Transaction size is " + this.size + " but max transaction size is "
+                    + transactionMaxSize);
         }
 
         this.timestamp = timestamp;
@@ -48,12 +50,11 @@ public class Transaction implements Serializable {
 
     /* Methods */
     public byte[] getDataBytes() {
-        byte[] protocolVersionBytes;
+        byte[] protocolVersionBytes = this.protocolVersion.getBytes(StandardCharsets.UTF_8);
         byte[] timestampBytes;
         byte[] sizeBytes;
 
         try {
-            protocolVersionBytes = Converters.floatToByteArray(this.protocolVersion);
             timestampBytes = Converters.longToByteArray(this.timestamp);
             sizeBytes = Converters.intToByteArray(this.size);
         } catch (IOException e) {
@@ -92,6 +93,7 @@ public class Transaction implements Serializable {
     }
 
     /* Getters */
+
     /**
      * Gets Epoch time of when a transaction was created.
      *
@@ -133,7 +135,7 @@ public class Transaction implements Serializable {
      *
      * @return the protocol version
      */
-    public float getProtocolVersion() {
+    public String getProtocolVersion() {
         return protocolVersion;
     }
 

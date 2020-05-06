@@ -2,6 +2,7 @@ package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
 import jdk.jshell.spi.ExecutionControl;
 import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
@@ -14,9 +15,6 @@ import java.util.*;
  */
 public class Blockchain implements Serializable {
     /* Attributes */
-    public static final float PROTOCOL_VERSION = 0.1f;
-    private static final int TRANSACTION_PER_BLOCK = 5; // THIS VALUE WILL BE CHANGED
-    private static final int BLOCKS_IN_MEMORY = 2; // THIS VALUE WILL BE CHANGED
     // TODO: Stack OR MAYBE MAP (?)
     private final List<Block> blocks;
     // TODO: MOVE TRANSACTION POOL TO REPLICA ?
@@ -30,7 +28,7 @@ public class Blockchain implements Serializable {
         var genesisBytes = "What to Know and What to Do About the Global Pandemic".getBytes(StandardCharsets.UTF_8);
         RIPEMD160.Digest hash = new RIPEMD160.Digest();
 
-        Block genesisBlock = new Block(hash.digest(genesisBytes), PROTOCOL_VERSION, 0, 0L, new byte[0]);
+        Block genesisBlock = new Block(hash.digest(genesisBytes), Configuration.getInstance().getProtocolVersion(), 0, 0L, new byte[0]);
 
         this.blocks = new ArrayList<>();
         this.blocks.add(genesisBlock);
@@ -61,7 +59,7 @@ public class Blockchain implements Serializable {
     public Block createBlock(long timestamp, byte[] nonce) {
         Block auxBlock = this.getCurrentBlock();
 
-        Block block = new Block(auxBlock.getHash(), PROTOCOL_VERSION, auxBlock.getBlockHeight() + 1,
+        Block block = new Block(auxBlock.getHash(), Configuration.getInstance().getProtocolVersion(), auxBlock.getBlockHeight() + 1,
                 timestamp, nonce);
 
         this.blocks.add(0, block);
@@ -79,7 +77,7 @@ public class Blockchain implements Serializable {
     public Block createBlock(long timestamp, byte[] nonce, Map<byte[], Transaction> transactions) {
         Block auxBlock = this.getCurrentBlock();
 
-        Block block = new Block(auxBlock.getHash(), PROTOCOL_VERSION, auxBlock.getBlockHeight() + 1,
+        Block block = new Block(auxBlock.getHash(), Configuration.getInstance().getProtocolVersion(), auxBlock.getBlockHeight() + 1,
                 transactions,timestamp, nonce);
 
         this.blocks.add(0, block);
@@ -90,7 +88,7 @@ public class Blockchain implements Serializable {
     public Block createBlock(long timestamp, byte[] nonce, List<Transaction> transactions) {
         Block auxBlock = this.getCurrentBlock();
 
-        Block block = new Block(auxBlock.getHash(), PROTOCOL_VERSION, auxBlock.getBlockHeight() + 1,
+        Block block = new Block(auxBlock.getHash(), Configuration.getInstance().getProtocolVersion(), auxBlock.getBlockHeight() + 1,
                 transactions,timestamp, nonce);
 
         this.blocks.add(0, block);
@@ -99,13 +97,15 @@ public class Blockchain implements Serializable {
     }
 
     private void processNewBlock() {
-        if (this.transactionPool.size() < TRANSACTION_PER_BLOCK) {
+        int transactionsPerBlock = Configuration.getInstance().getNumTransactionsInBlock();
+
+        if (this.transactionPool.size() < transactionsPerBlock) {
             return;
         }
 
         List<Transaction> transactions = new ArrayList<>();
 
-        while (transactions.size() < TRANSACTION_PER_BLOCK) {
+        while (transactions.size() < transactionsPerBlock) {
             transactions.add(this.transactionPool.get(0));
             this.transactionPool.remove(0);
         }

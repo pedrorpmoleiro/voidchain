@@ -20,11 +20,6 @@ import java.util.Map;
  * it needs to be calculated if needed.
  */
 public class Block implements Serializable {
-
-    private static final String BLOCK_STORAGE_DIRECTORY = "data" + File.separator + "blocks" + File.separator;
-    private static final String BLOCK_BASE_FILENAME = "block";
-    private static final String BLOCK_FILE_EXTENSION = ".dat";
-
     /* Attributes */
     // TODO: SIZE TO INCLUDE TRANSACTIONS & CHANGE HASHTABLE
     private final Map<byte[], Transaction> transactions;
@@ -43,7 +38,7 @@ public class Block implements Serializable {
      * @param nonce             the nonce
      */
     // TODO: REMOVE ?
-    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight, long timestamp, byte[] nonce) {
+    public Block(byte[] previousBlockHash, String protocolVersion, int blockHeight, long timestamp, byte[] nonce) {
         this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce);
         this.blockHeight = blockHeight;
         this.transactionCounter = 0;
@@ -61,7 +56,7 @@ public class Block implements Serializable {
      * @param timestamp         the timestamp
      * @param nonce             the nonce
      */
-    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight,
+    public Block(byte[] previousBlockHash, String protocolVersion, int blockHeight,
                  Map<byte[], Transaction> transactions, long timestamp, byte[] nonce) {
         this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce);
         this.blockHeight = blockHeight;
@@ -71,7 +66,7 @@ public class Block implements Serializable {
         this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
     }
 
-    public Block(byte[] previousBlockHash, float protocolVersion, int blockHeight,
+    public Block(byte[] previousBlockHash, String protocolVersion, int blockHeight,
                  List<Transaction> transactions, long timestamp, byte[] nonce) {
         this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce);
         this.blockHeight = blockHeight;
@@ -127,13 +122,17 @@ public class Block implements Serializable {
     }
 
     public boolean toDisk() {
-        return Storage.writeToDiskCompressed(this, BLOCK_STORAGE_DIRECTORY, BLOCK_BASE_FILENAME +
-                this.blockHeight + BLOCK_FILE_EXTENSION);
+        Configuration config = Configuration.getInstance();
+
+        return Storage.writeToDiskCompressed(this, config.getBlockFileDirectory(), config.getBlockFileBaseName() +
+                this.blockHeight + config.getBlockFileExtension());
     }
 
     public static Block fromDisk(int blockHeight) {
-        return (Block) Storage.readFromDiskCompressed(BLOCK_STORAGE_DIRECTORY + BLOCK_BASE_FILENAME +
-                blockHeight + BLOCK_FILE_EXTENSION);
+        Configuration config = Configuration.getInstance();
+
+        return (Block) Storage.readFromDiskCompressed(config.getBlockFileDirectory() + config.getBlockFileBaseName() +
+                blockHeight + config.getBlockFileExtension());
     }
 
     /* Getters */
@@ -199,7 +198,7 @@ public class Block implements Serializable {
      *
      * @return the protocol version (float)
      */
-    public float getProtocolVersion() {
+    public String getProtocolVersion() {
         return this.blockHeader.protocolVersion;
     }
 
