@@ -46,6 +46,9 @@ public class TestingMain {
         block1.addTransaction(new Transaction("TRANSACTION 7".getBytes(StandardCharsets.UTF_8), protocolVersion, 8L));
         System.out.println("Is chain valid: " + voidchain.isChainValid());
 
-        //block2.toDisk();
+        block1.toDisk();
+        block2.toDisk();
+
+        voidchain.getBlock(4);
     }
 }

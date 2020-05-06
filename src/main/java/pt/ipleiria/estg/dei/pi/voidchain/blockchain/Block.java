@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class Block implements Serializable {
     /* Attributes */
-    // TODO: SIZE TO INCLUDE TRANSACTIONS & CHANGE HASHTABLE
+    // TODO: SIZE TO INCLUDE TRANSACTIONS & CHANGE HASHTABLE (TREE_SET)
     private final Map<byte[], Transaction> transactions;
     private final BlockHeader blockHeader;
     private final long size;

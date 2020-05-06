@@ -15,6 +15,7 @@ public class Storage {
 
     public static boolean writeToDiskCompressed(Object object, String fileDirectory, String fileName) {
         Path pD = Paths.get(fileDirectory);
+
         try {
             if (Files.notExists(pD))
                 Files.createDirectories(pD);
@@ -35,15 +36,13 @@ public class Storage {
     }
 
     public static Object readFromDiskCompressed(String fileName) {
-        Object objectRead = null;
-
         try (ObjectInputStream ois = new ObjectInputStream(new InflaterInputStream(new FileInputStream(fileName)))) {
-            objectRead = ois.readObject();
+            Object objectRead = ois.readObject();
+
+            return objectRead;
         } catch (IOException | ClassNotFoundException e) {
             logger.error("Error while reading '" + fileName + "' from disk", e);
             return null;
         }
-
-        return objectRead;
     }
 }

@@ -1,9 +1,11 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
-import jdk.jshell.spi.ExecutionControl;
-import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 
+import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
+
+import java.io.File;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -152,10 +154,27 @@ public class Blockchain implements Serializable {
     public Block getCurrentBlock() {
         return this.blocks.get(0);
     }
+    
+    public Block getBlock(int blockHeight) {
+        for (Block b : blocks) {
+            if (b.getBlockHeight() == blockHeight) {
+                return b;
+            }
+        }
 
-    // TODO: IMPLEMENT & USE BLOCKS STORED ON DISK
-    public Block getBlock(int blockHeight) throws ExecutionControl.NotImplementedException {
-        throw new ExecutionControl.NotImplementedException("This is not yet implemented 😢");
+        Configuration config = Configuration.getInstance();
+
+        File[] blockFiles = new File(config.getBlockFileDirectory()).listFiles();
+        String wantedFile = config.getBlockFileDirectory() + config.getBlockFileBaseName() +
+                blockHeight + config.getBlockFileExtension();
+
+        for (File f : blockFiles) {
+            if (f.getName().equals(wantedFile)) {
+                return (Block) Storage.readFromDiskCompressed(f.getName());
+            }
+        }
+
+        throw new NoSuchElementException("Block doesn't exist");
     }
 
     @Override
