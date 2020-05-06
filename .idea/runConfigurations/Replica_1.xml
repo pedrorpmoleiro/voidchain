@@ -1,11 +1,11 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Replica 1" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.Replica" />
+    <option name="MAIN_CLASS_NAME" value="pt.ipleiria.estg.dei.pi.voidchain.replica.Replica" />
     <module name="voidchain" />
     <option name="PROGRAM_PARAMETERS" value="1" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.*" />
+        <option name="PATTERN" value="pt.ipleiria.estg.dei.pi.voidchain.replica.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

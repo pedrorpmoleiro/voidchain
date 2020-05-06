@@ -1,4 +1,4 @@
-package pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain;
+package pt.ipleiria.estg.dei.pi.voidchain;
 
 import org.bouncycastle.util.encoders.Base64;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
@@ -42,5 +42,8 @@ public class TestingMain {
         System.out.println("ALTERING PREVIOUS BLOCK (ADD TRANSACTION)");
         block1.addTransaction(new Transaction("TRANSACTION 7".getBytes(StandardCharsets.UTF_8), Blockchain.PROTOCOL_VERSION, 8L));
         System.out.println("Is chain valid: " + voidchain.isChainValid());
+
+        //block2.toDisk();
+        //var test = Block.fromDisk(2);
     }
 }

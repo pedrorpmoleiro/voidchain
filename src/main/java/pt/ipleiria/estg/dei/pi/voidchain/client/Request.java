@@ -1,4 +1,4 @@
-package pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain;
+package pt.ipleiria.estg.dei.pi.voidchain.client;
 
 import java.io.Serializable;
 

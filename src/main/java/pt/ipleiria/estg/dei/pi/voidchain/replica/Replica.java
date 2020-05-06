@@ -1,4 +1,4 @@
-package pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain;
+package pt.ipleiria.estg.dei.pi.voidchain.replica;
 
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
@@ -12,10 +12,23 @@ import org.slf4j.LoggerFactory;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
+import pt.ipleiria.estg.dei.pi.voidchain.client.Request;
 
 import java.io.*;
 import java.security.Security;
 
+/*
+    ON DISK:
+        SAVE BLOCK/(S)
+        LOAD BLOCK/(S)
+    API
+    AUTOMATION OF MANAGEMENT OF THE BLOCKCHAIN:
+        I.   COMMUNICATION BETWEEN REPLICAS (MAKE OWN SystemMessage)
+        II.  CREATE BLOCKS VIA TRANSACTION POOL
+        III. TRANSACTION POOL ON REPLICA (MOVE FROM BLOCKCHAIN (?)/CHANGE GET & INSTALL SNAPSHOT)
+        IV.  VALIDATE BLOCKS
+        V.
+*/
 public class Replica extends DefaultSingleRecoverable {
     private Blockchain blockchain;
     private Logger logger;
@@ -29,7 +42,7 @@ public class Replica extends DefaultSingleRecoverable {
 
     public static void main(String[] args) {
         if (args.length < 1) {
-            System.out.println("Usage: pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.Replica <server id>");
+            System.out.println("Usage: pt.ipleiria.estg.dei.pi.voidchain.replica.Replica <server id>");
             System.exit(-1);
         }
 
@@ -50,6 +63,14 @@ public class Replica extends DefaultSingleRecoverable {
         } catch (IOException | ClassNotFoundException e) {
             this.logger.error("Error installing snapshot", e);
         }
+
+        /*this.replicaContext.getServerCommunicationSystem().send(
+                this.replicaContext.getCurrentView().getProcesses(),
+                new TOMMessage(
+                        this.replicaContext.getCurrentView().getId(),
+                        this.replicaContext.getCurrentView().
+                )
+        );*/
     }
 
     @Override

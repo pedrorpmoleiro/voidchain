@@ -4,6 +4,7 @@ import org.bouncycastle.util.encoders.Base64;
 
 import pt.ipleiria.estg.dei.pi.voidchain.util.*;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.List;
@@ -19,6 +20,11 @@ import java.util.Map;
  * it needs to be calculated if needed.
  */
 public class Block implements Serializable {
+
+    private static final String BLOCK_STORAGE_DIRECTORY = "data" + File.separator + "blocks" + File.separator;
+    private static final String BLOCK_BASE_FILENAME = "block";
+    private static final String BLOCK_FILE_EXTENSION = ".dat";
+
     /* Attributes */
     // TODO: SIZE TO INCLUDE TRANSACTIONS & CHANGE HASHTABLE
     private final Map<byte[], Transaction> transactions;
@@ -107,6 +113,7 @@ public class Block implements Serializable {
      * @param transactions the transactions
      */
     // TODO: MAX TRANSACTION SIZE
+    // DON'T INSERT A TRANSACTION THAT EXCEEDS MAX SIZE
     public boolean addTransactions(Map<byte[], Transaction> transactions) {
         this.transactions.putAll(transactions);
         this.transactionCounter += transactions.size();
@@ -116,12 +123,23 @@ public class Block implements Serializable {
     }
 
     // TODO: MAX TRANSACTION SIZE
+    // DON'T INSERT A TRANSACTION THAT EXCEEDS MAX SIZE
     public boolean addTransactions(List<Transaction> transactions) {
         this.transactions.putAll(Converters.transactionListToMap(transactions));
         this.transactionCounter += transactions.size();
         this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
 
         return true;
+    }
+
+    public boolean toDisk() {
+        return Storage.writeToDiskCompressed(this, BLOCK_STORAGE_DIRECTORY, BLOCK_BASE_FILENAME +
+                this.blockHeight + BLOCK_FILE_EXTENSION);
+    }
+
+    public static Block fromDisk(int blockHeight) {
+        return (Block) Storage.readFromDiskCompressed(BLOCK_STORAGE_DIRECTORY + BLOCK_BASE_FILENAME +
+                blockHeight + BLOCK_FILE_EXTENSION);
     }
 
     /* Getters */

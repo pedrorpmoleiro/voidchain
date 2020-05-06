@@ -14,7 +14,8 @@ import java.util.*;
 public class Blockchain implements Serializable {
     /* Attributes */
     public static final float PROTOCOL_VERSION = 0.1f;
-    private static final int TRANSACTION_PER_BLOCK = 5;
+    private static final int TRANSACTION_PER_BLOCK = 5; // THIS VALUE WILL BE CHANGED
+    private static final int BLOCKS_IN_MEMORY = 2; // THIS VALUE WILL BE CHANGED
     // TODO: Stack (?)
     private final List<Block> blocks;
     private final List<Transaction> transactionPool;
