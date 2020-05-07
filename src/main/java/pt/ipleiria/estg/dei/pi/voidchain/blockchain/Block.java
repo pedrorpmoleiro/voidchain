@@ -1,14 +1,17 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
+import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
 import org.bouncycastle.util.encoders.Base64;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import pt.ipleiria.estg.dei.pi.voidchain.util.*;
 
-import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 /**
  * A block is where the transactions/data are stored in,
@@ -21,106 +24,177 @@ import java.util.Map;
  */
 public class Block implements Serializable {
     /* Attributes */
-    // TODO: SIZE TO INCLUDE TRANSACTIONS & CHANGE HASHTABLE (TREE_SET)
+    /**
+     * The constant DEFAULT_BLOCK.
+     * Represents a default block used as a return value in some methods.
+     */
+    public static final Block DEFAULT_BLOCK = new Block();
+
+    private static final Map<byte[], Transaction> EMPTY_MAP = new Hashtable<>();
+    private static final List<Transaction> EMPTY_LIST = new ArrayList<>();
+    private static final Logger logger = LoggerFactory.getLogger(Block.class.getName());
+
+    // TODO: CHANGE HASHTABLE (TREE_SET)
     private final Map<byte[], Transaction> transactions;
     private final BlockHeader blockHeader;
-    private final long size;
     private int transactionCounter;
     private final int blockHeight;
 
-    /**
-     * Instantiates a new Block without any initial transactions and with predefined timestamp and nonce.
-     *
-     * @param previousBlockHash the previous block hash
-     * @param protocolVersion   the protocol version
-     * @param blockHeight       the block height
-     * @param timestamp         the timestamp
-     * @param nonce             the nonce
-     */
-    // TODO: REMOVE ?
-    public Block(byte[] previousBlockHash, String protocolVersion, int blockHeight, long timestamp, byte[] nonce) {
-        this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce);
-        this.blockHeight = blockHeight;
-        this.transactionCounter = 0;
+    // FOR USE WITH DEFAULT_BLOCK
+    // TODO: IS IT NECESSARY ?
+    private Block() {
+        String auxString = "DEFAULT BLOCK";
+        byte[] auxBytes = new byte[0];
+        this.blockHeader = new BlockHeader(auxString.getBytes(StandardCharsets.UTF_8), auxString, -1L,
+                auxBytes, auxBytes);
+        this.blockHeight = -1;
+        this.transactionCounter = -1;
         this.transactions = new Hashtable<>();
-        this.size = this.blockHeader.getSize() + (Integer.BYTES * 2);
     }
 
     /**
-     * Instantiates a new Block with a preset "list" of transactions.
+     * Instantiates a new Genesis Block.
+     *
+     * @param genesisBytes the genesis bytes
+     */
+    // FOR USE BY BLOCKCHAIN CLASS TO CREATE GENESIS BLOCK
+    protected Block(byte[] genesisBytes) {
+        byte[] auxBytes = new byte[0];
+        this.blockHeader = new BlockHeader(genesisBytes, Configuration.getInstance().getProtocolVersion(), 0L,
+                auxBytes, auxBytes);
+        this.blockHeight = 0;
+        this.transactionCounter = -1; // ?
+        this.transactions = new Hashtable<>();
+    }
+
+    /**
+     * Instantiates a new Block.
      *
      * @param previousBlockHash the previous block hash
      * @param protocolVersion   the protocol version
      * @param blockHeight       the block height
-     * @param transactions      the transactions
+     * @param transactions      the transactions (Map)
      * @param timestamp         the timestamp
      * @param nonce             the nonce
+     * @throws InstantiationException if error occurs while calculating merkle tree exception will be thrown
      */
     public Block(byte[] previousBlockHash, String protocolVersion, int blockHeight,
-                 Map<byte[], Transaction> transactions, long timestamp, byte[] nonce) {
-        this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce);
+                 Map<byte[], Transaction> transactions, long timestamp, byte[] nonce) throws InstantiationException {
+
+        byte[] merkleRoot;
+        if (transactions != EMPTY_MAP) {
+            merkleRoot = MerkleTree.getMerkleRoot(transactions.keySet());
+
+            // TODO: REVIEW
+            if (Arrays.equals(merkleRoot, new byte[0]))
+                throw new InstantiationException("Error occurred while calculating merkle tree root");
+        } else
+            merkleRoot = new byte[0];
+
+        this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce, merkleRoot);
         this.blockHeight = blockHeight;
         this.transactionCounter = transactions.size();
         this.transactions = new Hashtable<>(transactions);
-        this.size = this.blockHeader.getSize() + (Integer.BYTES * 2) + this.transactions.size();
-        this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
     }
 
+    /**
+     * Instantiates a new Block.
+     *
+     * @param previousBlockHash the previous block hash
+     * @param protocolVersion   the protocol version
+     * @param blockHeight       the block height
+     * @param transactions      the transactions (List)
+     * @param timestamp         the timestamp
+     * @param nonce             the nonce
+     * @throws InstantiationException if error occurs while calculating merkle tree exception will be thrown
+     */
     public Block(byte[] previousBlockHash, String protocolVersion, int blockHeight,
-                 List<Transaction> transactions, long timestamp, byte[] nonce) {
-        this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce);
-        this.blockHeight = blockHeight;
-        this.transactionCounter = transactions.size();
+                 List<Transaction> transactions, long timestamp, byte[] nonce) throws InstantiationException {
         this.transactions = new Hashtable<>(Converters.transactionListToMap(transactions));
-        this.size = this.blockHeader.getSize() + (Integer.BYTES * 2) + this.transactions.size();
-        this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
-    }
 
-    // FOR USE WITH CLONE
-    // TODO: REMOVE ?
-    private Block (int blockHeight, Map<byte[], Transaction> transactions, long size, BlockHeader blockHeader) {
-        this.blockHeader = blockHeader;
+        byte[] merkleRoot;
+        if (transactions != EMPTY_LIST) {
+            merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
+
+            // TODO: REVIEW
+            if (Arrays.equals(merkleRoot, new byte[0]))
+                throw new InstantiationException("Error occurred while calculating merkle tree root");
+        } else
+            merkleRoot = new byte[0];
+
+        this.blockHeader = new BlockHeader(previousBlockHash, protocolVersion, timestamp, nonce, merkleRoot);
         this.blockHeight = blockHeight;
         this.transactionCounter = transactions.size();
-        this.transactions = new Hashtable<>(transactions);
-        this.size = size;
     }
 
     /* Methods */
+
     /**
-     * Adds a transaction to the block
+     * Adds a transaction to the block.
      *
      * @param transaction the transaction
+     * @return true if the transaction was saved or false if an error occurred
      */
     public boolean addTransaction(Transaction transaction) {
         this.transactions.put(transaction.getHash(), transaction);
         this.transactionCounter++;
         this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
 
+        // TODO: REVIEW
+        if (Arrays.equals(this.blockHeader.merkleRoot, new byte[0])) {
+            logger.error("Transactions added. Error occurred while calculating merkle tree root");
+            return false;
+        }
+
         return true;
     }
 
     /**
-     * Adds transactions to the block.
+     * Adds transactions (Map) to the block.
      *
      * @param transactions the transactions
+     * @return true if the transactions were saved or false if an error occurred
      */
     public boolean addTransactions(Map<byte[], Transaction> transactions) {
         this.transactions.putAll(transactions);
         this.transactionCounter += transactions.size();
         this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
 
+        // TODO: REVIEW
+        if (Arrays.equals(this.blockHeader.merkleRoot, new byte[0])) {
+            logger.error("Transactions added. Error occurred while calculating merkle tree root");
+            return false;
+        }
+
         return true;
     }
 
+    /**
+     * Add transactions (List) boolean.
+     *
+     * @param transactions the transactions
+     * @return true if the transactions were saved or false if an error occurred
+     */
+// TODO: REMOVE ?
     public boolean addTransactions(List<Transaction> transactions) {
         this.transactions.putAll(Converters.transactionListToMap(transactions));
         this.transactionCounter += transactions.size();
         this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
 
+        // TODO: REVIEW
+        if (Arrays.equals(this.blockHeader.merkleRoot, new byte[0])) {
+            logger.error("Transactions added. Error occurred while calculating merkle tree root");
+            return false;
+        }
+
         return true;
     }
 
+    /**
+     * Saves block to disk according to current system configurations.
+     *
+     * @return true if the block was saved to disk or false if an error occurred
+     */
     public boolean toDisk() {
         Configuration config = Configuration.getInstance();
 
@@ -128,18 +202,33 @@ public class Block implements Serializable {
                 this.blockHeight + config.getBlockFileExtension());
     }
 
+    /**
+     * Loads block from disk.
+     * <p>
+     * Will return DEFAULT_BLOCK upon block not found or error occurred while loading from disk
+     *
+     * @param blockHeight the block height of the wanted block
+     * @return the block (Block)
+     */
     public static Block fromDisk(int blockHeight) {
-        Configuration config = Configuration.getInstance();
+        try {
+            Configuration config = Configuration.getInstance();
 
-        return (Block) Storage.readFromDiskCompressed(config.getBlockFileDirectory() + config.getBlockFileBaseName() +
-                blockHeight + config.getBlockFileExtension());
+            return (Block) Storage.readFromDiskCompressed(config.getBlockFileDirectory() + config.getBlockFileBaseName() +
+                    blockHeight + config.getBlockFileExtension());
+        } catch (IOException | ClassNotFoundException e) {
+            logger.error("Error getting block " + blockHeight + " from disk", e);
+
+            return DEFAULT_BLOCK;
+        }
     }
 
     /* Getters */
+
     /**
      * Gets all the transactions that are stored in a block
      * For security reasons, we do not give direct access to the transactions,
-     * we return a copy of it.
+     * a copy of the original is returned.
      *
      * @return the transactions (Map<String, Transaction>)
      */
@@ -148,22 +237,27 @@ public class Block implements Serializable {
     }
 
     /**
-     * Gets size of the block in bytes.
-     * Does not include size of transactions.
+     * Calculates size of the block in bytes.
+     * Includes the size of transactions.
      *
      * @return the size (long)
      */
-    public long getSize() {
-        return size;
+    public int getSize() {
+        int allTransactionSize = 0;
+
+        for (Transaction t : transactions.values())
+            allTransactionSize += t.getSize();
+
+        return this.blockHeader.getSize() + (Integer.BYTES * 2) + allTransactionSize;
     }
 
     /**
      * Gets the number of transactions inside a block.
      *
-     * @return the transaction counter (long)
+     * @return the transaction counter (int)
      */
     public int getTransactionCounter() {
-        return transactionCounter;
+        return this.transactionCounter;
     }
 
     /**
@@ -172,7 +266,16 @@ public class Block implements Serializable {
      * @return the block height (int)
      */
     public int getBlockHeight() {
-        return blockHeight;
+        return this.blockHeight;
+    }
+
+    /**
+     * Gets the transactions merkle tree root, from the block header.
+     *
+     * @return the merkle tree root (byte[])
+     */
+    public byte[] getMerkleRoot() {
+        return this.blockHeader.merkleRoot;
     }
 
     /**
@@ -196,7 +299,7 @@ public class Block implements Serializable {
     /**
      * Gets protocol version, from the block header.
      *
-     * @return the protocol version (float)
+     * @return the protocol version (String)
      */
     public String getProtocolVersion() {
         return this.blockHeader.protocolVersion;
@@ -205,43 +308,43 @@ public class Block implements Serializable {
     /**
      * Gets nonce, a random int, from the block header.
      *
-     * @return the nonce (int)
+     * @return the nonce (byte[])
      */
+// TODO: JAVADOC
     public byte[] getNonce() {
         return this.blockHeader.nonce;
     }
 
     /**
      * Calculates the hash of the block.
-     * To calculate the hash of a block, we double hash it's header (block header)
+     * To calculate the hash of a block, we double hash it's header (block header).
+     * <p>
      * SHA3_512(RIPEMD160(blockHeader))
+     * <p>
+     * Will return byte[0] if error occurred while calculating hash.
      *
-     * @return the block hash / block header hash (byte[])
+     * @return the block hash (byte[])
      */
     public byte[] getHash() {
-        return Hash.calculateSHA3512RIPEMD160(this.blockHeader.getData());
-    }
+        byte[] blockHeaderData = this.blockHeader.getData();
+        byte[] aux = new byte[0];
 
+        if (Arrays.equals(blockHeaderData, aux)) {
+            return aux;
+        }
 
-    /**
-     * Creates a clone/copy of the current (instance) block.
-     *
-     * @return a clone/copy of this block.
-     */
-    // TODO: REMOVE ?
-    public Block clone() {
-        return new Block(this.blockHeight, this.transactions, this.size, this.blockHeader.clone());
+        return Hash.calculateSHA3512RIPEMD160(blockHeaderData);
     }
 
     @Override
     public String toString() {
         return "Block: {" + System.lineSeparator() +
-                "transactions: " + transactions.values() + System.lineSeparator() +
-                blockHeader + System.lineSeparator() +
-                "size: " + size + System.lineSeparator() +
-                "transaction counter: " + transactionCounter + System.lineSeparator() +
-                "block height: " + blockHeight + System.lineSeparator() +
-                "hash: " + Base64.toBase64String(getHash()) + System.lineSeparator() +
+                "transactions: " + this.transactions.values() + System.lineSeparator() +
+                this.blockHeader + System.lineSeparator() +
+                "size: " + this.getSize() + System.lineSeparator() +
+                "transaction counter: " + this.transactionCounter + System.lineSeparator() +
+                "block height: " + this.blockHeight + System.lineSeparator() +
+                "hash: " + Base64.toBase64String(this.getHash()) + System.lineSeparator() +
                 "}";
     }
 }

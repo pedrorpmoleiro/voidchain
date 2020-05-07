@@ -16,27 +16,23 @@ import pt.ipleiria.estg.dei.pi.voidchain.client.Request;
 
 import java.io.*;
 import java.security.Security;
+import java.util.Arrays;
 
 /*
     TODO: READ BELOW
-    ON DISK:
-        SAVE BLOCK/(S)
-        LOAD BLOCK/(S)
     API
     AUTOMATION OF MANAGEMENT OF THE BLOCKCHAIN:
         I.   COMMUNICATION BETWEEN REPLICAS (MAKE OWN SystemMessage)
         II.  CREATE BLOCKS VIA TRANSACTION POOL
         III. TRANSACTION POOL ON REPLICA (MOVE FROM BLOCKCHAIN (?)/CHANGE GET & INSTALL SNAPSHOT)
         IV.  VALIDATE BLOCKS
-        V.
 */
 public class Replica extends DefaultSingleRecoverable {
     private Blockchain blockchain;
-    private Logger logger;
+    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
     public Replica(int id) {
         this.blockchain = new Blockchain();
-        this.logger = LoggerFactory.getLogger(this.getClass().getName());
 
         new ServiceReplica(id, this, this);
     }
@@ -56,6 +52,11 @@ public class Replica extends DefaultSingleRecoverable {
 
     @Override
     public void installSnapshot(byte[] state) {
+        if (Arrays.equals(state, new byte[0])) {
+            return;
+        }
+
+        Blockchain aux = this.blockchain;
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(state);
              ObjectInput objIn = new ObjectInputStream(byteIn)) {
 
@@ -63,6 +64,7 @@ public class Replica extends DefaultSingleRecoverable {
 
         } catch (IOException | ClassNotFoundException e) {
             this.logger.error("Error installing snapshot", e);
+            this.blockchain = aux;
         }
 
         /*this.replicaContext.getServerCommunicationSystem().send(
@@ -76,10 +78,10 @@ public class Replica extends DefaultSingleRecoverable {
 
     @Override
     public byte[] getSnapshot() {
-        byte[] snapshot = null;
+        byte[] snapshot = new byte[0];
 
         try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-             ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
+             ObjectOutput objOut = new ObjectOutputStream(  byteOut)) {
 
             objOut.writeObject(this.blockchain);
             objOut.flush();

@@ -2,6 +2,12 @@ package pt.ipleiria.estg.dei.pi.voidchain.client;
 
 import java.io.Serializable;
 
+/*
+    TODO: READ BELOW
+    USE SEQUENCIAL 'WRITES' INSTEAD OF THIS
+    SHOULD BE DEPRECATED / DELETED
+    TODO: REQUEST TYPE ENUM
+*/
 public class Request implements Serializable {
     private final int req;
     private final boolean hasData;

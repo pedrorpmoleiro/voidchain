@@ -13,6 +13,7 @@ import java.util.zip.InflaterInputStream;
 public class Storage {
     private static Logger logger = LoggerFactory.getLogger(Storage.class.getName());
 
+    // TODO: IMPROVE
     public static boolean writeToDiskCompressed(Object object, String fileDirectory, String fileName) {
         Path pD = Paths.get(fileDirectory);
 
@@ -35,14 +36,9 @@ public class Storage {
         return true;
     }
 
-    public static Object readFromDiskCompressed(String fileName) {
-        try (ObjectInputStream ois = new ObjectInputStream(new InflaterInputStream(new FileInputStream(fileName)))) {
-            Object objectRead = ois.readObject();
+    public static Object readFromDiskCompressed(String fileName) throws IOException, ClassNotFoundException {
+        ObjectInputStream ois = new ObjectInputStream(new InflaterInputStream(new FileInputStream(fileName)));
 
-            return objectRead;
-        } catch (IOException | ClassNotFoundException e) {
-            logger.error("Error while reading '" + fileName + "' from disk", e);
-            return null;
-        }
+        return ois.readObject();
     }
 }

@@ -1,11 +1,15 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
-import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
+
+import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -13,7 +17,7 @@ import java.util.*;
 /**
  * Blockchain data structure is an ordered, back-linked list of blocks of transactions/data.
  * BFT-Smart runs on top of this blockchain (more like blockchain is piece of the puzzle that is BFT-Smart),
- *  and by running on top of a blockchain, making it more secure and robust.
+ * and by running on top of a blockchain, making it more secure and robust.
  */
 public class Blockchain implements Serializable {
     /* Attributes */
@@ -22,15 +26,20 @@ public class Blockchain implements Serializable {
     // TODO: MOVE TRANSACTION POOL TO REPLICA ?
     private final List<Transaction> transactionPool;
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
     /**
      * Instantiates the Blockchain data structure.
      * Keep in mind that can only exist a valid "chain".
      */
     public Blockchain() {
+        /*
         var genesisBytes = "What to Know and What to Do About the Global Pandemic".getBytes(StandardCharsets.UTF_8);
         RIPEMD160.Digest hash = new RIPEMD160.Digest();
+        Block genesisBlock = new Block(hash.digest(genesisBytes));
+        */
 
-        Block genesisBlock = new Block(hash.digest(genesisBytes), Configuration.getInstance().getProtocolVersion(), 0, 0L, new byte[0]);
+        Block genesisBlock = new Block("What to Know and What to Do About the Global Pandemic".getBytes(StandardCharsets.UTF_8));
 
         this.blocks = new ArrayList<>();
         this.blocks.add(genesisBlock);
@@ -39,11 +48,13 @@ public class Blockchain implements Serializable {
     }
 
     /* Methods */
+
     /**
-     * Tests if this blockchain is a valid blockchain
+     * Tests if this blockchain is a valid blockchain.
      *
-     * @return the boolean
+     * @return true if the block chain is valid or false otherwise
      */
+    // TODO: DOES IT WORK IF PREVIOUS PREVIOUS BLOCK ALTERED ?
     public boolean isChainValid() {
         Block currentBlock = this.getCurrentBlock();
         Block previousBlock = this.blocks.get(1);
@@ -54,48 +65,71 @@ public class Blockchain implements Serializable {
     /**
      * Creates a new block, then adds it to the chain.
      *
-     * @param timestamp the timestamp
-     * @param nonce     the nonce
-     * @return the block
+     * @param timestamp the timestamp (long)
+     * @param nonce     the nonce (byte[])
+     * @return the newly created block
      */
     public Block createBlock(long timestamp, byte[] nonce) {
-        Block auxBlock = this.getCurrentBlock();
+        try {
+            Block auxBlock = this.getCurrentBlock();
 
-        Block block = new Block(auxBlock.getHash(), Configuration.getInstance().getProtocolVersion(), auxBlock.getBlockHeight() + 1,
-                timestamp, nonce);
+            Block block = new Block(auxBlock.getHash(), Configuration.getInstance().getProtocolVersion(),
+                    auxBlock.getBlockHeight() + 1, new Hashtable<>(), timestamp, nonce);
 
-        this.blocks.add(0, block);
+            this.blocks.add(0, block);
+            return block;
 
-        return block;
+        } catch (InstantiationException e) {
+            logger.error("Error occurred while creating new block", e);
+            return Block.DEFAULT_BLOCK;
+        }
     }
 
     /**
      * Creates a new block, with predefined transactions, then adds it to the chain.
      *
-     * @param timestamp the timestamp
-     * @param nonce     the nonce
-     * @return the block
+     * @param timestamp    the timestamp (long)
+     * @param nonce        the nonce (byte[])
+     * @param transactions the transactions (Map)
+     * @return the newly created block
      */
     public Block createBlock(long timestamp, byte[] nonce, Map<byte[], Transaction> transactions) {
-        Block auxBlock = this.getCurrentBlock();
+        try {
+            Block auxBlock = this.getCurrentBlock();
 
-        Block block = new Block(auxBlock.getHash(), Configuration.getInstance().getProtocolVersion(), auxBlock.getBlockHeight() + 1,
-                transactions,timestamp, nonce);
+            Block block = new Block(auxBlock.getHash(), Configuration.getInstance().getProtocolVersion(), auxBlock.getBlockHeight() + 1,
+                    transactions, timestamp, nonce);
 
-        this.blocks.add(0, block);
-
-        return block;
+            this.blocks.add(0, block);
+            return block;
+        } catch (InstantiationException e) {
+            logger.error("Error occurred while creating new block", e);
+            return Block.DEFAULT_BLOCK;
+        }
     }
 
+    /**
+     * Creates a new block, with predefined transactions, then adds it to the chain.
+     *
+     * @param timestamp    the timestamp (long)
+     * @param nonce        the nonce (byte[])
+     * @param transactions the transactions (List)
+     * @return the newly created block
+     */
+    // TODO: REMOVE ?
     public Block createBlock(long timestamp, byte[] nonce, List<Transaction> transactions) {
-        Block auxBlock = this.getCurrentBlock();
+        try {
+            Block auxBlock = this.getCurrentBlock();
 
-        Block block = new Block(auxBlock.getHash(), Configuration.getInstance().getProtocolVersion(), auxBlock.getBlockHeight() + 1,
-                transactions,timestamp, nonce);
+            Block block = new Block(auxBlock.getHash(), Configuration.getInstance().getProtocolVersion(), auxBlock.getBlockHeight() + 1,
+                    transactions, timestamp, nonce);
 
-        this.blocks.add(0, block);
-
-        return block;
+            this.blocks.add(0, block);
+            return block;
+        } catch (InstantiationException e) {
+            logger.error("Error occurred while creating new block", e);
+            return Block.DEFAULT_BLOCK;
+        }
     }
 
     private void processNewBlock() {
@@ -146,16 +180,25 @@ public class Blockchain implements Serializable {
     }
 
     /* Getters */
+
     /**
      * Gets the last added block to the chain, or in other words, the highest block in the blockchain
      *
-     * @return the current block
+     * @return the most recently created block
      */
     public Block getCurrentBlock() {
         return this.blocks.get(0);
     }
-    
-    public Block getBlock(int blockHeight) {
+
+    /**
+     * Gets block, with defined block height, from memory or disk.
+     * Will return DEFAULT_BLOCK if error occured while loading the block from disk.
+     *
+     * @param blockHeight the block height
+     * @return the block
+     * @throws NoSuchElementException If no matching block found exception will be thrown
+     */
+    public Block getBlock(int blockHeight) throws NoSuchElementException {
         for (Block b : blocks) {
             if (b.getBlockHeight() == blockHeight) {
                 return b;
@@ -165,12 +208,21 @@ public class Blockchain implements Serializable {
         Configuration config = Configuration.getInstance();
 
         File[] blockFiles = new File(config.getBlockFileDirectory()).listFiles();
+        if (blockFiles == null)
+            throw new NoSuchElementException("Block doesn't exist");
+
         String wantedFile = config.getBlockFileDirectory() + config.getBlockFileBaseName() +
                 blockHeight + config.getBlockFileExtension();
 
         for (File f : blockFiles) {
             if (f.getName().equals(wantedFile)) {
-                return (Block) Storage.readFromDiskCompressed(f.getName());
+                try {
+                    return (Block) Storage.readFromDiskCompressed(f.getName());
+                } catch (IOException | ClassNotFoundException e) {
+                    logger.error("Error getting block " + blockHeight + " from disk", e);
+
+                    return Block.DEFAULT_BLOCK;
+                }
             }
         }
 

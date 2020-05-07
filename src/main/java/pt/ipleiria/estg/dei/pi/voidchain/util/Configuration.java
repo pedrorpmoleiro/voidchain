@@ -81,7 +81,6 @@ public class Configuration {
 
                                     this.blockFileDirectory = aux;
                                 }
-                                continue;
                         }
                     }
                 }

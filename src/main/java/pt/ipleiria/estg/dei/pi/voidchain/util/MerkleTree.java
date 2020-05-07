@@ -11,10 +11,15 @@ public class MerkleTree {
 
     // https://medium.com/@vinayprabhu19/merkel-tree-in-java-b45093c8c6bd
     public static byte[] getMerkleRoot(Set<byte[]> transactionHashList) {
-        return merkleTree(new ArrayList<>(transactionHashList)).get(0);
+        try {
+            return merkleTree(new ArrayList<>(transactionHashList)).get(0);
+        } catch (RuntimeException e) {
+            logger.error("Error occured while calculating merkle tree", e);
+            return new byte[0];
+        }
     }
 
-    public static ArrayList<byte[]> merkleTree(ArrayList<byte[]> hashList) {
+    public static ArrayList<byte[]> merkleTree(ArrayList<byte[]> hashList) throws RuntimeException {
         if (hashList.size() == 1) {
             return hashList;
         }
@@ -40,11 +45,9 @@ public class MerkleTree {
                 j++;
             }
 
-            if (j != sizeAux) {
+            if (j != sizeAux)
                 // THIS SHOULDN'T RUN
-                logger.error("Could not write all bytes to array");
-                return null;
-            }
+                throw new RuntimeException("Could not write all bytes to array");
 
             parentList.add(Hash.calculateSHA3512RIPEMD160(aux));
         }
