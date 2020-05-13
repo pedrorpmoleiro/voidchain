@@ -1,23 +1,31 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
-import pt.ipleiria.estg.dei.pi.voidchain.Util;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Hash;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.bouncycastle.util.encoders.Base64;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * The transaction contains data of the operations performed by the replicas.
  * In the 'transactions' section of a block, transactions get recorded.
+ * The structure of a transaction is: timestamp (when it was created), its size
+ * , the version of the protocol when the transaction was created and the hash of the transaction (trasaction ID).
  */
 public class Transaction implements Serializable {
     /* Attributes */
+    private final Logger logger = LoggerFactory.getLogger(Transaction.class.getName());
     private final long timestamp;
     private final byte[] data;
-    private final int size;
-    private final float protocolVersion;
-    private byte[] hash;
+    private final String protocolVersion;
 
     /**
      * Instantiates a new Transaction.
@@ -25,39 +33,42 @@ public class Transaction implements Serializable {
      * @param data            the data
      * @param protocolVersion the protocol version
      * @param timestamp       the timestamp
+     * @throws IllegalArgumentException if transaction size exceeds max value an exception will be thrown
      */
-    public Transaction(byte[] data, float protocolVersion, long timestamp) {
+    public Transaction(byte[] data, String protocolVersion, long timestamp) {
+        int size = Long.BYTES + data.length + Integer.BYTES + Float.BYTES;
+
+        int transactionMaxSize = Configuration.getInstance().getTransactionMaxSize();
+        if (size > transactionMaxSize) {
+            throw new IllegalArgumentException("Transaction size is " + size + " but max transaction size is "
+                    + transactionMaxSize);
+        }
+
         this.timestamp = timestamp;
         this.data = data;
         this.protocolVersion = protocolVersion;
-        this.size = Long.SIZE + this.data.length + Integer.SIZE + Float.SIZE;
-
-        byte[] dataBytes = getDataBytes(this.timestamp, this.data, this.size, this.protocolVersion);
-
-        if (dataBytes == null) {
-            // TODO: ERROR
-            return;
-        }
-
-        this.hash = Util.calculateHash(dataBytes);
     }
 
     /* Methods */
-    private static byte[] getDataBytes(long timestamp, byte[] data, int size, float protocolVersion) {
-        byte[] protocolVersionBytes;
+    /**
+     * Calculates all the attributes in byte array format.
+     * <p>
+     * Will return byte[0] if an error occurs.
+     *
+     * @return the data (byte[])
+     */
+    public byte[] getDataBytes() {
+        byte[] protocolVersionBytes = this.protocolVersion.getBytes(StandardCharsets.UTF_8);
         byte[] timestampBytes;
-        byte[] sizeBytes;
 
         try {
-            protocolVersionBytes = Util.floatToByteArray(protocolVersion);
-            timestampBytes = Util.longToByteArray(timestamp);
-            sizeBytes = Util.intToByteArray(size);
+            timestampBytes = Converters.longToByteArray(this.timestamp);
         } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+            this.logger.error("Error converting timestamp [" + this.timestamp + "] into byte array");
+            return new byte[0];
         }
 
-        int sizeAux = protocolVersionBytes.length + timestampBytes.length + sizeBytes.length + data.length;
+        int sizeAux = protocolVersionBytes.length + timestampBytes.length + this.data.length;
         byte[] dataBytes = new byte[sizeAux];
         int i = 0;
 
@@ -69,25 +80,20 @@ public class Transaction implements Serializable {
             dataBytes[i] = b;
             i++;
         }
-        for (byte b : sizeBytes) {
-            dataBytes[i] = b;
-            i++;
-        }
-        for (byte b : data) {
+        for (byte b : this.data) {
             dataBytes[i] = b;
             i++;
         }
 
-        if (i != sizeAux) {
-            // TODO: ERROR
-            System.out.println("THIS SHOULDN'T RUN");
-            return null;
-        }
+        if (i != sizeAux)
+            // THIS SHOULDN'T RUN
+            return new byte[0];
 
         return dataBytes;
     }
 
     /* Getters */
+
     /**
      * Gets Epoch time of when a transaction was created.
      *
@@ -107,40 +113,52 @@ public class Transaction implements Serializable {
     }
 
     /**
-     * Gets the size of a transaction in Bytes.
+     * Calculates the size of a transaction in Bytes.
      *
      * @return the size (int)
      */
     public int getSize() {
-        return size;
+        return Long.BYTES + this.data.length + this.protocolVersion.getBytes(StandardCharsets.UTF_8).length;
     }
 
     /**
-     * Gets the hash of the transaction ( SHA3_512(RIPEMD160(TX)) ).
+     * Calculates the hash of the transaction.
+     * To calculate the hash of a transaction, we double hash all it's attributes.
+     * <p>
+     * SHA3_512(RIPEMD160(blockHeader))
+     * <p>
+     * Will return byte[0] if error occurred while calculating hash.
      *
-     * @return the hash (byte[])
+     * @return the block hash (byte[])
      */
     public byte[] getHash() {
-        return hash;
+        byte[] dataBytes = this.getDataBytes();
+        byte[] aux = new byte[0];
+
+        if (Arrays.equals(dataBytes, aux)) {
+            return aux;
+        }
+
+        return Hash.calculateSHA3512RIPEMD160(dataBytes);
     }
 
     /**
      * Gets protocol version.
      *
-     * @return the protocol version
+     * @return the protocol version (String)
      */
-    public float getProtocolVersion() {
+    public String getProtocolVersion() {
         return protocolVersion;
     }
 
     @Override
     public String toString() {
         return "Transaction: {" + System.lineSeparator() +
-                "timestamp: " + timestamp + System.lineSeparator() +
-                "data: " + Base64.toBase64String(data) + System.lineSeparator() +
-                "size: " + size + System.lineSeparator() +
-                "protocol version: " + protocolVersion + System.lineSeparator() +
-                "hash: " + Base64.toBase64String(hash) + System.lineSeparator() +
+                "timestamp: " + this.timestamp + System.lineSeparator() +
+                "data: " + Base64.toBase64String(this.data) + System.lineSeparator() +
+                "size: " + this.getSize() + System.lineSeparator() +
+                "protocol version: " + this.protocolVersion + System.lineSeparator() +
+                "hash: " + Base64.toBase64String(this.getHash()) + System.lineSeparator() +
                 "}" + System.lineSeparator();
     }
 }

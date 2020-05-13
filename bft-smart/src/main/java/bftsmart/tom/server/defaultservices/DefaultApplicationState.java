@@ -29,7 +29,7 @@ import java.util.Set;
  * This class represents a state transfered from a replica to another. The state associated with the last
  * checkpoint together with all the batches of messages received do far, comprises the sender's
  * current state
- *
+ * 
  * @author Joao Sousa
  */
 public class DefaultApplicationState implements ApplicationState {
@@ -44,7 +44,7 @@ public class DefaultApplicationState implements ApplicationState {
     private CommandsInfo[] messageBatches; // batches received since the last checkpoint.
     private int lastCheckpointCID; // Consensus ID for the last checkpoint
     private byte[] logHash;
-
+    
     private int pid;
 
     /**
@@ -55,7 +55,7 @@ public class DefaultApplicationState implements ApplicationState {
      * @param stateHash Hash of the state associated with the last checkpoint
      */
     public DefaultApplicationState(CommandsInfo[] messageBatches, int lastCheckpointCID, int lastCID, byte[] state, byte[] stateHash, int pid) {
-
+       
         this.messageBatches = messageBatches; // batches received since the last checkpoint.
         this.lastCheckpointCID = lastCheckpointCID; // Consensus ID for the last checkpoint
         this.lastCID = lastCID; // Consensus ID for the last messages batch delivered to the application
@@ -83,8 +83,8 @@ public class DefaultApplicationState implements ApplicationState {
         this.hasState = false;
         this.pid = -1;
     }
-
-
+    
+    
     @Override
     public void setSerializedState(byte[] state) {
         this.state = state;
@@ -94,7 +94,7 @@ public class DefaultApplicationState implements ApplicationState {
     public byte[] getSerializedState() {
         return state;
     }
-
+      
     /**
      * Indicates if the TransferableState object has a valid state
      * @return true if it has a valid state, false otherwise
@@ -113,7 +113,7 @@ public class DefaultApplicationState implements ApplicationState {
     public int getLastCID() {
         return lastCID;
     }
-
+    
     /**
      * Retrieves the certified decision for the last consensus present in this object
      * @param controller
@@ -123,22 +123,22 @@ public class DefaultApplicationState implements ApplicationState {
     public CertifiedDecision getCertifiedDecision(ServerViewController controller) {
         CommandsInfo ci = getMessageBatch(getLastCID());
         if (ci != null && ci.msgCtx[0].getProof() != null) { // do I have a proof for the consensus?
-
+            
             Set<ConsensusMessage> proof = ci.msgCtx[0].getProof();
             LinkedList<TOMMessage> requests = new LinkedList<>();
-
+            
             //Recreate all TOMMessages ordered in the consensus
             for (int i = 0; i < ci.commands.length; i++) {
-
+                
                 requests.add(ci.msgCtx[i].recreateTOMMessage(ci.commands[i]));
-
+                
             }
-
+            
             //Serialize the TOMMessages to re-create the proposed value
             BatchBuilder bb = new BatchBuilder(0);
             byte[] value = bb.makeBatch(requests, ci.msgCtx[0].getNumOfNonces(),
                     ci.msgCtx[0].getSeed(), ci.msgCtx[0].getTimestamp(), controller.getStaticConf().getUseSignatures() == 1);
-
+            
             //Assemble and return the certified decision
             return new CertifiedDecision(pid, getLastCID(), value, proof);
         }
@@ -169,7 +169,7 @@ public class DefaultApplicationState implements ApplicationState {
     public void setState(byte[] state) {
         this.state = state;
     }
-
+    
     /**
      * Retrieves all batches of messages
      * @return Batch of messages
@@ -221,9 +221,9 @@ public class DefaultApplicationState implements ApplicationState {
                     //System.out.println("[DefaultApplicationState] returing FALSE2!");
                     return false;
                 }
-
+                
                 for (int i = 0; i < this.messageBatches.length; i++) {
-
+                    
                     if (this.messageBatches[i] == null && tState.messageBatches[i] != null) {
                         //System.out.println("[DefaultApplicationState] returing FALSE3!");
                         return false;
@@ -233,7 +233,7 @@ public class DefaultApplicationState implements ApplicationState {
                         //System.out.println("[DefaultApplicationState] returing FALSE4!");
                         return false;
                     }
-
+                    
                     if (!(this.messageBatches[i] == null && tState.messageBatches[i] == null) &&
                         (!this.messageBatches[i].equals(tState.messageBatches[i]))) {
                         //System.out.println("[DefaultApplicationState] returing FALSE5!" + (this.messageBatches[i] == null) + " " + (tState.messageBatches[i] == null));

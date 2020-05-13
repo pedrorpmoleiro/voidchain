@@ -19,6 +19,7 @@ package bftsmart.tom.core;
 import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignedObject;
 import java.util.concurrent.locks.Condition;
@@ -44,6 +45,10 @@ import bftsmart.tom.server.RequestVerifier;
 import bftsmart.tom.util.BatchBuilder;
 import bftsmart.tom.util.BatchReader;
 import bftsmart.tom.util.TOMUtil;
+
+import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.CountDownLatch;
@@ -76,6 +81,11 @@ public final class TOMLayer extends Thread implements RequestReceiver {
      * Manage timers for pending requests
      */
     public RequestsTimer requestsTimer;
+    
+    //timeout for batch
+    private Timer batchTimer = null;
+    private long lastRequest = -1;
+    
     /**
      * Store requests received but still not ordered
      */
@@ -102,7 +112,9 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     private ReentrantLock proposeLock = new ReentrantLock();
     private Condition canPropose = proposeLock.newCondition();
 
-    private PrivateKey prk;
+    private PrivateKey privateKey;
+    private HashMap<Integer, PublicKey> publicKey;
+    
     public ServerViewController controller;
 
     private RequestVerifier verifier;
@@ -135,6 +147,13 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         this.communication = cs;
         this.controller = controller;
         
+        /*Tulio Ribeiro*/
+        this.privateKey = this.controller.getStaticConf().getPrivateKey();
+        this.publicKey = new HashMap<>();
+        int [] targets  = this.controller.getCurrentViewAcceptors();
+        for (int i = 0; i < targets.length; i++) {
+            publicKey.put(targets[i], controller.getStaticConf().getPublicKey(targets[i]));
+        }
         // use either the same number of Netty workers threads if specified in the configuration
         // or use a many as the number of cores available
         int nWorkers = this.controller.getStaticConf().getNumNettyWorkers();
@@ -147,7 +166,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         } else {
             this.requestsTimer = new RequestsTimer(this, communication, this.controller); // Create requests timers manager (a thread)
         }
-
+        
         try {
             this.md = TOMUtil.getHashEngine();
         } catch (Exception e) {
@@ -160,7 +179,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             logger.error("Failed to get signature engine",e);
         }
 
-        this.prk = this.controller.getStaticConf().getPrivateKey();
         this.dt = new DeliveryThread(this, receiver, recoverer, this.controller); // Create delivery thread
         this.dt.start();
         this.stateManager = recoverer.getStateManager();
@@ -172,6 +190,24 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         this.clientsManager = new ClientsManager(this.controller, requestsTimer, this.verifier);
 
         this.syncher = new Synchronizer(this); // create synchronizer
+        
+        if (controller.getStaticConf().getBatchTimeout() > -1) {
+
+            batchTimer = new Timer();
+            batchTimer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+
+                    if (clientsManager.havePendingRequests() && 
+                            (System.currentTimeMillis() - lastRequest) >= controller.getStaticConf().getBatchTimeout()) {
+
+                        logger.debug("Signaling proposer thread!!");
+                        haveMessages();
+                    }
+                }
+
+            }, 0, controller.getStaticConf().getBatchTimeout());
+        }
     }
 
     /**
@@ -191,7 +227,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
     public SignedObject sign(Serializable obj) {
         try {
-            return new SignedObject(obj, prk, engine);
+            return new SignedObject(obj, privateKey, engine);
         } catch (Exception e) {
             logger.error("Failed to sign object",e);
             return null;
@@ -207,7 +243,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
      */
     public boolean verifySignature(SignedObject so, int sender) {
         try {
-            return so.verify(controller.getStaticConf().getPublicKey(sender), engine);
+            return so.verify(publicKey.get(sender), engine);
         } catch (Exception e) {
             logger.error("Failed to verify object signature",e);
         }
@@ -235,6 +271,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
      * @param last ID of the consensus which was last to be executed
      */
     public void setLastExec(int last) {
+        logger.debug("Setting last exec to " + last);
         this.lastExecuted = last;
     }
 
@@ -304,7 +341,21 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             logger.debug("Received TOMMessage from client " + msg.getSender() + " with sequence number " + msg.getSequence() + " for session " + msg.getSession());
 
             if (clientsManager.requestReceived(msg, true, communication)) {
-                haveMessages();
+                
+                if(controller.getStaticConf().getBatchTimeout() == -1) {
+                    haveMessages();
+                } else {
+                    
+                    if (clientsManager.countPendingRequests() < controller.getStaticConf().getMaxBatchSize()) {
+                        
+                        lastRequest = System.currentTimeMillis();
+                                                
+                    } else {
+                        
+                        haveMessages();
+                    }
+                    
+                }
             } else {
                 logger.warn("The received TOMMessage " + msg + " was discarded.");
             }
@@ -321,6 +372,8 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     public byte[] createPropose(Decision dec) {
         // Retrieve a set of pending requests from the clients manager
         RequestList pendingRequests = clientsManager.getPendingRequests();
+        
+        logger.debug("Number of pending requets to propose in consensus {}: {}", dec.getConsensusId(), pendingRequests.size());
 
         int numberOfMessages = pendingRequests.size(); // number of messages retrieved
         int numberOfNonces = this.controller.getStaticConf().getNumberOfNonces(); // ammount of nonces to be generated
@@ -376,16 +429,20 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
             // blocks until there are requests to be processed/ordered
             messagesLock.lock();
-            if (!clientsManager.havePendingRequests()) {
+            if (!clientsManager.havePendingRequests() ||
+                    (controller.getStaticConf().getBatchTimeout() > -1 
+                    		&& clientsManager.countPendingRequests() < controller.getStaticConf().getMaxBatchSize())) {
+                
+                logger.debug("Waiting for enough requests");
                 haveMessages.awaitUninterruptibly();
+                logger.debug("Got enough requests");
             }
             messagesLock.unlock();
             
             if (!doWork) break;
             
-            logger.debug("There are messages to be ordered.");
+            logger.debug("There are requests to be ordered. I will propose.");
 
-            logger.debug("I can try to propose.");
 
             if ((execManager.getCurrentLeader() == this.controller.getStaticConf().getProcessId()) && //I'm the leader
                     (clientsManager.havePendingRequests()) && //there are messages to be ordered

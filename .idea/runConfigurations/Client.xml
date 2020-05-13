@@ -1,11 +1,11 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Client" type="Application" factoryName="Application" nameIsGenerated="true">
-    <option name="MAIN_CLASS_NAME" value="pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.client.Client" />
+    <option name="MAIN_CLASS_NAME" value="pt.ipleiria.estg.dei.pi.voidchain.client.Client" />
     <module name="voidchain" />
     <option name="PROGRAM_PARAMETERS" value="8" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.client.Client" />
+        <option name="PATTERN" value="pt.ipleiria.estg.dei.pi.voidchain.client.Client" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

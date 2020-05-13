@@ -236,7 +236,7 @@
     <mkdir dir="bin"/>
     <jar destfile="bin/client.jar" basedir="target/classes">
       <manifest>
-        <attribute name="Main-Class" value="pt.ipleiria.estg.dei.pi.voidchain.demo.blockchain.client.Client"/>
+        <attribute name="Main-Class" value="pt.ipleiria.estg.dei.pi.voidchain.client.Client"/>
       </manifest>
     </jar>
   </target>
