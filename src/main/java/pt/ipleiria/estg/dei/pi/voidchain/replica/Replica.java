@@ -238,4 +238,9 @@ public class Replica extends DefaultSingleRecoverable {
 
         return reply;
     }
+
+    @Override
+    public void Op(int CID, byte[] requests, MessageContext msgCtx) {
+        // TODO: ANALYZE
+    }
 }

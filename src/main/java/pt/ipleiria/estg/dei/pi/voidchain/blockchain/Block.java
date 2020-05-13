@@ -203,7 +203,7 @@ public class Block implements Serializable {
     public boolean toDisk() {
         Configuration config = Configuration.getInstance();
 
-        return Storage.writeToDiskCompressed(this, config.getBlockFileDirectory(),
+        return Storage.writeObjectToDisk(this, config.getBlockFileDirectory(),
                 config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + this.blockHeight +
                         config.getBlockFileExtensionSeparator() + config.getBlockFileExtension());
     }
@@ -219,7 +219,7 @@ public class Block implements Serializable {
     public static Block fromDisk(int blockHeight) {
         try {
             Configuration config = Configuration.getInstance();
-            return (Block) Storage.readFromDiskCompressed(config.getBlockFileDirectory() +
+            return (Block) Storage.readObjectFromDisk(config.getBlockFileDirectory() +
                     config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + blockHeight +
                     config.getBlockFileExtensionSeparator() + config.getBlockFileExtension());
         } catch (IOException | ClassNotFoundException e) {

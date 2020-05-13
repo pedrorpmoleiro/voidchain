@@ -14,7 +14,7 @@ public class Storage {
     private static Logger logger = LoggerFactory.getLogger(Storage.class.getName());
 
     // TODO: IMPROVE
-    public static boolean writeToDiskCompressed(Object object, String fileDirectory, String fileName) {
+    public static boolean writeObjectToDisk(Object object, String fileDirectory, String fileName) {
         Path pD = Paths.get(fileDirectory);
 
         try {
@@ -25,8 +25,8 @@ public class Storage {
             e.printStackTrace();
         }
 
-        try (ObjectOutputStream oos = new ObjectOutputStream(new DeflaterOutputStream(new FileOutputStream(
-                fileDirectory + fileName, false)))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(
+                fileDirectory + fileName, false))) {
             oos.writeObject(object);
         } catch (IOException e) {
             logger.error("Error while writing '" + fileName + "' to disk", e);
@@ -36,8 +36,8 @@ public class Storage {
         return true;
     }
 
-    public static Object readFromDiskCompressed(String fileName) throws IOException, ClassNotFoundException {
-        ObjectInputStream ois = new ObjectInputStream(new InflaterInputStream(new FileInputStream(fileName)));
+    public static Object readObjectFromDisk(String fileName) throws IOException, ClassNotFoundException {
+        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName));
 
         return ois.readObject();
     }

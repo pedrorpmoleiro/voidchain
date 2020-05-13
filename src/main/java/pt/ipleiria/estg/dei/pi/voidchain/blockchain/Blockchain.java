@@ -1,6 +1,5 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
-import bftsmart.reconfiguration.util.HostsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +67,7 @@ public class Blockchain implements Serializable {
                     if (currentFileBlockHeight > previousFileBlockHeight) {
                         previousFileBlockHeight = currentFileBlockHeight;
                         try {
-                            blocksDisk.add(0, (Block) Storage.readFromDiskCompressed(blockFile.getAbsolutePath()));
+                            blocksDisk.add(0, (Block) Storage.readObjectFromDisk(blockFile.getAbsolutePath()));
                         } catch (IOException | ClassNotFoundException e) {
                             logger.error("Error loading block from disk", e);
                             continue;
@@ -245,7 +244,7 @@ public class Blockchain implements Serializable {
         for (File f : blockFiles) {
             if (f.getName().equals(wantedFile)) {
                 try {
-                    return (Block) Storage.readFromDiskCompressed(f.getName());
+                    return (Block) Storage.readObjectFromDisk(f.getName());
                 } catch (IOException | ClassNotFoundException e) {
                     logger.error("Error getting block " + blockHeight + " from disk", e);
 

@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.StringTokenizer;
 
+// TODO: RESET METHOD
 public class Configuration {
     private static Configuration INSTANCE = null;
 
