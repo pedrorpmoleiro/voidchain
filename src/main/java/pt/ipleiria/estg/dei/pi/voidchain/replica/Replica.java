@@ -38,7 +38,7 @@ public class Replica extends DefaultSingleRecoverable {
     private final List<Transaction> transactionPool;
 
     public Replica(int id) {
-        this.blockchain = new Blockchain();
+        this.blockchain = Blockchain.getInstance();
         this.transactionPool = new ArrayList<>();
 
         new ServiceReplica(id, this, this);
@@ -157,6 +157,11 @@ public class Replica extends DefaultSingleRecoverable {
         return execute(command, msgCtx, true);
     }
 
+    @Override
+    public byte[] appExecuteUnordered(byte[] command, MessageContext msgCtx) {
+        return execute(command, msgCtx, false);
+    }
+
     private byte[] execute(byte[] command, MessageContext msgCtx, boolean ordered) {
         byte[] reply = null;
         boolean hasReply = false;
@@ -232,10 +237,5 @@ public class Replica extends DefaultSingleRecoverable {
         }
 
         return reply;
-    }
-
-    @Override
-    public byte[] appExecuteUnordered(byte[] command, MessageContext msgCtx) {
-        return execute(command, msgCtx, false);
     }
 }

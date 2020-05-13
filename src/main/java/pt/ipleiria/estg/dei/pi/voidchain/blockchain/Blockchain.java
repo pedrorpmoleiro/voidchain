@@ -31,7 +31,7 @@ public class Blockchain implements Serializable {
      * Instantiates the Blockchain data structure.
      * Keep in mind that can only exist a valid "chain".
      */
-    public Blockchain() {
+    private Blockchain() {
         Block genesisBlock = new Block(GENESIS_STRING.getBytes(StandardCharsets.UTF_8));
         genesisBlock.toDisk();
 
@@ -45,6 +45,7 @@ public class Blockchain implements Serializable {
 
     /* Methods */
 
+    // TODO: BLOCK DATA VALIDATE
     public static Blockchain getInstance() {
         if (INSTANCE == null) {
             Configuration config = Configuration.getInstance();
@@ -52,8 +53,6 @@ public class Blockchain implements Serializable {
             File[] blockFiles = new File(config.getBlockFileDirectory()).listFiles();
             if (blockFiles != null) {
                 List<Block> blocksDisk = new ArrayList<>();
-                int b = blockFiles.length - 1;
-                int m = config.getNumBlockInMemory();
                 int previousFileBlockHeight = -1;
 
                 for (File blockFile : blockFiles) {

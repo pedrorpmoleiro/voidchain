@@ -1,15 +1,9 @@
 package pt.ipleiria.estg.dei.pi.voidchain;
 
-import org.bouncycastle.util.encoders.Base64;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
-import pt.ipleiria.estg.dei.pi.voidchain.util.MerkleTree;
-
-import javax.print.DocFlavor;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 
 public class TestingMain {
     public static void main(String[] args) {
@@ -38,11 +32,6 @@ public class TestingMain {
                 break;
             }
             block.toDisk();
-        }
-
-        for (int b = 0; b < BLOCK_COUNT + 1; b++) {
-            Block block = Block.fromDisk(b);
-            System.out.println(block.toString());
         }
     }
 }
