@@ -4,7 +4,7 @@
     <module name="voidchain" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="pt.ipleiria.estg.dei.pi.voidchain.replica.*" />
+        <option name="PATTERN" value="pt.ipleiria.estg.dei.pi.voidchain.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
