@@ -1,6 +1,5 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
-import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
 import org.bouncycastle.util.encoders.Base64;
 
 import org.slf4j.Logger;
@@ -10,7 +9,6 @@ import pt.ipleiria.estg.dei.pi.voidchain.util.*;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -24,33 +22,13 @@ import java.util.*;
  */
 public class Block implements Serializable {
     /* Attributes */
-    /**
-     * The constant DEFAULT_BLOCK.
-     * Represents a default block used as a return value in some methods.
-     */
-    public static final Block DEFAULT_BLOCK = new Block();
-
-    private static final Map<byte[], Transaction> EMPTY_MAP = new Hashtable<>();
-    private static final List<Transaction> EMPTY_LIST = new ArrayList<>();
     private static final Logger logger = LoggerFactory.getLogger(Block.class.getName());
 
-    // TODO: CHANGE HASHTABLE (TREE_SET)
-    private final Map<byte[], Transaction> transactions;
+    // TODO: CHANGE HASHTABLE (TREE_SET) ?
+    private Map<byte[], Transaction> transactions;
     private final BlockHeader blockHeader;
     private int transactionCounter;
     private final int blockHeight;
-
-    // FOR USE WITH DEFAULT_BLOCK
-    // TODO: IS IT NECESSARY ?
-    private Block() {
-        String auxString = "DEFAULT BLOCK";
-        byte[] auxBytes = new byte[0];
-        this.blockHeader = new BlockHeader(auxString.getBytes(StandardCharsets.UTF_8), auxString, -1L,
-                auxBytes, auxBytes);
-        this.blockHeight = -1;
-        this.transactionCounter = -1;
-        this.transactions = new Hashtable<>();
-    }
 
     /**
      * Instantiates a new Genesis Block.
@@ -82,7 +60,7 @@ public class Block implements Serializable {
                  Map<byte[], Transaction> transactions, long timestamp, byte[] nonce) throws InstantiationException {
 
         byte[] merkleRoot;
-        if (transactions != EMPTY_MAP) {
+        if (transactions.size() != 0) {
             merkleRoot = MerkleTree.getMerkleRoot(transactions.keySet());
 
             // TODO: REVIEW
@@ -113,7 +91,7 @@ public class Block implements Serializable {
         this.transactions = new Hashtable<>(Converters.transactionListToMap(transactions));
 
         byte[] merkleRoot;
-        if (transactions != EMPTY_LIST) {
+        if (transactions.size() != 0) {
             merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
 
             // TODO: REVIEW
@@ -143,8 +121,17 @@ public class Block implements Serializable {
         // TODO: REVIEW
         if (Arrays.equals(this.blockHeader.merkleRoot, new byte[0])) {
             logger.error("Transactions added. Error occurred while calculating merkle tree root");
+
+            Block aux = Block.fromDisk(this.blockHeight);
+            this.transactionCounter = aux.transactionCounter;
+            this.transactions = aux.transactions;
+            this.blockHeader.merkleRoot = aux.blockHeader.merkleRoot;
+
             return false;
         }
+
+        // TODO: TO DISK
+        this.toDisk();
 
         return true;
     }
@@ -163,8 +150,17 @@ public class Block implements Serializable {
         // TODO: REVIEW
         if (Arrays.equals(this.blockHeader.merkleRoot, new byte[0])) {
             logger.error("Transactions added. Error occurred while calculating merkle tree root");
+
+            Block aux = Block.fromDisk(this.blockHeight);
+            this.transactionCounter = aux.transactionCounter;
+            this.transactions = aux.transactions;
+            this.blockHeader.merkleRoot = aux.blockHeader.merkleRoot;
+
             return false;
         }
+
+        // TODO: TO DISK
+        this.toDisk();
 
         return true;
     }
@@ -184,8 +180,17 @@ public class Block implements Serializable {
         // TODO: REVIEW
         if (Arrays.equals(this.blockHeader.merkleRoot, new byte[0])) {
             logger.error("Transactions added. Error occurred while calculating merkle tree root");
+
+            Block aux = Block.fromDisk(this.blockHeight);
+            this.transactionCounter = aux.transactionCounter;
+            this.transactions = aux.transactions;
+            this.blockHeader.merkleRoot = aux.blockHeader.merkleRoot;
+
             return false;
         }
+
+        // TODO: TO DISK
+        this.toDisk();
 
         return true;
     }
@@ -198,14 +203,15 @@ public class Block implements Serializable {
     public boolean toDisk() {
         Configuration config = Configuration.getInstance();
 
-        return Storage.writeToDiskCompressed(this, config.getBlockFileDirectory(), config.getBlockFileBaseName() +
-                this.blockHeight + config.getBlockFileExtension());
+        return Storage.writeToDiskCompressed(this, config.getBlockFileDirectory(),
+                config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + this.blockHeight +
+                        config.getBlockFileExtensionSeparator() + config.getBlockFileExtension());
     }
 
     /**
      * Loads block from disk.
      * <p>
-     * Will return DEFAULT_BLOCK upon block not found or error occurred while loading from disk
+     * Will return NULL upon block not found or error occurred while loading from disk
      *
      * @param blockHeight the block height of the wanted block
      * @return the block (Block)
@@ -213,13 +219,12 @@ public class Block implements Serializable {
     public static Block fromDisk(int blockHeight) {
         try {
             Configuration config = Configuration.getInstance();
-
-            return (Block) Storage.readFromDiskCompressed(config.getBlockFileDirectory() + config.getBlockFileBaseName() +
-                    blockHeight + config.getBlockFileExtension());
+            return (Block) Storage.readFromDiskCompressed(config.getBlockFileDirectory() +
+                    config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + blockHeight +
+                    config.getBlockFileExtensionSeparator() + config.getBlockFileExtension());
         } catch (IOException | ClassNotFoundException e) {
             logger.error("Error getting block " + blockHeight + " from disk", e);
-
-            return DEFAULT_BLOCK;
+            return null;
         }
     }
 
@@ -310,7 +315,7 @@ public class Block implements Serializable {
      *
      * @return the nonce (byte[])
      */
-// TODO: JAVADOC
+    // TODO: JAVADOC
     public byte[] getNonce() {
         return this.blockHeader.nonce;
     }

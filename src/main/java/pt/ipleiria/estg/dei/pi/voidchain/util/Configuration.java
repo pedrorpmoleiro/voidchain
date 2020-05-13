@@ -11,15 +11,14 @@ public class Configuration {
 
     public static final String CONFIG_FILE = "config" + File.separator + "voidchain.config";
 
-    public static final String DEFAULT_PROTOCOL_VERSION = "0.2";
-    public static final int DEFAULT_TRANSACTION_MAX_SIZE = 1024;
-    public static final int DEFAULT_NUM_TRANSACTIONS_BLOCK = 5;
+    public static final String DEFAULT_PROTOCOL_VERSION = "1.0";
+    public static final int DEFAULT_TRANSACTION_MAX_SIZE = 512000;
+    public static final int DEFAULT_NUM_TRANSACTIONS_BLOCK = 100;
 
-    public static final int DEFAULT_BLOCKS_MEMORY = 2;
-    public static final String DEFAULT_BLOCK_FILE_EXTENSION = ".dat";
+    public static final int DEFAULT_BLOCKS_MEMORY = 10;
+    public static final String DEFAULT_BLOCK_FILE_EXTENSION = "dat";
     public static final String DEFAULT_BLOCK_FILE_BASE_NAME = "block";
     public static final String DEFAULT_BLOCK_FILE_DIRECTORY = "data" + File.separator + "blocks";
-
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -29,7 +28,10 @@ public class Configuration {
 
     private int numBlockInMemory = DEFAULT_BLOCKS_MEMORY;
     private String blockFileExtension = DEFAULT_BLOCK_FILE_EXTENSION;
+    private final String blockFileExtensionSeparator = ".";
+    private final String blockFileExtensionSeparatorSplit = "\\.";
     private String blockFileBaseName = DEFAULT_BLOCK_FILE_BASE_NAME;
+    private final String blockFileBaseNameSeparator = "_";
     private String blockFileDirectory = DEFAULT_BLOCK_FILE_DIRECTORY;
 
     private Configuration() {
@@ -129,6 +131,14 @@ public class Configuration {
         return blockFileDirectory;
     }
 
+    public String getBlockFileExtensionSeparator() {
+        return blockFileExtensionSeparator;
+    }
+
+    public String getBlockFileBaseNameSeparator() {
+        return blockFileBaseNameSeparator;
+    }
+
     @Override
     public String toString() {
         return "Configuration: {" + System.lineSeparator() +
@@ -139,6 +149,12 @@ public class Configuration {
                 "block file extension: '" + blockFileExtension + '\'' + System.lineSeparator() +
                 "block file base name: '" + blockFileBaseName + '\'' + System.lineSeparator() +
                 "block file directory: '" + blockFileDirectory + '\'' + System.lineSeparator() +
+                "block file extension separator: '" + blockFileExtensionSeparator + '\'' + System.lineSeparator() +
+                "block file base name separator: '" + blockFileBaseNameSeparator + '\'' + System.lineSeparator() +
                 '}';
+    }
+
+    public String getBlockFileExtensionSeparatorSplit() {
+        return blockFileExtensionSeparatorSplit;
     }
 }

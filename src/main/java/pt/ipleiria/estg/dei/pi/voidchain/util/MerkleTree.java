@@ -20,9 +20,11 @@ public class MerkleTree {
     }
 
     public static ArrayList<byte[]> merkleTree(ArrayList<byte[]> hashList) throws RuntimeException {
-        if (hashList.size() == 1) {
+        if (hashList.size() == 0)
+            throw new IllegalArgumentException("Received Hash List is empty");
+
+        if (hashList.size() == 1)
             return hashList;
-        }
 
         ArrayList<byte[]> parentList = new ArrayList<>();
 

@@ -13,13 +13,17 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.client.Request;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 
 import java.io.*;
 import java.security.Security;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /*
     TODO: READ BELOW
+    BATCH EXECUTABLE ?
     API
     AUTOMATION OF MANAGEMENT OF THE BLOCKCHAIN:
         I.   COMMUNICATION BETWEEN REPLICAS (MAKE OWN SystemMessage)
@@ -28,11 +32,14 @@ import java.util.Arrays;
         IV.  VALIDATE BLOCKS
 */
 public class Replica extends DefaultSingleRecoverable {
-    private Blockchain blockchain;
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
+    private Blockchain blockchain;
+    private final List<Transaction> transactionPool;
 
     public Replica(int id) {
         this.blockchain = new Blockchain();
+        this.transactionPool = new ArrayList<>();
 
         new ServiceReplica(id, this, this);
     }
@@ -49,6 +56,56 @@ public class Replica extends DefaultSingleRecoverable {
 
         new Replica(Integer.parseInt(args[0]));
     }
+
+    // MEMORY POOL
+    private void processNewBlock() {
+        int transactionsPerBlock = Configuration.getInstance().getNumTransactionsInBlock();
+
+        if (this.transactionPool.size() < transactionsPerBlock) {
+            return;
+        }
+
+        List<Transaction> transactions = new ArrayList<>();
+
+        while (transactions.size() < transactionsPerBlock) {
+            transactions.add(this.transactionPool.get(0));
+            this.transactionPool.remove(0);
+        }
+
+        /*
+            TODO: TIMESTAMP & NONCE (?) & READ BELOW
+            REPLICAS SHOULD COMMUNICATE TO ADD NEW BLOCK
+            TIMESTAMP AND NONCE WOULD COME FROM MSGCTX
+        */
+
+        this.blockchain.createBlock(0, new byte[0], transactions);
+    }
+
+    public boolean addTransaction(Transaction transaction) {
+        int aux = this.transactionPool.size();
+        this.transactionPool.add(transaction);
+
+        if (aux == this.transactionPool.size() || (aux + 1) != this.transactionPool.size()) {
+            return false;
+        }
+
+        processNewBlock();
+        return true;
+    }
+
+    public boolean addTransactions(List<Transaction> transactions) {
+        int aux = this.transactionPool.size();
+        this.transactionPool.addAll(transactions);
+
+        if (aux == this.transactionPool.size() || (aux + transactions.size()) != this.transactionPool.size()) {
+            return false;
+        }
+
+        processNewBlock();
+        return true;
+    }
+
+    // END MEMORY POOL
 
     @Override
     public void installSnapshot(byte[] state) {

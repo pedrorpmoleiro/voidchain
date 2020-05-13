@@ -7,48 +7,42 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.MerkleTree;
 
+import javax.print.DocFlavor;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 public class TestingMain {
     public static void main(String[] args) {
-        Blockchain voidchain = new Blockchain();
+        Blockchain voidchain = Blockchain.getInstance();
 
         String protocolVersion = Configuration.getInstance().getProtocolVersion();
+        final int BLOCK_COUNT = 5;
+        final int TRANSACTION_COUNT = Configuration.getInstance().getNumTransactionsInBlock();
+        final int TRANSACTION_DATA_SIZE = Configuration.getInstance().getTransactionMaxSize() - 24;
 
-        Block block1 = voidchain.createBlock(0L, new byte[0]);
-        block1.addTransaction(new Transaction("TRANSACTION 1".getBytes(StandardCharsets.UTF_8), protocolVersion, 1L));
-        block1.addTransaction(new Transaction("TRANSACTION 2".getBytes(StandardCharsets.UTF_8), protocolVersion, 2L));
-        block1.addTransaction(new Transaction("TRANSACTION 3".getBytes(StandardCharsets.UTF_8), protocolVersion, 3L));
-        block1.addTransaction(new Transaction("TRANSACTION 4".getBytes(StandardCharsets.UTF_8), protocolVersion, 4L));
-        System.out.println("Transaction Count: " + block1.getTransactionCounter());
-        System.out.println("Merkle Root: " + Base64.toBase64String(MerkleTree.getMerkleRoot(block1.getTransactions().keySet())));
+        long timestamp = 1L;
+        final byte[] nonce = new byte[10];
+        final byte[] transactionData = new byte[TRANSACTION_DATA_SIZE];
 
-        System.out.println("----------------------------------------------------------------------");
+        for (int b = 0; b < BLOCK_COUNT; b++) {
+            Block block = voidchain.createBlock(timestamp, nonce);
+            timestamp += 1L;
+            for (int t = 0; t < TRANSACTION_COUNT; t++) {
+                Transaction transaction = new Transaction(transactionData, protocolVersion, timestamp);
+                // int size = transaction.getSize();
+                block.addTransaction(transaction);
+                timestamp += 1L;
+            }
+            if (block.getTransactionCounter() != TRANSACTION_COUNT) {
+                System.out.println("DIDN'T ADD ALL TRANSACTIONS");
+                break;
+            }
+            block.toDisk();
+        }
 
-        System.out.println("Original 1: " + block1.toString());
-        System.out.println("Clone of 1: " + block1.clone().toString());
-
-        System.out.println("----------------------------------------------------------------------");
-
-        block1.addTransaction(new Transaction("TRANSACTION 5".getBytes(StandardCharsets.UTF_8), protocolVersion, 5L));
-        var mapTransactions = block1.getTransactions();
-        System.out.println("Transaction Count: " + block1.getTransactionCounter());
-        System.out.println("Merkle Root: " + Base64.toBase64String(MerkleTree.getMerkleRoot(mapTransactions.keySet())));
-
-        Block block2 = voidchain.createBlock(6L, new byte[0], new ArrayList<>(mapTransactions.values()));
-        block2.addTransaction(new Transaction("TRANSACTION 6".getBytes(StandardCharsets.UTF_8), protocolVersion, 7L));
-        System.out.println("Transaction Count: " + block2.getTransactionCounter());
-        System.out.println("Merkle Root: " + Base64.toBase64String(MerkleTree.getMerkleRoot(block2.getTransactions().keySet())));
-
-        System.out.println("Is chain valid: " + voidchain.isChainValid());
-        System.out.println("ALTERING PREVIOUS BLOCK (ADD TRANSACTION)");
-        block1.addTransaction(new Transaction("TRANSACTION 7".getBytes(StandardCharsets.UTF_8), protocolVersion, 8L));
-        System.out.println("Is chain valid: " + voidchain.isChainValid());
-
-        block1.toDisk();
-        block2.toDisk();
-
-        voidchain.getBlock(4);
+        for (int b = 0; b < BLOCK_COUNT + 1; b++) {
+            Block block = Block.fromDisk(b);
+            System.out.println(block.toString());
+        }
     }
 }

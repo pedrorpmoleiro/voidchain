@@ -1,16 +1,13 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
+import bftsmart.reconfiguration.util.HostsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
 
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -21,33 +18,76 @@ import java.util.*;
  */
 public class Blockchain implements Serializable {
     /* Attributes */
-    // TODO: Stack OR MAYBE MAP (?)
+    // TODO: STACK OR MAYBE MAP (?)
     private final List<Block> blocks;
-    // TODO: MOVE TRANSACTION POOL TO REPLICA ?
-    private final List<Transaction> transactionPool;
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+    private static Blockchain INSTANCE = null;
+
+    private static final String GENESIS_STRING = "What to Know and What to Do About the Global Pandemic";
+
+    private static final Logger logger = LoggerFactory.getLogger(Blockchain.class.getName());
 
     /**
      * Instantiates the Blockchain data structure.
      * Keep in mind that can only exist a valid "chain".
      */
     public Blockchain() {
-        /*
-        var genesisBytes = "What to Know and What to Do About the Global Pandemic".getBytes(StandardCharsets.UTF_8);
-        RIPEMD160.Digest hash = new RIPEMD160.Digest();
-        Block genesisBlock = new Block(hash.digest(genesisBytes));
-        */
-
-        Block genesisBlock = new Block("What to Know and What to Do About the Global Pandemic".getBytes(StandardCharsets.UTF_8));
+        Block genesisBlock = new Block(GENESIS_STRING.getBytes(StandardCharsets.UTF_8));
+        genesisBlock.toDisk();
 
         this.blocks = new ArrayList<>();
         this.blocks.add(genesisBlock);
+    }
 
-        this.transactionPool = new ArrayList<>();
+    private Blockchain(List<Block> blocks) {
+        this.blocks = blocks;
     }
 
     /* Methods */
+
+    public static Blockchain getInstance() {
+        if (INSTANCE == null) {
+            Configuration config = Configuration.getInstance();
+
+            File[] blockFiles = new File(config.getBlockFileDirectory()).listFiles();
+            if (blockFiles != null) {
+                List<Block> blocksDisk = new ArrayList<>();
+                int b = blockFiles.length - 1;
+                int m = config.getNumBlockInMemory();
+                int previousFileBlockHeight = -1;
+
+                for (File blockFile : blockFiles) {
+                    String[] aux = blockFile.getName().split(config.getBlockFileBaseNameSeparator());
+
+                    if (!aux[0].equals(config.getBlockFileBaseName())) {
+                        continue;
+                    }
+
+                    String blockHeightString = aux[1].split(config.getBlockFileExtensionSeparatorSplit())[0];
+                    int currentFileBlockHeight = Integer.parseInt(blockHeightString);
+
+                    if (currentFileBlockHeight > previousFileBlockHeight) {
+                        previousFileBlockHeight = currentFileBlockHeight;
+                        try {
+                            blocksDisk.add(0, (Block) Storage.readFromDiskCompressed(blockFile.getAbsolutePath()));
+                        } catch (IOException | ClassNotFoundException e) {
+                            logger.error("Error loading block from disk", e);
+                            continue;
+                        }
+
+                        while (blocksDisk.size() > config.getNumBlockInMemory()) {
+                            blocksDisk.remove(blocksDisk.size() - 1);
+                        }
+                    }
+                }
+
+                INSTANCE = new Blockchain(blocksDisk);
+            } else
+                INSTANCE = new Blockchain();
+        }
+
+        return INSTANCE;
+    }
 
     /**
      * Tests if this blockchain is a valid blockchain.
@@ -64,11 +104,14 @@ public class Blockchain implements Serializable {
 
     /**
      * Creates a new block, then adds it to the chain.
+     * <p>
+     * Will return NULL if error occured while creating the block.
      *
      * @param timestamp the timestamp (long)
      * @param nonce     the nonce (byte[])
      * @return the newly created block
      */
+    // TODO: REMOVE ?
     public Block createBlock(long timestamp, byte[] nonce) {
         try {
             Block auxBlock = this.getCurrentBlock();
@@ -77,16 +120,27 @@ public class Blockchain implements Serializable {
                     auxBlock.getBlockHeight() + 1, new Hashtable<>(), timestamp, nonce);
 
             this.blocks.add(0, block);
+
+            // TODO: TO DISK
+            block.toDisk();
+
+            // TODO: ONLY X BLOCKS IN MEMORY
+            while (this.blocks.size() > Configuration.getInstance().getNumBlockInMemory()) {
+                this.blocks.remove(this.blocks.size() - 1);
+            }
+
             return block;
 
         } catch (InstantiationException e) {
             logger.error("Error occurred while creating new block", e);
-            return Block.DEFAULT_BLOCK;
+            return null;
         }
     }
 
     /**
      * Creates a new block, with predefined transactions, then adds it to the chain.
+     * <p>
+     * Will return NULL if error occured while creating the block.
      *
      * @param timestamp    the timestamp (long)
      * @param nonce        the nonce (byte[])
@@ -101,15 +155,27 @@ public class Blockchain implements Serializable {
                     transactions, timestamp, nonce);
 
             this.blocks.add(0, block);
+
+            // TODO: TO DISK
+            block.toDisk();
+
+            // TODO: ONLY X BLOCKS IN MEMORY
+            while (this.blocks.size() > Configuration.getInstance().getNumBlockInMemory()) {
+                this.blocks.remove(this.blocks.size() - 1);
+            }
+
             return block;
+
         } catch (InstantiationException e) {
             logger.error("Error occurred while creating new block", e);
-            return Block.DEFAULT_BLOCK;
+            return null;
         }
     }
 
     /**
      * Creates a new block, with predefined transactions, then adds it to the chain.
+     * <p>
+     * Will return NULL if error occured while creating the block.
      *
      * @param timestamp    the timestamp (long)
      * @param nonce        the nonce (byte[])
@@ -125,58 +191,21 @@ public class Blockchain implements Serializable {
                     transactions, timestamp, nonce);
 
             this.blocks.add(0, block);
+
+            // TODO: TO DISK
+            block.toDisk();
+
+            // TODO: ONLY X BLOCKS IN MEMORY
+            while (this.blocks.size() > Configuration.getInstance().getNumBlockInMemory()) {
+                this.blocks.remove(this.blocks.size() - 1);
+            }
+
             return block;
+
         } catch (InstantiationException e) {
             logger.error("Error occurred while creating new block", e);
-            return Block.DEFAULT_BLOCK;
+            return null;
         }
-    }
-
-    private void processNewBlock() {
-        int transactionsPerBlock = Configuration.getInstance().getNumTransactionsInBlock();
-
-        if (this.transactionPool.size() < transactionsPerBlock) {
-            return;
-        }
-
-        List<Transaction> transactions = new ArrayList<>();
-
-        while (transactions.size() < transactionsPerBlock) {
-            transactions.add(this.transactionPool.get(0));
-            this.transactionPool.remove(0);
-        }
-
-        /*
-            TODO: TIMESTAMP & NONCE (?) & READ BELOW
-            REPLICAS SHOULD COMMUNICATE TO ADD NEW BLOCK
-            TIMESTAMP AND NONCE WOULD COME FROM MSGCTX
-        */
-
-        this.createBlock(0, new byte[0], transactions);
-    }
-
-    public boolean addTransaction(Transaction transaction) {
-        int aux = this.transactionPool.size();
-        this.transactionPool.add(transaction);
-
-        if (aux == this.transactionPool.size() || (aux + 1) != this.transactionPool.size()) {
-            return false;
-        }
-
-        processNewBlock();
-        return true;
-    }
-
-    public boolean addTransactions(List<Transaction> transactions) {
-        int aux = this.transactionPool.size();
-        this.transactionPool.addAll(transactions);
-
-        if (aux == this.transactionPool.size() || (aux + transactions.size()) != this.transactionPool.size()) {
-            return false;
-        }
-
-        processNewBlock();
-        return true;
     }
 
     /* Getters */
@@ -192,7 +221,7 @@ public class Blockchain implements Serializable {
 
     /**
      * Gets block, with defined block height, from memory or disk.
-     * Will return DEFAULT_BLOCK if error occured while loading the block from disk.
+     * Will return NULL if error occured while loading the block from disk.
      *
      * @param blockHeight the block height
      * @return the block
@@ -221,12 +250,12 @@ public class Blockchain implements Serializable {
                 } catch (IOException | ClassNotFoundException e) {
                     logger.error("Error getting block " + blockHeight + " from disk", e);
 
-                    return Block.DEFAULT_BLOCK;
+                    return null;
                 }
             }
         }
 
-        throw new NoSuchElementException("Block doesn't exist");
+        throw new NoSuchElementException("Requested block doesn't exist");
     }
 
     @Override
