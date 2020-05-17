@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.StringTokenizer;
 
-// TODO: RESET METHOD
+// TODO: RESET METHOD MOVE FILES IF DIRECTORY IS CHANGED ?
 public class Configuration {
     private static Configuration INSTANCE = null;
 
@@ -36,6 +36,18 @@ public class Configuration {
     private String blockFileDirectory = DEFAULT_BLOCK_FILE_DIRECTORY;
 
     private Configuration() {
+        this.reloadConfigurationFromDisk();
+    }
+
+    public static Configuration getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new Configuration();
+        }
+
+        return INSTANCE;
+    }
+
+    public void reloadConfigurationFromDisk() {
         try {
             FileReader fr = new FileReader(CONFIG_FILE);
             BufferedReader rd = new BufferedReader(fr);
@@ -94,14 +106,6 @@ public class Configuration {
         } catch (IOException e) {
             this.logger.error("Could not load configuration", e);
         }
-    }
-
-    public static Configuration getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new Configuration();
-        }
-
-        return INSTANCE;
     }
 
     public String getProtocolVersion() {
