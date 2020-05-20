@@ -13,7 +13,6 @@ import java.util.zip.InflaterInputStream;
 public class Storage {
     private static Logger logger = LoggerFactory.getLogger(Storage.class.getName());
 
-    // TODO: IMPROVE
     public static boolean writeObjectToDisk(Object object, String fileDirectory, String fileName) {
         Path pD = Paths.get(fileDirectory);
 

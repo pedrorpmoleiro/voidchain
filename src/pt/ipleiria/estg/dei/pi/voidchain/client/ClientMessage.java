@@ -3,25 +3,19 @@ package pt.ipleiria.estg.dei.pi.voidchain.client;
 import java.io.Serializable;
 
 /*
-    TODO: READ BELOW
-    USE SEQUENCIAL 'WRITES' INSTEAD OF THIS
-    SHOULD BE DEPRECATED / DELETED
-    TODO: REQUEST TYPE ENUM
+    TODO: REQUEST TYPE ENUM ?
 */
-public class Request implements Serializable {
+public class ClientMessage implements Serializable {
     private final int req;
-    private final boolean hasData;
     private final byte[] data;
 
-    public Request(int req) {
+    public ClientMessage(int req) {
         this.req = req;
-        this.hasData = false;
         this.data = null;
     }
 
-    public Request(int req, byte[] data) {
+    public ClientMessage(int req, byte[] data) {
         this.req = req;
-        this.hasData = true;
         this.data = data;
     }
 
@@ -30,7 +24,7 @@ public class Request implements Serializable {
     }
 
     public boolean hasData() {
-        return hasData;
+        return this.data != null;
     }
 
     public byte[] getData() {

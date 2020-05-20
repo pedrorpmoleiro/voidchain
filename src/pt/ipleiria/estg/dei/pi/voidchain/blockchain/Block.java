@@ -24,7 +24,7 @@ public class Block implements Serializable {
     /* Attributes */
     private static final Logger logger = LoggerFactory.getLogger(Block.class.getName());
 
-    // TODO: CHANGE HASHTABLE (TREE_SET) ?
+    // TODO: CHANGE HASHTABLE (TREE_MAP) ?
     private Map<byte[], Transaction> transactions;
     private final BlockHeader blockHeader;
     private int transactionCounter;
@@ -130,7 +130,6 @@ public class Block implements Serializable {
             return false;
         }
 
-        // TODO: TO DISK
         this.toDisk();
 
         return true;
@@ -159,7 +158,6 @@ public class Block implements Serializable {
             return false;
         }
 
-        // TODO: TO DISK
         this.toDisk();
 
         return true;
@@ -189,7 +187,6 @@ public class Block implements Serializable {
             return false;
         }
 
-        // TODO: TO DISK
         this.toDisk();
 
         return true;
@@ -311,11 +308,10 @@ public class Block implements Serializable {
     }
 
     /**
-     * Gets nonce, a random int, from the block header.
+     * Gets nonce, a random byte array, from the block header.
      *
      * @return the nonce (byte[])
      */
-    // TODO: JAVADOC
     public byte[] getNonce() {
         return this.blockHeader.nonce;
     }

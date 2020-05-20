@@ -80,7 +80,7 @@ public class Client {
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                Request req = new Request(1);
+                ClientMessage req = new ClientMessage(1);
                 objOut.writeObject(req);
 
                 objOut.flush();
@@ -115,7 +115,7 @@ public class Client {
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                Request req = new Request(2);
+                ClientMessage req = new ClientMessage(2);
                 objOut.writeObject(req);
 
                 objOut.flush();
@@ -144,7 +144,7 @@ public class Client {
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                Request req = new Request(3);
+                ClientMessage req = new ClientMessage(3);
                 objOut.writeObject(req);
 
                 objOut.flush();
@@ -179,7 +179,7 @@ public class Client {
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                Request req = new Request(4);
+                ClientMessage req = new ClientMessage(4);
                 objOut.writeObject(req);
 
                 objOut.flush();
@@ -218,7 +218,7 @@ public class Client {
 
                 System.out.println("Data bytes: " + Base64.toBase64String(data));
 
-                Request req = new Request(5, data);
+                ClientMessage req = new ClientMessage(5, data);
                 objOut.writeObject(req);
 
                 objOut.flush();
@@ -264,7 +264,7 @@ public class Client {
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                Request req = new Request(6);
+                ClientMessage req = new ClientMessage(6);
                 objOut.writeObject(req);
 
                 objOut.flush();

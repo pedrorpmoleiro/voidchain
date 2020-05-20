@@ -42,6 +42,8 @@ public class Configuration {
     public static Configuration getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new Configuration();
+        } else {
+            INSTANCE.reloadConfigurationFromDisk();
         }
 
         return INSTANCE;

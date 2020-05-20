@@ -17,7 +17,8 @@ import java.util.*;
  */
 public class Blockchain implements Serializable {
     /* Attributes */
-    // TODO: STACK OR MAYBE MAP (?)
+    // TODO: ANALYZE
+    // ? STACK
     private final List<Block> blocks;
 
     private static Blockchain INSTANCE = null;
@@ -92,7 +93,8 @@ public class Blockchain implements Serializable {
      *
      * @return true if the block chain is valid or false otherwise
      */
-    // TODO: DOES IT WORK IF PREVIOUS PREVIOUS BLOCK ALTERED ?
+    // TODO: ANALYZE
+    // ? DOES IT WORK IF PREVIOUS PREVIOUS BLOCK ALTERED
     public boolean isChainValid() {
         Block currentBlock = this.getCurrentBlock();
         Block previousBlock = this.blocks.get(1);
@@ -114,16 +116,16 @@ public class Blockchain implements Serializable {
         try {
             Block auxBlock = this.getCurrentBlock();
 
-            Block block = new Block(auxBlock.getHash(), Configuration.getInstance().getProtocolVersion(),
+            Configuration config = Configuration.getInstance();
+
+            Block block = new Block(auxBlock.getHash(), config.getProtocolVersion(),
                     auxBlock.getBlockHeight() + 1, new Hashtable<>(), timestamp, nonce);
 
             this.blocks.add(0, block);
 
-            // TODO: TO DISK
             block.toDisk();
 
-            // TODO: ONLY X BLOCKS IN MEMORY
-            while (this.blocks.size() > Configuration.getInstance().getNumBlockInMemory()) {
+            while (this.blocks.size() > config.getNumBlockInMemory()) {
                 this.blocks.remove(this.blocks.size() - 1);
             }
 
@@ -147,18 +149,18 @@ public class Blockchain implements Serializable {
      */
     public Block createBlock(long timestamp, byte[] nonce, Map<byte[], Transaction> transactions) {
         try {
+            Configuration config = Configuration.getInstance();
+
             Block auxBlock = this.getCurrentBlock();
 
-            Block block = new Block(auxBlock.getHash(), Configuration.getInstance().getProtocolVersion(), auxBlock.getBlockHeight() + 1,
+            Block block = new Block(auxBlock.getHash(), config.getProtocolVersion(), auxBlock.getBlockHeight() + 1,
                     transactions, timestamp, nonce);
 
             this.blocks.add(0, block);
 
-            // TODO: TO DISK
             block.toDisk();
 
-            // TODO: ONLY X BLOCKS IN MEMORY
-            while (this.blocks.size() > Configuration.getInstance().getNumBlockInMemory()) {
+            while (this.blocks.size() > config.getNumBlockInMemory()) {
                 this.blocks.remove(this.blocks.size() - 1);
             }
 
@@ -190,10 +192,8 @@ public class Blockchain implements Serializable {
 
             this.blocks.add(0, block);
 
-            // TODO: TO DISK
             block.toDisk();
 
-            // TODO: ONLY X BLOCKS IN MEMORY
             while (this.blocks.size() > Configuration.getInstance().getNumBlockInMemory()) {
                 this.blocks.remove(this.blocks.size() - 1);
             }
@@ -203,6 +203,14 @@ public class Blockchain implements Serializable {
         } catch (InstantiationException e) {
             logger.error("Error occurred while creating new block", e);
             return null;
+        }
+    }
+
+    public void addBlock(Block block) {
+        this.blocks.add(0,block);
+        block.toDisk();
+        while (this.blocks.size() > Configuration.getInstance().getNumBlockInMemory()) {
+            this.blocks.remove(this.blocks.size() - 1);
         }
     }
 

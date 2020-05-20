@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
-import pt.ipleiria.estg.dei.pi.voidchain.client.Request;
+import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 
 import java.io.*;
@@ -20,15 +20,17 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 /*
     TODO: READ BELOW
-    BATCH EXECUTABLE ?
+    BATCH EXECUTABLE ? 🛑
     API
+    BLOCKS IN DISK SYNC
     AUTOMATION OF MANAGEMENT OF THE BLOCKCHAIN:
-        I.   COMMUNICATION BETWEEN REPLICAS (MAKE OWN SystemMessage)
-        II.  CREATE BLOCKS VIA TRANSACTION POOL
-        III. TRANSACTION POOL ON REPLICA (MOVE FROM BLOCKCHAIN (?)/CHANGE GET & INSTALL SNAPSHOT)
+        I.   COMMUNICATION BETWEEN REPLICAS (MAKE OWN SystemMessage) ❌
+        II.  CREATE BLOCKS VIA TRANSACTION POOL ✅
+        III. TRANSACTION POOL ON REPLICA (MOVE FROM BLOCKCHAIN (?)/CHANGE GET & INSTALL SNAPSHOT) ✅
         IV.  VALIDATE BLOCKS
 */
 public class Replica extends DefaultSingleRecoverable {
@@ -59,26 +61,65 @@ public class Replica extends DefaultSingleRecoverable {
 
     // MEMORY POOL
     private void processNewBlock() {
-        int transactionsPerBlock = Configuration.getInstance().getNumTransactionsInBlock();
+        Configuration config = Configuration.getInstance();
+
+        int transactionsPerBlock = config.getNumTransactionsInBlock();
 
         if (this.transactionPool.size() < transactionsPerBlock) {
             return;
         }
 
         List<Transaction> transactions = new ArrayList<>();
+        long timestamp = -1L;
 
         while (transactions.size() < transactionsPerBlock) {
-            transactions.add(this.transactionPool.get(0));
+            Transaction t = this.transactionPool.get(0);
+            transactions.add(t);
             this.transactionPool.remove(0);
+
+            if (t.getTimestamp() > timestamp)
+                timestamp = t.getTimestamp();
         }
 
         /*
-            TODO: TIMESTAMP & NONCE (?) & READ BELOW
-            REPLICAS SHOULD COMMUNICATE TO ADD NEW BLOCK
-            TIMESTAMP AND NONCE WOULD COME FROM MSGCTX
+            ! REPLICAS SHOULD COMMUNICATE TO ADD NEW BLOCK
         */
 
-        this.blockchain.createBlock(0, new byte[0], transactions);
+        Block previousBlock = this.blockchain.getCurrentBlock();
+        byte[] nonces = new byte[10];
+        new Random(timestamp).nextBytes(nonces);
+
+        byte[] blockBytes;
+        Block newBlock;
+
+        try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+             ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
+
+            newBlock = new Block(previousBlock.getPreviousBlockHash(), config.getProtocolVersion(),
+                    previousBlock.getBlockHeight() + 1, transactions, timestamp, nonces);
+
+            objOut.writeObject(newBlock);
+            objOut.flush();
+            byteOut.flush();
+
+            blockBytes = byteOut.toByteArray();
+
+        } catch (IOException | InstantiationException e) {
+            this.transactionPool.addAll(transactions);
+            e.printStackTrace();
+            return;
+        }
+
+        ReplicaMessage rm = new ReplicaMessage(this.replicaContext.getCurrentView().getId(),
+                ReplicaMessageType.NEW_BLOCK, blockBytes);
+
+        this.replicaContext.getServerCommunicationSystem().send(
+                this.replicaContext.getCurrentView().getProcesses(), rm);
+
+        logger.info("SENT MESSAGE TO ALL REPLICAS *****************************************************");
+        //
+
+        this.blockchain.addBlock(newBlock);
     }
 
     public boolean addTransaction(Transaction transaction) {
@@ -123,14 +164,6 @@ public class Replica extends DefaultSingleRecoverable {
             this.logger.error("Error installing snapshot", e);
             this.blockchain = aux;
         }
-
-        /*this.replicaContext.getServerCommunicationSystem().send(
-                this.replicaContext.getCurrentView().getProcesses(),
-                new TOMMessage(
-                        this.replicaContext.getCurrentView().getId(),
-                        this.replicaContext.getCurrentView().
-                )
-        );*/
     }
 
     @Override
@@ -171,7 +204,7 @@ public class Replica extends DefaultSingleRecoverable {
              ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
              ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-            Request input = (Request) objIn.readObject();
+            ClientMessage input = (ClientMessage) objIn.readObject();
 
             Block currentBlock = this.blockchain.getCurrentBlock();
 
@@ -205,8 +238,9 @@ public class Replica extends DefaultSingleRecoverable {
                                 objOut.writeUTF(e.getMessage());
                             }
 
-                            currentBlock.addTransaction(t);
-                            objOut.writeBoolean(true);
+                            //currentBlock.addTransaction(t);
+                            //objOut.writeBoolean(true);
+                            objOut.writeBoolean(addTransaction(t));
                         } else {
                             objOut.writeBoolean(false);
                             objOut.writeUTF("Transaction cannot be created without any data");
@@ -242,5 +276,6 @@ public class Replica extends DefaultSingleRecoverable {
     @Override
     public void Op(int CID, byte[] requests, MessageContext msgCtx) {
         // TODO: ANALYZE
+        int test = 0;
     }
 }
