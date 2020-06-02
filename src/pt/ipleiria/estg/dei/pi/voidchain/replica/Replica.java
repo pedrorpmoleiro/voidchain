@@ -24,7 +24,7 @@ import java.util.Random;
 
 /*
     TODO: READ BELOW
-    BATCH EXECUTABLE ? 🛑
+    ? BATCH EXECUTABLE 🛑
     API
     BLOCKS IN DISK SYNC
     AUTOMATION OF MANAGEMENT OF THE BLOCKCHAIN:
@@ -38,10 +38,14 @@ public class Replica extends DefaultSingleRecoverable {
 
     private Blockchain blockchain;
     private final List<Transaction> transactionPool;
+    private final ReplicaMessenger messenger;
+
+    private Block proposedBlock = null;
 
     public Replica(int id) {
         this.blockchain = Blockchain.getInstance();
         this.transactionPool = new ArrayList<>();
+        this.messenger = new ReplicaMessenger(id);
 
         new ServiceReplica(id, this, this);
     }
@@ -60,6 +64,10 @@ public class Replica extends DefaultSingleRecoverable {
     }
 
     // MEMORY POOL
+    private void createProposedBlock() {
+
+    }
+
     private void processNewBlock() {
         Configuration config = Configuration.getInstance();
 
@@ -81,45 +89,26 @@ public class Replica extends DefaultSingleRecoverable {
                 timestamp = t.getTimestamp();
         }
 
-        /*
-            ! REPLICAS SHOULD COMMUNICATE TO ADD NEW BLOCK
-        */
-
         Block previousBlock = this.blockchain.getCurrentBlock();
         byte[] nonces = new byte[10];
         new Random(timestamp).nextBytes(nonces);
 
-        byte[] blockBytes;
-        Block newBlock;
-
-        try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-             ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
-
-            newBlock = new Block(previousBlock.getPreviousBlockHash(), config.getProtocolVersion(),
+        try {
+            this.proposedBlock = new Block(previousBlock.getPreviousBlockHash(), config.getProtocolVersion(),
                     previousBlock.getBlockHeight() + 1, transactions, timestamp, nonces);
-
-            objOut.writeObject(newBlock);
-            objOut.flush();
-            byteOut.flush();
-
-            blockBytes = byteOut.toByteArray();
-
-        } catch (IOException | InstantiationException e) {
+        } catch (InstantiationException e) {
+            this.logger.error("Error creating new block instance", e);
             this.transactionPool.addAll(transactions);
-            e.printStackTrace();
             return;
         }
 
-        ReplicaMessage rm = new ReplicaMessage(this.replicaContext.getCurrentView().getId(),
-                ReplicaMessageType.NEW_BLOCK, blockBytes);
+        if (this.messenger.proposeBlock(this.proposedBlock)) {
+            this.blockchain.addBlock(this.proposedBlock);
+        } else {
+            this.transactionPool.addAll(transactions);
+        }
 
-        this.replicaContext.getServerCommunicationSystem().send(
-                this.replicaContext.getCurrentView().getProcesses(), rm);
-
-        logger.info("SENT MESSAGE TO ALL REPLICAS *****************************************************");
-        //
-
-        this.blockchain.addBlock(newBlock);
+        this.proposedBlock = null;
     }
 
     public boolean addTransaction(Transaction transaction) {
@@ -148,6 +137,7 @@ public class Replica extends DefaultSingleRecoverable {
 
     // END MEMORY POOL
 
+    // TODO BLOCK SYNC
     @Override
     public void installSnapshot(byte[] state) {
         if (Arrays.equals(state, new byte[0])) {
@@ -166,12 +156,13 @@ public class Replica extends DefaultSingleRecoverable {
         }
     }
 
+    // TODO BLOCK SYNC
     @Override
     public byte[] getSnapshot() {
         byte[] snapshot = new byte[0];
 
         try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-             ObjectOutput objOut = new ObjectOutputStream(  byteOut)) {
+             ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
             objOut.writeObject(this.blockchain);
             objOut.flush();
@@ -204,61 +195,89 @@ public class Replica extends DefaultSingleRecoverable {
              ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
              ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-            ClientMessage input = (ClientMessage) objIn.readObject();
+            Object input = objIn.readObject();
 
-            Block currentBlock = this.blockchain.getCurrentBlock();
+            if (input.getClass() == ClientMessage.class) {
+                Block currentBlock = this.blockchain.getCurrentBlock();
 
-            switch (input.getReq()) {
-                case 1:
-                    objOut.writeObject(currentBlock);
-                    hasReply = true;
-                    break;
-                case 2:
-                    objOut.write(currentBlock.getHash());
-                    hasReply = true;
-                    break;
-                case 3:
-                    objOut.writeInt(currentBlock.getBlockHeight());
-                    hasReply = true;
-                    break;
-                case 4:
-                    objOut.writeObject(currentBlock.getTransactions());
-                    hasReply = true;
-                    break;
-                case 5:
-                    if (ordered) {
-                        if (input.hasData()) {
-                            Transaction t = null;
-                            try {
-                                t = new Transaction(input.getData(), currentBlock.getProtocolVersion(),
-                                        msgCtx.getTimestamp());
-                            } catch (IllegalArgumentException e) {
-                                logger.error(e.getMessage(), e);
-                                objOut.writeBoolean(false);
-                                objOut.writeUTF(e.getMessage());
-                            }
+                ClientMessage req = (ClientMessage) input;
 
-                            //currentBlock.addTransaction(t);
-                            //objOut.writeBoolean(true);
-                            objOut.writeBoolean(addTransaction(t));
-                        } else {
-                            objOut.writeBoolean(false);
-                            objOut.writeUTF("Transaction cannot be created without any data");
-                        }
-
+                switch (req.getType()) {
+                    case 1:
+                        objOut.writeObject(currentBlock);
                         hasReply = true;
                         break;
-                    }
-                case 6:
-                    if (ordered) {
-                        this.blockchain.createBlock(msgCtx.getTimestamp(), msgCtx.getNonces());
-                        objOut.writeBoolean(true);
+                    case 2:
+                        objOut.write(currentBlock.getHash());
                         hasReply = true;
-                    }
-                    break;
-                default:
-                    this.logger.error("Error of request");
-            }
+                        break;
+                    case 3:
+                        objOut.writeInt(currentBlock.getBlockHeight());
+                        hasReply = true;
+                        break;
+                    case 4:
+                        objOut.writeObject(currentBlock.getTransactions());
+                        hasReply = true;
+                        break;
+                    case 5:
+                        if (ordered) {
+                            if (req.hasData()) {
+                                Transaction t = null;
+                                try {
+                                    t = new Transaction(req.getData(), currentBlock.getProtocolVersion(),
+                                            msgCtx.getTimestamp());
+                                } catch (IllegalArgumentException e) {
+                                    logger.error(e.getMessage(), e);
+                                    objOut.writeBoolean(false);
+                                    objOut.writeUTF(e.getMessage());
+                                }
+
+                                //currentBlock.addTransaction(t);
+                                //objOut.writeBoolean(true);
+                                objOut.writeBoolean(addTransaction(t));
+                            } else {
+                                objOut.writeBoolean(false);
+                                objOut.writeUTF("Transaction cannot be created without any data");
+                            }
+
+                            hasReply = true;
+                            break;
+                        }
+                    case 6:
+                        if (ordered) {
+                            this.blockchain.createBlock(msgCtx.getTimestamp(), msgCtx.getNonces());
+                            objOut.writeBoolean(true);
+                            hasReply = true;
+                        }
+                        break;
+                    default:
+                        this.logger.error("Unknown type of ClientMessageType");
+                }
+            } else if (input.getClass() == ReplicaMessage.class) {
+                ReplicaMessage req = (ReplicaMessage) input;
+
+                switch (req.getType()) {
+                    case SYNC_BLOCKS:
+                        // TODO
+                        break;
+                    case NEW_BLOCK:
+
+                        Block proposedBlock;
+                        try (ByteArrayInputStream byteIn2 = new ByteArrayInputStream(req.getContent());
+                             ObjectInput objIn2 = new ObjectInputStream(byteIn2)) {
+                            proposedBlock = (Block) objIn2.readObject();
+                        }
+
+                        if (this.proposedBlock == null) {
+
+                        }
+
+                        break;
+                    default:
+                        this.logger.error("Unknown type of ReplicaMessageType");
+                }
+            } else
+                this.logger.error("Unknown message class, ignoring");
 
             if (hasReply) {
                 objOut.flush();

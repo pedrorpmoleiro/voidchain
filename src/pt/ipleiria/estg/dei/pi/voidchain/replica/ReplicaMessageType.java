@@ -1,6 +1,8 @@
 package pt.ipleiria.estg.dei.pi.voidchain.replica;
 
-public enum ReplicaMessageType {
+import java.io.Serializable;
+
+public enum ReplicaMessageType implements Serializable {
     NEW_BLOCK,
     SYNC_BLOCKS; // ?
 

@@ -6,21 +6,21 @@ import java.io.Serializable;
     TODO: REQUEST TYPE ENUM ?
 */
 public class ClientMessage implements Serializable {
-    private final int req;
+    private final int type;
     private final byte[] data;
 
-    public ClientMessage(int req) {
-        this.req = req;
+    public ClientMessage(int type) {
+        this.type = type;
         this.data = null;
     }
 
-    public ClientMessage(int req, byte[] data) {
-        this.req = req;
+    public ClientMessage(int type, byte[] data) {
+        this.type = type;
         this.data = data;
     }
 
-    public int getReq() {
-        return req;
+    public int getType() {
+        return type;
     }
 
     public boolean hasData() {

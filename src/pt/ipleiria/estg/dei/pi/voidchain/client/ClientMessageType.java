@@ -1,6 +1,8 @@
 package pt.ipleiria.estg.dei.pi.voidchain.client;
 
-public enum ClientMessageType {
+import java.io.Serializable;
+
+public enum ClientMessageType implements Serializable {
     GET_MOST_RECENT_BLOCK,
     GET_BLOCK,
     GET_MOST_RECENT_BLOCK_HEIGHT,

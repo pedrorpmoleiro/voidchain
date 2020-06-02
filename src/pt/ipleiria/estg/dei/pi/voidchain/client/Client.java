@@ -33,8 +33,8 @@ public class Client {
 
     private final ServiceProxy serviceProxy;
 
-    public Client(int clientId) {
-        this.serviceProxy = new ServiceProxy(clientId);
+    public Client(int id) {
+        this.serviceProxy = new ServiceProxy(id);
     }
 
     public static void main(String[] args) {
