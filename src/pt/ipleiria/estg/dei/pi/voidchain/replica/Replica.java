@@ -75,7 +75,7 @@ public class Replica extends DefaultSingleRecoverable {
         }
 
         List<Transaction> transactions = new ArrayList<>();
-        long timestamp = Long.MIN_VALUE;
+        //long timestamp = Long.MIN_VALUE;
 
 
         while (transactions.size() < transactionsPerBlock) {
@@ -83,17 +83,17 @@ public class Replica extends DefaultSingleRecoverable {
             transactions.add(t);
             this.transactionPool.remove(0);
 
-            if (t.getTimestamp() > timestamp)
-                timestamp = t.getTimestamp();
+            //if (t.getTimestamp() > timestamp)
+            //timestamp = t.getTimestamp();
         }
 
         Block previousBlock = this.blockchain.getCurrentBlock();
-        byte[] nonces = new byte[10];
-        new Random(timestamp).nextBytes(nonces);
+        //byte[] nonces = new byte[10];
+        //new Random(timestamp).nextBytes(nonces);
 
         try {
             this.proposedBlock = new Block(previousBlock.getPreviousBlockHash(), config.getProtocolVersion(),
-                    previousBlock.getBlockHeight() + 1, transactions, timestamp, nonces);
+                    previousBlock.getBlockHeight() + 1, transactions, -1L, new byte[0]);
         } catch (InstantiationException e) {
             this.logger.error("Error creating new block instance", e);
             this.transactionPool.addAll(transactions);
@@ -272,24 +272,40 @@ public class Replica extends DefaultSingleRecoverable {
                         // TODO
                         break;
                     case NEW_BLOCK:
-                        if (hasReply) break;
-
                         Block recvBlock;
                         try (ByteArrayInputStream byteIn2 = new ByteArrayInputStream(req.getContent());
                              ObjectInput objIn2 = new ObjectInputStream(byteIn2)) {
                             recvBlock = (Block) objIn2.readObject();
+                            recvBlock = new Block(recvBlock.getPreviousBlockHash(), recvBlock.getProtocolVersion(),
+                                    recvBlock.getBlockHeight(), new ArrayList<>(recvBlock.getTransactions().values()),
+                                    msgCtx.getTimestamp(), msgCtx.getNonces());
                         }
+                        if (hasReply) break;
+
                         createProposedBlock();
                         if (this.proposedBlock == null) {
+                            /*
                             if (Arrays.equals(recvBlock.getHash(), this.blockchain.getCurrentBlock().getHash()))
                                 objOut.writeBoolean(true);
                             else
                                 objOut.writeBoolean(false);
+                             */
+                            objOut.writeBoolean(Arrays.equals(recvBlock.getHash(), this.blockchain.getCurrentBlock().getHash()));
                         } else {
-                            if (Arrays.equals(recvBlock.getHash(), this.proposedBlock.getHash())) {
+                            /* if (Arrays.equals(recvBlock.getHash(), this.proposedBlock.getHash())) {
                                 this.blockchain.addBlock(this.proposedBlock);
                                 this.proposedBlock = null;
 
+                                objOut.writeBoolean(true);
+                            } else */
+                            if (Arrays.equals(recvBlock.getMerkleRoot(), this.proposedBlock.getMerkleRoot()) &&
+                                    recvBlock.getBlockHeight() == this.proposedBlock.getBlockHeight() &&
+                                    Arrays.equals(recvBlock.getPreviousBlockHash(),
+                                            this.proposedBlock.getPreviousBlockHash()) &&
+                                    recvBlock.getProtocolVersion().equals(this.proposedBlock.getProtocolVersion())) {
+                                // ? REVIEW
+                                this.blockchain.addBlock(recvBlock);
+                                this.proposedBlock = null;
                                 objOut.writeBoolean(true);
                             } else
                                 objOut.writeBoolean(false);
@@ -308,7 +324,7 @@ public class Replica extends DefaultSingleRecoverable {
                 reply = byteOut.toByteArray();
             }
 
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException | InstantiationException e) {
             this.logger.error("ERROR", e);
         }
 
