@@ -6,8 +6,10 @@ public class ReplicaMessage implements Serializable {
 
     private ReplicaMessageType type;
     private byte[] content = new byte[0];
+    private int sender;
 
-    public ReplicaMessage(ReplicaMessageType type, byte[] content) {
+    public ReplicaMessage(int sender, ReplicaMessageType type, byte[] content) {
+        this.sender = sender;
         this.type = type;
 
         if (type == ReplicaMessageType.NEW_BLOCK) {
@@ -22,5 +24,9 @@ public class ReplicaMessage implements Serializable {
 
     public byte[] getContent() {
         return content;
+    }
+
+    public int getSender() {
+        return sender;
     }
 }

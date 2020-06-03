@@ -30,7 +30,7 @@ public class ReplicaMessenger {
                 objOut2.flush();
                 byteOut2.flush();
 
-                req = new ReplicaMessage(ReplicaMessageType.NEW_BLOCK, byteOut2.toByteArray());
+                req = new ReplicaMessage(this.serviceProxy.getProcessId(), ReplicaMessageType.NEW_BLOCK, byteOut2.toByteArray());
             }
 
             objOut.writeObject(req);

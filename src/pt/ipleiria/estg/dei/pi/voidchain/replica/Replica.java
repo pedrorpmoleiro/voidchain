@@ -65,12 +65,9 @@ public class Replica extends DefaultSingleRecoverable {
 
     // MEMORY POOL
     private void createProposedBlock() {
+        if (this.proposedBlock != null) return;
 
-    }
-
-    private void processNewBlock() {
         Configuration config = Configuration.getInstance();
-
         int transactionsPerBlock = config.getNumTransactionsInBlock();
 
         if (this.transactionPool.size() < transactionsPerBlock) {
@@ -78,7 +75,8 @@ public class Replica extends DefaultSingleRecoverable {
         }
 
         List<Transaction> transactions = new ArrayList<>();
-        long timestamp = -1L;
+        long timestamp = Long.MIN_VALUE;
+
 
         while (transactions.size() < transactionsPerBlock) {
             Transaction t = this.transactionPool.get(0);
@@ -99,13 +97,18 @@ public class Replica extends DefaultSingleRecoverable {
         } catch (InstantiationException e) {
             this.logger.error("Error creating new block instance", e);
             this.transactionPool.addAll(transactions);
-            return;
         }
+    }
+
+    private void processNewBlock() {
+        createProposedBlock();
+
+        if (this.proposedBlock == null) return;
 
         if (this.messenger.proposeBlock(this.proposedBlock)) {
             this.blockchain.addBlock(this.proposedBlock);
         } else {
-            this.transactionPool.addAll(transactions);
+            this.transactionPool.addAll(this.proposedBlock.getTransactions().values());
         }
 
         this.proposedBlock = null;
@@ -119,7 +122,8 @@ public class Replica extends DefaultSingleRecoverable {
             return false;
         }
 
-        processNewBlock();
+        new Thread(this::processNewBlock).start();
+
         return true;
     }
 
@@ -131,7 +135,8 @@ public class Replica extends DefaultSingleRecoverable {
             return false;
         }
 
-        processNewBlock();
+        new Thread(this::processNewBlock).start();
+
         return true;
     }
 
@@ -256,22 +261,40 @@ public class Replica extends DefaultSingleRecoverable {
             } else if (input.getClass() == ReplicaMessage.class) {
                 ReplicaMessage req = (ReplicaMessage) input;
 
+                if (req.getSender() == this.replicaContext.getCurrentView().getId()) {
+                    objOut.writeBoolean(true);
+                    hasReply = true;
+                }
+
                 switch (req.getType()) {
                     case SYNC_BLOCKS:
+                        if (hasReply) break;
                         // TODO
                         break;
                     case NEW_BLOCK:
+                        if (hasReply) break;
 
-                        Block proposedBlock;
+                        Block recvBlock;
                         try (ByteArrayInputStream byteIn2 = new ByteArrayInputStream(req.getContent());
                              ObjectInput objIn2 = new ObjectInputStream(byteIn2)) {
-                            proposedBlock = (Block) objIn2.readObject();
+                            recvBlock = (Block) objIn2.readObject();
                         }
-
+                        createProposedBlock();
                         if (this.proposedBlock == null) {
+                            if (Arrays.equals(recvBlock.getHash(), this.blockchain.getCurrentBlock().getHash()))
+                                objOut.writeBoolean(true);
+                            else
+                                objOut.writeBoolean(false);
+                        } else {
+                            if (Arrays.equals(recvBlock.getHash(), this.proposedBlock.getHash())) {
+                                this.blockchain.addBlock(this.proposedBlock);
+                                this.proposedBlock = null;
 
+                                objOut.writeBoolean(true);
+                            } else
+                                objOut.writeBoolean(false);
                         }
-
+                        hasReply = true;
                         break;
                     default:
                         this.logger.error("Unknown type of ReplicaMessageType");
@@ -290,11 +313,5 @@ public class Replica extends DefaultSingleRecoverable {
         }
 
         return reply;
-    }
-
-    @Override
-    public void Op(int CID, byte[] requests, MessageContext msgCtx) {
-        // TODO: ANALYZE
-        int test = 0;
     }
 }
