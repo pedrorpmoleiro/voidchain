@@ -5,7 +5,7 @@
     <option name="PROGRAM_PARAMETERS" value="2" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="pt.ipleiria.estg.dei.pi.voidchain.replica.*" />
+        <option name="PATTERN" value="pt.ipleiria.estg.dei.pi.voidchain.client.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
