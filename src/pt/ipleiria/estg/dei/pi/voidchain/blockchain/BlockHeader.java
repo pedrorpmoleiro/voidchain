@@ -10,6 +10,8 @@ import org.bouncycastle.util.encoders.Base64;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * The block header is a section of a block.
@@ -40,23 +42,7 @@ public class BlockHeader implements Serializable {
      */
     protected byte[] merkleRoot;
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
-
-    /**
-     * Instantiates a new Block header.
-     *
-     * @param previousBlockHash the previous block hash
-     * @param protocolVersion   the protocol version
-     * @param timestamp         the timestamp
-     * @param nonce             the nonce
-     */
-    public BlockHeader(byte[] previousBlockHash, String protocolVersion, long timestamp, byte[] nonce) {
-        this.previousBlockHash = previousBlockHash;
-        this.protocolVersion = protocolVersion;
-        this.timestamp = timestamp;
-        this.nonce = nonce;
-        this.merkleRoot = new byte[0];
-    }
+    private static final Logger logger = LoggerFactory.getLogger(BlockHeader.class.getName());
 
     /**
      * Instantiates a new Block header.
@@ -67,7 +53,8 @@ public class BlockHeader implements Serializable {
      * @param nonce             the nonce
      * @param merkleRoot        the merkle root
      */
-    public BlockHeader(byte[] previousBlockHash, String protocolVersion, long timestamp, byte[] nonce, byte[] merkleRoot) {
+    public BlockHeader(byte[] previousBlockHash, String protocolVersion, long timestamp, byte[] nonce,
+                       byte[] merkleRoot) {
         this.previousBlockHash = previousBlockHash;
         this.protocolVersion = protocolVersion;
         this.timestamp = timestamp;
@@ -101,7 +88,7 @@ public class BlockHeader implements Serializable {
         try {
             timestampBytes = Converters.longToByteArray(this.timestamp);
         } catch (IOException e) {
-            this.logger.error("Error converting timestamp [" + this.timestamp + "] into byte array");
+            logger.error("Error converting timestamp [" + this.timestamp + "] into byte array");
             return new byte[0];
         }
 
@@ -136,6 +123,24 @@ public class BlockHeader implements Serializable {
             return new byte[0];
 
         return dataBytes;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BlockHeader that = (BlockHeader) o;
+        return Arrays.equals(previousBlockHash, that.previousBlockHash) &&
+                protocolVersion.equals(that.protocolVersion) &&
+                Arrays.equals(merkleRoot, that.merkleRoot);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(protocolVersion);
+        result = 31 * result + Arrays.hashCode(previousBlockHash);
+        result = 31 * result + Arrays.hashCode(merkleRoot);
+        return result;
     }
 
     @Override

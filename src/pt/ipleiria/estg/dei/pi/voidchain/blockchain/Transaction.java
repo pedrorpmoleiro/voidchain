@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Map;
 
 /**
  * The transaction contains data of the operations performed by the replicas.
@@ -22,7 +24,13 @@ import java.util.Arrays;
  */
 public class Transaction implements Serializable {
     /* Attributes */
-    private final Logger logger = LoggerFactory.getLogger(Transaction.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(Transaction.class.getName());
+
+    public static final Comparator<Transaction> LIST_COMPARATOR = (o1, o2) ->
+            Long.compare(o2.getTimestamp(), o1.getTimestamp());
+    public static final Comparator<Map.Entry<byte[], Transaction>> MAP_COMPARATOR = (o1, o2) ->
+            Long.compare(o2.getValue().getTimestamp(), o1.getValue().getTimestamp());
+
     private final long timestamp;
     private final byte[] data;
     private final String protocolVersion;
@@ -33,16 +41,15 @@ public class Transaction implements Serializable {
      * @param data            the data
      * @param protocolVersion the protocol version
      * @param timestamp       the timestamp
-     * @throws IllegalArgumentException if transaction size exceeds max value an exception will be thrown
+     * @throws IllegalArgumentException illegal argument exception will be thrown if transaction size exceeds max value of transacion
      */
     public Transaction(byte[] data, String protocolVersion, long timestamp) {
         int size = Long.BYTES + data.length + Integer.BYTES + Float.BYTES;
 
         int transactionMaxSize = Configuration.getInstance().getTransactionMaxSize();
-        if (size > transactionMaxSize) {
+        if (size > transactionMaxSize)
             throw new IllegalArgumentException("Transaction size is " + size + " but max transaction size is "
                     + transactionMaxSize);
-        }
 
         this.timestamp = timestamp;
         this.data = data;
@@ -50,6 +57,7 @@ public class Transaction implements Serializable {
     }
 
     /* Methods */
+
     /**
      * Calculates all the attributes in byte array format.
      * <p>
@@ -64,7 +72,7 @@ public class Transaction implements Serializable {
         try {
             timestampBytes = Converters.longToByteArray(this.timestamp);
         } catch (IOException e) {
-            this.logger.error("Error converting timestamp [" + this.timestamp + "] into byte array");
+            logger.error("Error converting timestamp [" + this.timestamp + "] into byte array");
             return new byte[0];
         }
 
@@ -135,9 +143,8 @@ public class Transaction implements Serializable {
         byte[] dataBytes = this.getDataBytes();
         byte[] aux = new byte[0];
 
-        if (Arrays.equals(dataBytes, aux)) {
+        if (Arrays.equals(dataBytes, aux))
             return aux;
-        }
 
         return Hash.calculateSHA3512RIPEMD160(dataBytes);
     }

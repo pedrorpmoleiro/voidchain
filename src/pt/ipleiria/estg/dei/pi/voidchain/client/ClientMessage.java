@@ -2,9 +2,7 @@ package pt.ipleiria.estg.dei.pi.voidchain.client;
 
 import java.io.Serializable;
 
-/*
-    TODO: REQUEST TYPE ENUM ?
-*/
+// TODO: JAVADOC
 public class ClientMessage implements Serializable {
     private final int type;
     private final byte[] data;

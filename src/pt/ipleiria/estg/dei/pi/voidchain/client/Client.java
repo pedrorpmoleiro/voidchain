@@ -18,6 +18,8 @@ import java.security.Security;
 import java.util.Hashtable;
 import java.util.Map;
 
+// TODO: JAVADOC
+// TODO: REFORMAT FOR NEW STRUCTURE
 public class Client {
     private JButton getCurrentBlockButton;
     private JButton getCurrentBlockHashButton;
@@ -42,9 +44,8 @@ public class Client {
             System.out.println("Usage: pt.ipleiria.estg.dei.pi.voidchain.client.Client <client id>");
         }
 
-        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
             Security.addProvider(new BouncyCastleProvider());
-        }
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());

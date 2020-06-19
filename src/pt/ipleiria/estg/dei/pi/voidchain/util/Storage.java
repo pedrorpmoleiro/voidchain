@@ -7,34 +7,45 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
 
 public class Storage {
-    private static Logger logger = LoggerFactory.getLogger(Storage.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(Storage.class.getName());
 
+    /**
+     * Write object to disk.
+     *
+     * @param object        the object to be saved
+     * @param fileDirectory the directory to be saved in
+     * @param fileName      the file name to be saved under
+     * @return true if the object was saved successfully or false otherwise
+     */
     public static boolean writeObjectToDisk(Object object, String fileDirectory, String fileName) {
-        Path pD = Paths.get(fileDirectory);
-
         try {
+            Path pD = Paths.get(fileDirectory);
+
             if (Files.notExists(pD))
                 Files.createDirectories(pD);
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(
-                fileDirectory + fileName, false))) {
+            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileDirectory + fileName,
+                    false));
             oos.writeObject(object);
+            oos.close();
+
+            return true;
         } catch (IOException e) {
             logger.error("Error while writing '" + fileName + "' to disk", e);
             return false;
         }
-
-        return true;
     }
 
+    /**
+     * Reads object from disk.
+     *
+     * @param fileName the path and file name
+     * @return the object
+     * @throws IOException            the io exception
+     * @throws ClassNotFoundException the class not found exception
+     */
     public static Object readObjectFromDisk(String fileName) throws IOException, ClassNotFoundException {
         ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName));
 

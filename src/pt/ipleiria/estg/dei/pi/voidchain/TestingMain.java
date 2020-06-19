@@ -5,10 +5,12 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class TestingMain {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InstantiationException {
         Blockchain voidchain = Blockchain.getInstance();
 
         String protocolVersion = Configuration.getInstance().getProtocolVersion();
@@ -24,20 +26,21 @@ public class TestingMain {
 
         for (int b = 0; b < BLOCK_COUNT; b++) {
             random.nextBytes(nonce);
-            Block block = voidchain.createBlock(timestamp, nonce);
-            timestamp += 1L;
+            List<Transaction> transactionList = new ArrayList<>();
             for (int t = 0; t < TRANSACTION_COUNT; t++) {
                 random.nextBytes(transactionData);
                 Transaction transaction = new Transaction(transactionData, protocolVersion, timestamp);
-                // int size = transaction.getSize();
-                block.addTransaction(transaction);
+                transactionList.add(transaction);
                 timestamp += 1L;
             }
-            if (block.getTransactionCounter() != TRANSACTION_COUNT) {
+            Block previousBlock = voidchain.getMostRecentBlock();
+            Block newBlock = new Block(previousBlock.getHash(), protocolVersion, previousBlock.getBlockHeight() + 1,
+                    transactionList, timestamp, nonce);
+            if (newBlock.getTransactionCounter() != TRANSACTION_COUNT) {
                 System.out.println("DIDN'T ADD ALL TRANSACTIONS");
                 break;
             }
-            block.toDisk();
+            voidchain.addBlock(newBlock);
         }
     }
 }

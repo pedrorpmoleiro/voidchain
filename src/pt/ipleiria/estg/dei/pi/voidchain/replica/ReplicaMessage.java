@@ -2,6 +2,7 @@ package pt.ipleiria.estg.dei.pi.voidchain.replica;
 
 import java.io.*;
 
+// TODO: JAVADOC
 public class ReplicaMessage implements Serializable {
 
     private ReplicaMessageType type;

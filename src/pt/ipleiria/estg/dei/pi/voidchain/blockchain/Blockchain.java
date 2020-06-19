@@ -17,8 +17,6 @@ import java.util.*;
  */
 public class Blockchain implements Serializable {
     /* Attributes */
-    // TODO: ANALYZE
-    // ? STACK
     private final List<Block> blocks;
 
     private static Blockchain INSTANCE = null;
@@ -40,11 +38,16 @@ public class Blockchain implements Serializable {
     }
 
     private Blockchain(List<Block> blocks) {
-        this.blocks = blocks;
+        this.blocks = new ArrayList<>(blocks);
     }
 
     /* Methods */
 
+    /**
+     * Gets the instance of singleton class.
+     *
+     * @return the instance
+     */
     // TODO: BLOCK DATA VALIDATE
     public static Blockchain getInstance() {
         if (INSTANCE == null) {
@@ -53,7 +56,22 @@ public class Blockchain implements Serializable {
             File[] blockFiles = new File(config.getBlockFileDirectory()).listFiles();
             if (blockFiles != null) {
                 List<Block> blocksDisk = new ArrayList<>();
-                int previousFileBlockHeight = -1;
+                int previousFileBlockHeight = Integer.MIN_VALUE;
+
+                Arrays.sort(blockFiles, new Comparator<File>() {
+                    @Override
+                    public int compare(File o1, File o2) {
+                        String[] aux1 = o1.getName().split(config.getBlockFileBaseNameSeparator());
+                        String aux2 = aux1[1].split(config.getBlockFileExtensionSeparatorSplit())[0];
+                        int o1Height = Integer.parseInt(aux2);
+
+                        aux1 = o2.getName().split(config.getBlockFileBaseNameSeparator());
+                        aux2 = aux1[1].split(config.getBlockFileExtensionSeparatorSplit())[0];
+                        int o2Height = Integer.parseInt(aux2);
+
+                        return Integer.compare(o1Height, o2Height);
+                    }
+                });
 
                 for (File blockFile : blockFiles) {
                     String[] aux = blockFile.getName().split(config.getBlockFileBaseNameSeparator());
@@ -96,7 +114,7 @@ public class Blockchain implements Serializable {
     // TODO: ANALYZE
     // ? DOES IT WORK IF PREVIOUS PREVIOUS BLOCK ALTERED
     public boolean isChainValid() {
-        Block currentBlock = this.getCurrentBlock();
+        Block currentBlock = this.getMostRecentBlock();
         Block previousBlock = this.blocks.get(1);
 
         return Arrays.equals(currentBlock.getPreviousBlockHash(), previousBlock.getHash());
@@ -114,7 +132,7 @@ public class Blockchain implements Serializable {
     // TODO: REMOVE ?
     public Block createBlock(long timestamp, byte[] nonce) {
         try {
-            Block auxBlock = this.getCurrentBlock();
+            Block auxBlock = this.getMostRecentBlock();
 
             Configuration config = Configuration.getInstance();
 
@@ -147,11 +165,12 @@ public class Blockchain implements Serializable {
      * @param transactions the transactions (Map)
      * @return the newly created block
      */
+    // TODO: REMOVE ?
     public Block createBlock(long timestamp, byte[] nonce, Map<byte[], Transaction> transactions) {
         try {
             Configuration config = Configuration.getInstance();
 
-            Block auxBlock = this.getCurrentBlock();
+            Block auxBlock = this.getMostRecentBlock();
 
             Block block = new Block(auxBlock.getHash(), config.getProtocolVersion(), auxBlock.getBlockHeight() + 1,
                     transactions, timestamp, nonce);
@@ -185,7 +204,7 @@ public class Blockchain implements Serializable {
     // TODO: REMOVE ?
     public Block createBlock(long timestamp, byte[] nonce, List<Transaction> transactions) {
         try {
-            Block auxBlock = this.getCurrentBlock();
+            Block auxBlock = this.getMostRecentBlock();
 
             Block block = new Block(auxBlock.getHash(), Configuration.getInstance().getProtocolVersion(), auxBlock.getBlockHeight() + 1,
                     transactions, timestamp, nonce);
@@ -206,12 +225,21 @@ public class Blockchain implements Serializable {
         }
     }
 
-    public void addBlock(Block block) {
-        this.blocks.add(0,block);
+    /**
+     * Adds a block to the front of the chain.
+     *
+     * @param block the block to be added
+     */
+    public boolean addBlock(Block block) {
+        if (block == null) return false;
+        // TODO: EQUALS
+        if (block.getBlockHeight() == this.getMostRecentBlock().getBlockHeight()) return false;
+        this.blocks.add(0, block);
         block.toDisk();
-        while (this.blocks.size() > Configuration.getInstance().getNumBlockInMemory()) {
+        while (this.blocks.size() > Configuration.getInstance().getNumBlockInMemory())
             this.blocks.remove(this.blocks.size() - 1);
-        }
+
+        return true;
     }
 
     /* Getters */
@@ -221,7 +249,7 @@ public class Blockchain implements Serializable {
      *
      * @return the most recently created block
      */
-    public Block getCurrentBlock() {
+    public Block getMostRecentBlock() {
         return this.blocks.get(0);
     }
 
@@ -232,13 +260,13 @@ public class Blockchain implements Serializable {
      * @param blockHeight the block height
      * @return the block
      * @throws NoSuchElementException If no matching block found exception will be thrown
+     * @throws IOException            IO exception if an error while loading the block data from disk
+     * @throws ClassNotFoundException Class not found exception if an error while converting block data to Block class instance
      */
-    public Block getBlock(int blockHeight) throws NoSuchElementException {
-        for (Block b : blocks) {
-            if (b.getBlockHeight() == blockHeight) {
+    public Block getBlock(int blockHeight) throws NoSuchElementException, IOException, ClassNotFoundException {
+        for (Block b : blocks)
+            if (b.getBlockHeight() == blockHeight)
                 return b;
-            }
-        }
 
         Configuration config = Configuration.getInstance();
 
@@ -249,17 +277,9 @@ public class Blockchain implements Serializable {
         String wantedFile = config.getBlockFileDirectory() + config.getBlockFileBaseName() +
                 blockHeight + config.getBlockFileExtension();
 
-        for (File f : blockFiles) {
-            if (f.getName().equals(wantedFile)) {
-                try {
-                    return (Block) Storage.readObjectFromDisk(f.getName());
-                } catch (IOException | ClassNotFoundException e) {
-                    logger.error("Error getting block " + blockHeight + " from disk", e);
-
-                    return null;
-                }
-            }
-        }
+        for (File f : blockFiles)
+            if (f.getName().equals(wantedFile))
+                return (Block) Storage.readObjectFromDisk(f.getName());
 
         throw new NoSuchElementException("Requested block doesn't exist");
     }

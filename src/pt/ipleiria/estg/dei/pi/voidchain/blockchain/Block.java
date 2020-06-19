@@ -24,7 +24,6 @@ public class Block implements Serializable {
     /* Attributes */
     private static final Logger logger = LoggerFactory.getLogger(Block.class.getName());
 
-    // TODO: CHANGE HASHTABLE (TREE_MAP) ?
     private Map<byte[], Transaction> transactions;
     private final BlockHeader blockHeader;
     private int transactionCounter;
@@ -41,7 +40,7 @@ public class Block implements Serializable {
         this.blockHeader = new BlockHeader(genesisBytes, Configuration.getInstance().getProtocolVersion(), 0L,
                 auxBytes, auxBytes);
         this.blockHeight = 0;
-        this.transactionCounter = -1; // ?
+        this.transactionCounter = -1;
         this.transactions = new Hashtable<>();
     }
 
@@ -54,16 +53,15 @@ public class Block implements Serializable {
      * @param transactions      the transactions (Map)
      * @param timestamp         the timestamp
      * @param nonce             the nonce
-     * @throws InstantiationException if error occurs while calculating merkle tree exception will be thrown
+     * @throws InstantiationException instantiation exception will be thrown if error occurs while calculating merkle tree root
      */
     public Block(byte[] previousBlockHash, String protocolVersion, int blockHeight,
                  Map<byte[], Transaction> transactions, long timestamp, byte[] nonce) throws InstantiationException {
 
         byte[] merkleRoot;
-        if (transactions.size() != 0) {
-            merkleRoot = MerkleTree.getMerkleRoot(transactions.keySet());
+        if (transactions.size() > 0) {
+            merkleRoot = MerkleTree.getMerkleRoot(transactions);
 
-            // TODO: REVIEW
             if (Arrays.equals(merkleRoot, new byte[0]))
                 throw new InstantiationException("Error occurred while calculating merkle tree root");
         } else
@@ -84,17 +82,16 @@ public class Block implements Serializable {
      * @param transactions      the transactions (List)
      * @param timestamp         the timestamp
      * @param nonce             the nonce
-     * @throws InstantiationException if error occurs while calculating merkle tree exception will be thrown
+     * @throws InstantiationException instantiation exception will be thrown if error occurs while calculating merkle tree root
      */
     public Block(byte[] previousBlockHash, String protocolVersion, int blockHeight,
                  List<Transaction> transactions, long timestamp, byte[] nonce) throws InstantiationException {
         this.transactions = new Hashtable<>(Converters.transactionListToMap(transactions));
 
         byte[] merkleRoot;
-        if (transactions.size() != 0) {
-            merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
+        if (transactions.size() > 0) {
+            merkleRoot = MerkleTree.getMerkleRoot(this.transactions);
 
-            // TODO: REVIEW
             if (Arrays.equals(merkleRoot, new byte[0]))
                 throw new InstantiationException("Error occurred while calculating merkle tree root");
         } else
@@ -107,22 +104,17 @@ public class Block implements Serializable {
 
     /* Methods */
 
-    /**
-     * Adds a transaction to the block.
-     *
-     * @param transaction the transaction
-     * @return true if the transaction was saved or false if an error occurred
-     */
-    public boolean addTransaction(Transaction transaction) {
-        this.transactions.put(transaction.getHash(), transaction);
-        this.transactionCounter++;
-        this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
+    // TODO REMOVE ?
+    private boolean calculateMerkleRootAndValidateTransactionAdded() {
+        this.transactionCounter += transactions.size();
+        this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions);
 
-        // TODO: REVIEW
         if (Arrays.equals(this.blockHeader.merkleRoot, new byte[0])) {
             logger.error("Transactions added. Error occurred while calculating merkle tree root");
 
             Block aux = Block.fromDisk(this.blockHeight);
+            if (aux == null) return false;
+
             this.transactionCounter = aux.transactionCounter;
             this.transactions = aux.transactions;
             this.blockHeader.merkleRoot = aux.blockHeader.merkleRoot;
@@ -130,9 +122,7 @@ public class Block implements Serializable {
             return false;
         }
 
-        this.toDisk();
-
-        return true;
+        return this.toDisk();
     }
 
     /**
@@ -141,26 +131,11 @@ public class Block implements Serializable {
      * @param transactions the transactions
      * @return true if the transactions were saved or false if an error occurred
      */
+    // TODO REMOVE ?
     public boolean addTransactions(Map<byte[], Transaction> transactions) {
         this.transactions.putAll(transactions);
-        this.transactionCounter += transactions.size();
-        this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
 
-        // TODO: REVIEW
-        if (Arrays.equals(this.blockHeader.merkleRoot, new byte[0])) {
-            logger.error("Transactions added. Error occurred while calculating merkle tree root");
-
-            Block aux = Block.fromDisk(this.blockHeight);
-            this.transactionCounter = aux.transactionCounter;
-            this.transactions = aux.transactions;
-            this.blockHeader.merkleRoot = aux.blockHeader.merkleRoot;
-
-            return false;
-        }
-
-        this.toDisk();
-
-        return true;
+        return calculateMerkleRootAndValidateTransactionAdded();
     }
 
     /**
@@ -169,27 +144,11 @@ public class Block implements Serializable {
      * @param transactions the transactions
      * @return true if the transactions were saved or false if an error occurred
      */
-// TODO: REMOVE ?
+    // TODO REMOVE ?
     public boolean addTransactions(List<Transaction> transactions) {
         this.transactions.putAll(Converters.transactionListToMap(transactions));
-        this.transactionCounter += transactions.size();
-        this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions.keySet());
 
-        // TODO: REVIEW
-        if (Arrays.equals(this.blockHeader.merkleRoot, new byte[0])) {
-            logger.error("Transactions added. Error occurred while calculating merkle tree root");
-
-            Block aux = Block.fromDisk(this.blockHeight);
-            this.transactionCounter = aux.transactionCounter;
-            this.transactions = aux.transactions;
-            this.blockHeader.merkleRoot = aux.blockHeader.merkleRoot;
-
-            return false;
-        }
-
-        this.toDisk();
-
-        return true;
+        return calculateMerkleRootAndValidateTransactionAdded();
     }
 
     /**
@@ -335,6 +294,21 @@ public class Block implements Serializable {
         }
 
         return Hash.calculateSHA3512RIPEMD160(blockHeaderData);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Block block = (Block) o;
+        return transactionCounter == block.transactionCounter &&
+                blockHeight == block.blockHeight &&
+                blockHeader.equals(block.blockHeader);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(blockHeader, transactionCounter, blockHeight);
     }
 
     @Override

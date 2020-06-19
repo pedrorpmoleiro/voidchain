@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.StringTokenizer;
 
+// TODO: JAVADOC
 // TODO: RESET METHOD MOVE FILES IF DIRECTORY IS CHANGED ?
 public class Configuration {
     private static Configuration INSTANCE = null;
@@ -21,7 +22,7 @@ public class Configuration {
     public static final String DEFAULT_BLOCK_FILE_BASE_NAME = "block";
     public static final String DEFAULT_BLOCK_FILE_DIRECTORY = "data" + File.separator + "blocks";
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(Configuration.class.getName());
 
     private String protocolVersion = DEFAULT_PROTOCOL_VERSION;
     private int transactionMaxSize = DEFAULT_TRANSACTION_MAX_SIZE;
@@ -36,20 +37,19 @@ public class Configuration {
     private String blockFileDirectory = DEFAULT_BLOCK_FILE_DIRECTORY;
 
     private Configuration() {
-        this.reloadConfigurationFromDisk();
+        this.loadConfigurationFromDisk();
     }
 
     public static Configuration getInstance() {
-        if (INSTANCE == null) {
+        if (INSTANCE == null)
             INSTANCE = new Configuration();
-        } else {
-            INSTANCE.reloadConfigurationFromDisk();
-        }
+        else
+            INSTANCE.loadConfigurationFromDisk();
 
         return INSTANCE;
     }
 
-    public void reloadConfigurationFromDisk() {
+    public void loadConfigurationFromDisk() {
         try {
             FileReader fr = new FileReader(CONFIG_FILE);
             BufferedReader rd = new BufferedReader(fr);
@@ -106,7 +106,7 @@ public class Configuration {
             fr.close();
             rd.close();
         } catch (IOException e) {
-            this.logger.error("Could not load configuration", e);
+            logger.error("Could not load configuration", e);
         }
     }
 
@@ -146,6 +146,10 @@ public class Configuration {
         return blockFileBaseNameSeparator;
     }
 
+    public String getBlockFileExtensionSeparatorSplit() {
+        return blockFileExtensionSeparatorSplit;
+    }
+
     @Override
     public String toString() {
         return "Configuration: {" + System.lineSeparator() +
@@ -159,9 +163,5 @@ public class Configuration {
                 "block file extension separator: '" + blockFileExtensionSeparator + '\'' + System.lineSeparator() +
                 "block file base name separator: '" + blockFileBaseNameSeparator + '\'' + System.lineSeparator() +
                 '}';
-    }
-
-    public String getBlockFileExtensionSeparatorSplit() {
-        return blockFileExtensionSeparatorSplit;
     }
 }

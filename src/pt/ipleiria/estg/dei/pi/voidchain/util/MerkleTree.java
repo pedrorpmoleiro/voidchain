@@ -2,23 +2,45 @@ package pt.ipleiria.estg.dei.pi.voidchain.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 
-import java.util.ArrayList;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Consumer;
 
+// https://medium.com/@vinayprabhu19/merkel-tree-in-java-b45093c8c6bd
 public class MerkleTree {
-    private static Logger logger = LoggerFactory.getLogger(MerkleTree.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(MerkleTree.class.getName());
 
-    // https://medium.com/@vinayprabhu19/merkel-tree-in-java-b45093c8c6bd
-    public static byte[] getMerkleRoot(Set<byte[]> transactionHashList) {
+    /**
+     * Return the merkle root of the given set of hashes.
+     * <p>
+     * Returns byte[0] if error occurred while calculating the markle tree.
+     *
+     * @param transactionMap the transaction map
+     * @return the merkle root (byte[])
+     */
+    public static byte[] getMerkleRoot(Map<byte[], Transaction> transactionMap) {
         try {
-            return merkleTree(new ArrayList<>(transactionHashList)).get(0);
+            ArrayList<byte[]> hashList = new ArrayList<>();
+            List<Map.Entry<byte[], Transaction>> entryList = new ArrayList<>(transactionMap.entrySet());
+            entryList.sort(Transaction.MAP_COMPARATOR);
+            entryList.forEach(t -> hashList.add(t.getKey()));
+
+            return merkleTree(hashList).get(0);
         } catch (RuntimeException e) {
             logger.error("Error occured while calculating merkle tree", e);
             return new byte[0];
         }
     }
 
+    /**
+     * Creates merkle tree of given list of hashes.
+     *
+     * @param hashList the hash list
+     * @return the merkle tree array list
+     * @throws RuntimeException runtime exception if error occured while calculating the merkle root
+     * @throws IllegalArgumentException illegal argument exception if given list is empty
+     */
     public static ArrayList<byte[]> merkleTree(ArrayList<byte[]> hashList) throws RuntimeException {
         if (hashList.size() == 0)
             throw new IllegalArgumentException("Received Hash List is empty");

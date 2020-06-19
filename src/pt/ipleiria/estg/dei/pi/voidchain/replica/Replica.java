@@ -17,24 +17,18 @@ import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 
 import java.io.*;
 import java.security.Security;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /*
     TODO: READ BELOW
-    ? BATCH EXECUTABLE 🛑
+    JAVA DOC
     API
     BLOCKS IN DISK SYNC
-    AUTOMATION OF MANAGEMENT OF THE BLOCKCHAIN:
-        I.   COMMUNICATION BETWEEN REPLICAS (MAKE OWN SystemMessage) ❌
-        II.  CREATE BLOCKS VIA TRANSACTION POOL ✅
-        III. TRANSACTION POOL ON REPLICA (MOVE FROM BLOCKCHAIN (?)/CHANGE GET & INSTALL SNAPSHOT) ✅
-        IV.  VALIDATE BLOCKS
+    VALIDATE BLOCKS
+    ? MEMORY POOL SYNC
 */
 public class Replica extends DefaultSingleRecoverable {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+    private static final Logger logger = LoggerFactory.getLogger(Replica.class.getName());
 
     private Blockchain blockchain;
     private final List<Transaction> transactionPool;
@@ -56,46 +50,36 @@ public class Replica extends DefaultSingleRecoverable {
             System.exit(-1);
         }
 
-        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
             Security.addProvider(new BouncyCastleProvider());
-        }
 
         new Replica(Integer.parseInt(args[0]));
     }
 
-    // MEMORY POOL
     private void createProposedBlock() {
         if (this.proposedBlock != null) return;
 
         Configuration config = Configuration.getInstance();
         int transactionsPerBlock = config.getNumTransactionsInBlock();
 
-        if (this.transactionPool.size() < transactionsPerBlock) {
-            return;
-        }
+        if (this.transactionPool.size() < transactionsPerBlock) return;
 
         List<Transaction> transactions = new ArrayList<>();
-        //long timestamp = Long.MIN_VALUE;
-
 
         while (transactions.size() < transactionsPerBlock) {
             Transaction t = this.transactionPool.get(0);
             transactions.add(t);
             this.transactionPool.remove(0);
-
-            //if (t.getTimestamp() > timestamp)
-            //timestamp = t.getTimestamp();
         }
 
-        Block previousBlock = this.blockchain.getCurrentBlock();
-        //byte[] nonces = new byte[10];
-        //new Random(timestamp).nextBytes(nonces);
+        Block previousBlock = this.blockchain.getMostRecentBlock();
 
         try {
             this.proposedBlock = new Block(previousBlock.getPreviousBlockHash(), config.getProtocolVersion(),
                     previousBlock.getBlockHeight() + 1, transactions, -1L, new byte[0]);
+
         } catch (InstantiationException e) {
-            this.logger.error("Error creating new block instance", e);
+            logger.error("Error creating new block instance", e);
             this.transactionPool.addAll(transactions);
         }
     }
@@ -106,10 +90,10 @@ public class Replica extends DefaultSingleRecoverable {
         if (this.proposedBlock == null) return;
 
         if (this.messenger.proposeBlock(this.proposedBlock)) {
-            this.blockchain.addBlock(this.proposedBlock);
-        } else {
+            if (this.proposedBlock != null)
+                this.blockchain.addBlock(this.proposedBlock);
+        } else
             this.transactionPool.addAll(this.proposedBlock.getTransactions().values());
-        }
 
         this.proposedBlock = null;
     }
@@ -118,9 +102,8 @@ public class Replica extends DefaultSingleRecoverable {
         int aux = this.transactionPool.size();
         this.transactionPool.add(transaction);
 
-        if (aux == this.transactionPool.size() || (aux + 1) != this.transactionPool.size()) {
+        if (aux == this.transactionPool.size() || (aux + 1) != this.transactionPool.size())
             return false;
-        }
 
         new Thread(this::processNewBlock).start();
 
@@ -131,16 +114,13 @@ public class Replica extends DefaultSingleRecoverable {
         int aux = this.transactionPool.size();
         this.transactionPool.addAll(transactions);
 
-        if (aux == this.transactionPool.size() || (aux + transactions.size()) != this.transactionPool.size()) {
+        if (aux == this.transactionPool.size() || (aux + transactions.size()) != this.transactionPool.size())
             return false;
-        }
 
         new Thread(this::processNewBlock).start();
 
         return true;
     }
-
-    // END MEMORY POOL
 
     // TODO BLOCK SYNC
     @Override
@@ -156,7 +136,7 @@ public class Replica extends DefaultSingleRecoverable {
             this.blockchain = (Blockchain) objIn.readObject();
 
         } catch (IOException | ClassNotFoundException e) {
-            this.logger.error("Error installing snapshot", e);
+            logger.error("Error installing snapshot", e);
             this.blockchain = aux;
         }
     }
@@ -175,7 +155,7 @@ public class Replica extends DefaultSingleRecoverable {
             snapshot = byteOut.toByteArray();
 
         } catch (IOException e) {
-            this.logger.error("Error getting snapshot", e);
+            logger.error("Error getting snapshot", e);
         }
 
         return snapshot;
@@ -203,7 +183,7 @@ public class Replica extends DefaultSingleRecoverable {
             Object input = objIn.readObject();
 
             if (input.getClass() == ClientMessage.class) {
-                Block currentBlock = this.blockchain.getCurrentBlock();
+                Block currentBlock = this.blockchain.getMostRecentBlock();
 
                 ClientMessage req = (ClientMessage) input;
 
@@ -237,8 +217,6 @@ public class Replica extends DefaultSingleRecoverable {
                                     objOut.writeUTF(e.getMessage());
                                 }
 
-                                //currentBlock.addTransaction(t);
-                                //objOut.writeBoolean(true);
                                 objOut.writeBoolean(addTransaction(t));
                             } else {
                                 objOut.writeBoolean(false);
@@ -250,60 +228,77 @@ public class Replica extends DefaultSingleRecoverable {
                         }
                     case 6:
                         if (ordered) {
-                            this.blockchain.createBlock(msgCtx.getTimestamp(), msgCtx.getNonces());
+                            long timestamp = msgCtx.getTimestamp();
+                            Random random = new Random(timestamp);
+                            byte[] transactionData = new byte[300];
+                            List<Transaction> transactionList = new ArrayList<>();
+                            Configuration config = Configuration.getInstance();
+                            for (int t = 0; t < 5; t++) {
+                                random.nextBytes(transactionData);
+                                Transaction transaction = new Transaction(transactionData, config.getProtocolVersion(), timestamp);
+                                transactionList.add(transaction);
+                                timestamp += 1L;
+                            }
+                            Block previousBlock = this.blockchain.getMostRecentBlock();
+                            Block newBlock = new Block(previousBlock.getHash(), config.getProtocolVersion(),
+                                    previousBlock.getBlockHeight() + 1, transactionList, timestamp,
+                                    msgCtx.getNonces());
+
+                            // this.blockchain.createBlock(msgCtx.getTimestamp(), msgCtx.getNonces(), transactionList);
+                            this.blockchain.addBlock(newBlock);
                             objOut.writeBoolean(true);
                             hasReply = true;
                         }
                         break;
                     default:
-                        this.logger.error("Unknown type of ClientMessageType");
+                        logger.error("Unknown type of ClientMessageType");
                 }
             } else if (input.getClass() == ReplicaMessage.class) {
                 ReplicaMessage req = (ReplicaMessage) input;
 
-                if (req.getSender() == this.replicaContext.getCurrentView().getId()) {
-                    objOut.writeBoolean(true);
-                    hasReply = true;
-                }
-
                 switch (req.getType()) {
                     case SYNC_BLOCKS:
-                        if (hasReply) break;
                         // TODO
                         break;
                     case NEW_BLOCK:
-                        Block recvBlock;
-                        try (ByteArrayInputStream byteIn2 = new ByteArrayInputStream(req.getContent());
-                             ObjectInput objIn2 = new ObjectInputStream(byteIn2)) {
-                            recvBlock = (Block) objIn2.readObject();
-                            recvBlock = new Block(recvBlock.getPreviousBlockHash(), recvBlock.getProtocolVersion(),
-                                    recvBlock.getBlockHeight(), new ArrayList<>(recvBlock.getTransactions().values()),
-                                    msgCtx.getTimestamp(), msgCtx.getNonces());
+                        if (req.getSender() == this.replicaContext.getStaticConfiguration().getProcessId()) {
+                            objOut.writeBoolean(true);
+                            hasReply = true;
                         }
-                        if (hasReply) break;
+
+                        Block recvBlock;
+
+                        ByteArrayInputStream byteIn2 = new ByteArrayInputStream(req.getContent());
+                        ObjectInput objIn2 = new ObjectInputStream(byteIn2);
+
+                        recvBlock = (Block) objIn2.readObject();
+
+                        objIn2.close();
+                        byteIn2.close();
+
+                        recvBlock = new Block(recvBlock.getPreviousBlockHash(), recvBlock.getProtocolVersion(),
+                                recvBlock.getBlockHeight(), recvBlock.getTransactions(),
+                                msgCtx.getTimestamp(), msgCtx.getNonces());
+
+                        if (hasReply) {
+                            this.proposedBlock = recvBlock;
+                            break;
+                        }
 
                         createProposedBlock();
-                        if (this.proposedBlock == null) {
-                            /*
-                            if (Arrays.equals(recvBlock.getHash(), this.blockchain.getCurrentBlock().getHash()))
-                                objOut.writeBoolean(true);
-                            else
-                                objOut.writeBoolean(false);
-                             */
-                            objOut.writeBoolean(Arrays.equals(recvBlock.getHash(), this.blockchain.getCurrentBlock().getHash()));
-                        } else {
-                            /* if (Arrays.equals(recvBlock.getHash(), this.proposedBlock.getHash())) {
-                                this.blockchain.addBlock(this.proposedBlock);
-                                this.proposedBlock = null;
 
-                                objOut.writeBoolean(true);
-                            } else */
+                        if (this.proposedBlock == null) {
+                            // TODO: BLOCK EQUALS
+                            objOut.writeBoolean(Arrays.equals(recvBlock.getHash(), this.blockchain.getMostRecentBlock()
+                                    .getHash()));
+                        } else {
+                            // TODO: BLOCK EQUALS
                             if (Arrays.equals(recvBlock.getMerkleRoot(), this.proposedBlock.getMerkleRoot()) &&
                                     recvBlock.getBlockHeight() == this.proposedBlock.getBlockHeight() &&
                                     Arrays.equals(recvBlock.getPreviousBlockHash(),
                                             this.proposedBlock.getPreviousBlockHash()) &&
                                     recvBlock.getProtocolVersion().equals(this.proposedBlock.getProtocolVersion())) {
-                                // ? REVIEW
+
                                 this.blockchain.addBlock(recvBlock);
                                 this.proposedBlock = null;
                                 objOut.writeBoolean(true);
@@ -313,10 +308,10 @@ public class Replica extends DefaultSingleRecoverable {
                         hasReply = true;
                         break;
                     default:
-                        this.logger.error("Unknown type of ReplicaMessageType");
+                        logger.error("Unknown type of ReplicaMessageType");
                 }
             } else
-                this.logger.error("Unknown message class, ignoring");
+                logger.error("Unknown message class, ignoring");
 
             if (hasReply) {
                 objOut.flush();
@@ -325,7 +320,7 @@ public class Replica extends DefaultSingleRecoverable {
             }
 
         } catch (IOException | ClassNotFoundException | InstantiationException e) {
-            this.logger.error("ERROR", e);
+            logger.error("ERROR", e);
         }
 
         return reply;
