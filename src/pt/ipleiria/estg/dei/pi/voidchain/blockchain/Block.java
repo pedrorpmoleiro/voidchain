@@ -104,53 +104,6 @@ public class Block implements Serializable {
 
     /* Methods */
 
-    // TODO REMOVE ?
-    private boolean calculateMerkleRootAndValidateTransactionAdded() {
-        this.transactionCounter += transactions.size();
-        this.blockHeader.merkleRoot = MerkleTree.getMerkleRoot(this.transactions);
-
-        if (Arrays.equals(this.blockHeader.merkleRoot, new byte[0])) {
-            logger.error("Transactions added. Error occurred while calculating merkle tree root");
-
-            Block aux = Block.fromDisk(this.blockHeight);
-            if (aux == null) return false;
-
-            this.transactionCounter = aux.transactionCounter;
-            this.transactions = aux.transactions;
-            this.blockHeader.merkleRoot = aux.blockHeader.merkleRoot;
-
-            return false;
-        }
-
-        return this.toDisk();
-    }
-
-    /**
-     * Adds transactions (Map) to the block.
-     *
-     * @param transactions the transactions
-     * @return true if the transactions were saved or false if an error occurred
-     */
-    // TODO REMOVE ?
-    public boolean addTransactions(Map<byte[], Transaction> transactions) {
-        this.transactions.putAll(transactions);
-
-        return calculateMerkleRootAndValidateTransactionAdded();
-    }
-
-    /**
-     * Add transactions (List) boolean.
-     *
-     * @param transactions the transactions
-     * @return true if the transactions were saved or false if an error occurred
-     */
-    // TODO REMOVE ?
-    public boolean addTransactions(List<Transaction> transactions) {
-        this.transactions.putAll(Converters.transactionListToMap(transactions));
-
-        return calculateMerkleRootAndValidateTransactionAdded();
-    }
-
     /**
      * Saves block to disk according to current system configurations.
      *

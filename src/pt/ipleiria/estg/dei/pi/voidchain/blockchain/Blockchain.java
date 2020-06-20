@@ -121,119 +121,13 @@ public class Blockchain implements Serializable {
     }
 
     /**
-     * Creates a new block, then adds it to the chain.
-     * <p>
-     * Will return NULL if error occured while creating the block.
-     *
-     * @param timestamp the timestamp (long)
-     * @param nonce     the nonce (byte[])
-     * @return the newly created block
-     */
-    // TODO: REMOVE ?
-    public Block createBlock(long timestamp, byte[] nonce) {
-        try {
-            Block auxBlock = this.getMostRecentBlock();
-
-            Configuration config = Configuration.getInstance();
-
-            Block block = new Block(auxBlock.getHash(), config.getProtocolVersion(),
-                    auxBlock.getBlockHeight() + 1, new Hashtable<>(), timestamp, nonce);
-
-            this.blocks.add(0, block);
-
-            block.toDisk();
-
-            while (this.blocks.size() > config.getNumBlockInMemory()) {
-                this.blocks.remove(this.blocks.size() - 1);
-            }
-
-            return block;
-
-        } catch (InstantiationException e) {
-            logger.error("Error occurred while creating new block", e);
-            return null;
-        }
-    }
-
-    /**
-     * Creates a new block, with predefined transactions, then adds it to the chain.
-     * <p>
-     * Will return NULL if error occured while creating the block.
-     *
-     * @param timestamp    the timestamp (long)
-     * @param nonce        the nonce (byte[])
-     * @param transactions the transactions (Map)
-     * @return the newly created block
-     */
-    // TODO: REMOVE ?
-    public Block createBlock(long timestamp, byte[] nonce, Map<byte[], Transaction> transactions) {
-        try {
-            Configuration config = Configuration.getInstance();
-
-            Block auxBlock = this.getMostRecentBlock();
-
-            Block block = new Block(auxBlock.getHash(), config.getProtocolVersion(), auxBlock.getBlockHeight() + 1,
-                    transactions, timestamp, nonce);
-
-            this.blocks.add(0, block);
-
-            block.toDisk();
-
-            while (this.blocks.size() > config.getNumBlockInMemory()) {
-                this.blocks.remove(this.blocks.size() - 1);
-            }
-
-            return block;
-
-        } catch (InstantiationException e) {
-            logger.error("Error occurred while creating new block", e);
-            return null;
-        }
-    }
-
-    /**
-     * Creates a new block, with predefined transactions, then adds it to the chain.
-     * <p>
-     * Will return NULL if error occured while creating the block.
-     *
-     * @param timestamp    the timestamp (long)
-     * @param nonce        the nonce (byte[])
-     * @param transactions the transactions (List)
-     * @return the newly created block
-     */
-    // TODO: REMOVE ?
-    public Block createBlock(long timestamp, byte[] nonce, List<Transaction> transactions) {
-        try {
-            Block auxBlock = this.getMostRecentBlock();
-
-            Block block = new Block(auxBlock.getHash(), Configuration.getInstance().getProtocolVersion(), auxBlock.getBlockHeight() + 1,
-                    transactions, timestamp, nonce);
-
-            this.blocks.add(0, block);
-
-            block.toDisk();
-
-            while (this.blocks.size() > Configuration.getInstance().getNumBlockInMemory()) {
-                this.blocks.remove(this.blocks.size() - 1);
-            }
-
-            return block;
-
-        } catch (InstantiationException e) {
-            logger.error("Error occurred while creating new block", e);
-            return null;
-        }
-    }
-
-    /**
      * Adds a block to the front of the chain.
      *
      * @param block the block to be added
      */
     public boolean addBlock(Block block) {
         if (block == null) return false;
-        // TODO: EQUALS
-        if (block.getBlockHeight() == this.getMostRecentBlock().getBlockHeight()) return false;
+        if (block.getBlockHeight() <= this.getMostRecentBlock().getBlockHeight()) return false;
         this.blocks.add(0, block);
         block.toDisk();
         while (this.blocks.size() > Configuration.getInstance().getNumBlockInMemory())

@@ -261,9 +261,10 @@ public class Replica extends DefaultSingleRecoverable {
                         // TODO
                         break;
                     case NEW_BLOCK:
-                        if (req.getSender() == this.replicaContext.getStaticConfiguration().getProcessId()) {
-                            objOut.writeBoolean(true);
+                        if (req.getSender() != msgCtx.getLeader()) {
+                            objOut.writeBoolean(false);
                             hasReply = true;
+                            break;
                         }
 
                         Block recvBlock;
@@ -280,25 +281,20 @@ public class Replica extends DefaultSingleRecoverable {
                                 recvBlock.getBlockHeight(), recvBlock.getTransactions(),
                                 msgCtx.getTimestamp(), msgCtx.getNonces());
 
-                        if (hasReply) {
+                        if (req.getSender() == this.replicaContext.getStaticConfiguration().getProcessId()) {
                             this.proposedBlock = recvBlock;
+
+                            objOut.writeBoolean(true);
+                            hasReply = true;
                             break;
                         }
 
                         createProposedBlock();
 
                         if (this.proposedBlock == null) {
-                            // TODO: BLOCK EQUALS
-                            objOut.writeBoolean(Arrays.equals(recvBlock.getHash(), this.blockchain.getMostRecentBlock()
-                                    .getHash()));
+                            objOut.writeBoolean(recvBlock.equals(this.blockchain.getMostRecentBlock()));
                         } else {
-                            // TODO: BLOCK EQUALS
-                            if (Arrays.equals(recvBlock.getMerkleRoot(), this.proposedBlock.getMerkleRoot()) &&
-                                    recvBlock.getBlockHeight() == this.proposedBlock.getBlockHeight() &&
-                                    Arrays.equals(recvBlock.getPreviousBlockHash(),
-                                            this.proposedBlock.getPreviousBlockHash()) &&
-                                    recvBlock.getProtocolVersion().equals(this.proposedBlock.getProtocolVersion())) {
-
+                            if (recvBlock.equals(this.proposedBlock)) {
                                 this.blockchain.addBlock(recvBlock);
                                 this.proposedBlock = null;
                                 objOut.writeBoolean(true);

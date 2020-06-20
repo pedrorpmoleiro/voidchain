@@ -22,6 +22,7 @@ import java.util.Map;
  * The structure of a transaction is: timestamp (when it was created), its size
  * , the version of the protocol when the transaction was created and the hash of the transaction (trasaction ID).
  */
+// TODO: JAVADOC
 public class Transaction implements Serializable {
     /* Attributes */
     private static final Logger logger = LoggerFactory.getLogger(Transaction.class.getName());
