@@ -17,7 +17,8 @@ public class Configuration {
     public static final int DEFAULT_TRANSACTION_MAX_SIZE = 512000;
     public static final int DEFAULT_NUM_TRANSACTIONS_BLOCK = 100;
 
-    public static final int DEFAULT_BLOCKS_MEMORY = 10;
+    public static final int DEFAULT_MEMORY_USED_FOR_BLOCKS = 128; // in MB
+
     public static final String DEFAULT_BLOCK_FILE_EXTENSION = "dat";
     public static final String DEFAULT_BLOCK_FILE_BASE_NAME = "block";
     public static final String DEFAULT_BLOCK_FILE_DIRECTORY = "data" + File.separator + "blocks";
@@ -28,7 +29,8 @@ public class Configuration {
     private int transactionMaxSize = DEFAULT_TRANSACTION_MAX_SIZE;
     private int numTransactionsInBlock = DEFAULT_NUM_TRANSACTIONS_BLOCK;
 
-    private int numBlockInMemory = DEFAULT_BLOCKS_MEMORY;
+    private int memoryUsedForBlocks = DEFAULT_MEMORY_USED_FOR_BLOCKS;
+
     private String blockFileExtension = DEFAULT_BLOCK_FILE_EXTENSION;
     private final String blockFileExtensionSeparator = ".";
     private final String blockFileExtensionSeparatorSplit = "\\.";
@@ -76,11 +78,6 @@ public class Configuration {
                                 if (aux != null)
                                     this.numTransactionsInBlock = Integer.parseInt(aux);
                                 continue;
-                            case "system.voidchain.memory.num_blocks":
-                                aux = str.nextToken().trim();
-                                if (aux != null)
-                                    this.numBlockInMemory = Integer.parseInt(aux);
-                                continue;
                             case "system.voidchain.storage.block_file_extension":
                                 aux = str.nextToken().trim();
                                 if (aux != null)
@@ -98,6 +95,11 @@ public class Configuration {
 
                                     this.blockFileDirectory = aux;
                                 }
+                                continue;
+                            case "system.voidchain.memory.block_bytes":
+                                aux = str.nextToken().trim();
+                                if (aux != null)
+                                    this.memoryUsedForBlocks = Integer.parseInt(aux);
                         }
                     }
                 }
@@ -120,10 +122,6 @@ public class Configuration {
 
     public int getNumTransactionsInBlock() {
         return numTransactionsInBlock;
-    }
-
-    public int getNumBlockInMemory() {
-        return numBlockInMemory;
     }
 
     public String getBlockFileExtension() {
@@ -150,13 +148,17 @@ public class Configuration {
         return blockFileExtensionSeparatorSplit;
     }
 
+    public int getMemoryUsedForBlocks() {
+        return memoryUsedForBlocks;
+    }
+
     @Override
     public String toString() {
         return "Configuration: {" + System.lineSeparator() +
                 "protocol version: '" + protocolVersion + '\'' + System.lineSeparator() +
                 "transaction max size: " + transactionMaxSize + System.lineSeparator() +
                 "number of transactions per block: " + numTransactionsInBlock + System.lineSeparator() +
-                "number of blocks in memory: " + numBlockInMemory + System.lineSeparator() +
+                "number of MB used to store blocks in memory: " + memoryUsedForBlocks + System.lineSeparator() +
                 "block file extension: '" + blockFileExtension + '\'' + System.lineSeparator() +
                 "block file base name: '" + blockFileBaseName + '\'' + System.lineSeparator() +
                 "block file directory: '" + blockFileDirectory + '\'' + System.lineSeparator() +

@@ -18,6 +18,7 @@ import java.util.*;
 public class Blockchain implements Serializable {
     /* Attributes */
     private final List<Block> blocks;
+    private int sizeInMemory = 0;
 
     private static Blockchain INSTANCE = null;
 
@@ -35,10 +36,12 @@ public class Blockchain implements Serializable {
 
         this.blocks = new ArrayList<>();
         this.blocks.add(genesisBlock);
+        this.sizeInMemory = genesisBlock.getSize();
     }
 
-    private Blockchain(List<Block> blocks) {
+    private Blockchain(List<Block> blocks,int sizeInMemory) {
         this.blocks = new ArrayList<>(blocks);
+        this.sizeInMemory = sizeInMemory;
     }
 
     /* Methods */
@@ -58,21 +61,19 @@ public class Blockchain implements Serializable {
                 List<Block> blocksDisk = new ArrayList<>();
                 int previousFileBlockHeight = Integer.MIN_VALUE;
 
-                Arrays.sort(blockFiles, new Comparator<File>() {
-                    @Override
-                    public int compare(File o1, File o2) {
-                        String[] aux1 = o1.getName().split(config.getBlockFileBaseNameSeparator());
-                        String aux2 = aux1[1].split(config.getBlockFileExtensionSeparatorSplit())[0];
-                        int o1Height = Integer.parseInt(aux2);
+                Arrays.sort(blockFiles, (o1, o2) -> {
+                    String[] aux1 = o1.getName().split(config.getBlockFileBaseNameSeparator());
+                    String aux2 = aux1[1].split(config.getBlockFileExtensionSeparatorSplit())[0];
+                    int o1Height = Integer.parseInt(aux2);
 
-                        aux1 = o2.getName().split(config.getBlockFileBaseNameSeparator());
-                        aux2 = aux1[1].split(config.getBlockFileExtensionSeparatorSplit())[0];
-                        int o2Height = Integer.parseInt(aux2);
+                    aux1 = o2.getName().split(config.getBlockFileBaseNameSeparator());
+                    aux2 = aux1[1].split(config.getBlockFileExtensionSeparatorSplit())[0];
+                    int o2Height = Integer.parseInt(aux2);
 
-                        return Integer.compare(o1Height, o2Height);
-                    }
+                    return Integer.compare(o1Height, o2Height);
                 });
 
+                int sizeInMemory = 0;
                 for (File blockFile : blockFiles) {
                     String[] aux = blockFile.getName().split(config.getBlockFileBaseNameSeparator());
 
@@ -86,19 +87,25 @@ public class Blockchain implements Serializable {
                     if (currentFileBlockHeight > previousFileBlockHeight) {
                         previousFileBlockHeight = currentFileBlockHeight;
                         try {
-                            blocksDisk.add(0, (Block) Storage.readObjectFromDisk(blockFile.getAbsolutePath()));
+                            Block b = (Block) Storage.readObjectFromDisk(blockFile.getAbsolutePath());
+                            blocksDisk.add(0, b);
+                            sizeInMemory += b.getSize();
                         } catch (IOException | ClassNotFoundException e) {
                             logger.error("Error loading block from disk", e);
                             continue;
                         }
 
-                        while (blocksDisk.size() > config.getNumBlockInMemory()) {
+                        /*while (blocksDisk.size() > config.getNumBlockInMemory()) {
                             blocksDisk.remove(blocksDisk.size() - 1);
+                        }*/
+                        while (sizeInMemory > (Configuration.getInstance().getMemoryUsedForBlocks() * 1000000)) {
+                            Block b = blocksDisk.remove(blocksDisk.size() - 1);
+                            sizeInMemory -= b.getSize();
                         }
                     }
                 }
 
-                INSTANCE = new Blockchain(blocksDisk);
+                INSTANCE = new Blockchain(blocksDisk, sizeInMemory);
             } else
                 INSTANCE = new Blockchain();
         }
@@ -129,9 +136,15 @@ public class Blockchain implements Serializable {
         if (block == null) return false;
         if (block.getBlockHeight() <= this.getMostRecentBlock().getBlockHeight()) return false;
         this.blocks.add(0, block);
+        this.sizeInMemory += block.getSize();
         block.toDisk();
-        while (this.blocks.size() > Configuration.getInstance().getNumBlockInMemory())
-            this.blocks.remove(this.blocks.size() - 1);
+        /*while (this.blocks.size() > Configuration.getInstance().getNumBlockInMemory())
+            this.blocks.remove(this.blocks.size() - 1);*/
+        int aux = (Configuration.getInstance().getMemoryUsedForBlocks() * 1000000);
+        while (this.sizeInMemory > aux) {
+            Block b = this.blocks.remove(this.blocks.size() - 1);
+            this.sizeInMemory -= b.getSize();
+        }
 
         return true;
     }
@@ -176,6 +189,10 @@ public class Blockchain implements Serializable {
                 return (Block) Storage.readObjectFromDisk(f.getName());
 
         throw new NoSuchElementException("Requested block doesn't exist");
+    }
+
+    public int getSizeInMemory() {
+        return sizeInMemory;
     }
 
     @Override

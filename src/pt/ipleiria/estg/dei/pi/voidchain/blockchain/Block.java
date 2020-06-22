@@ -154,7 +154,7 @@ public class Block implements Serializable {
      * Calculates size of the block in bytes.
      * Includes the size of transactions.
      *
-     * @return the size (long)
+     * @return the size (int)
      */
     public int getSize() {
         int allTransactionSize = 0;
