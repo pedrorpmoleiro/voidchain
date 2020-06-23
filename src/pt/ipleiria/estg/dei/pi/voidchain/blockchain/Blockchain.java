@@ -115,6 +115,9 @@ public class Blockchain implements Serializable {
     // TODO: ANALYZE
     // ? DOES IT WORK IF PREVIOUS PREVIOUS BLOCK ALTERED
     public boolean isChainValid() {
+        if (this.blocks.size() == 0) return false;
+        if (this.blocks.size() == 1) return true;
+
         Block currentBlock = this.getMostRecentBlock();
         Block previousBlock = this.blocks.get(1);
 
@@ -170,11 +173,14 @@ public class Blockchain implements Serializable {
      *
      * @param blockHeight the block height
      * @return the block
-     * @throws NoSuchElementException If no matching block found exception will be thrown
+     * @throws NoSuchElementException No such element exception will be thrown if no matching block is found
      * @throws IOException            IO exception if an error while loading the block data from disk
      * @throws ClassNotFoundException Class not found exception if an error while converting block data to Block class instance
      */
     public Block getBlock(int blockHeight) throws NoSuchElementException, IOException, ClassNotFoundException {
+        if (blockHeight > this.blocks.get(0).getBlockHeight())
+            throw new NoSuchElementException("Requested block is above the most recent block");
+
         for (Block b : this.blocks)
             if (b.getBlockHeight() == blockHeight)
                 return b;
