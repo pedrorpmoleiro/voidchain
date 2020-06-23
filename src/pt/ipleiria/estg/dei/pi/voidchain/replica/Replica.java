@@ -13,7 +13,9 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
+import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessageType;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
 
 import java.io.*;
 import java.security.Security;
@@ -188,23 +190,19 @@ public class Replica extends DefaultSingleRecoverable {
                 ClientMessage req = (ClientMessage) input;
 
                 switch (req.getType()) {
-                    case 1:
+                    case GET_MOST_RECENT_BLOCK:
                         objOut.writeObject(currentBlock);
                         hasReply = true;
                         break;
-                    case 2:
-                        objOut.write(currentBlock.getHash());
-                        hasReply = true;
-                        break;
-                    case 3:
+                    case GET_MOST_RECENT_BLOCK_HEIGHT:
                         objOut.writeInt(currentBlock.getBlockHeight());
                         hasReply = true;
                         break;
-                    case 4:
-                        objOut.writeObject(currentBlock.getTransactions());
+                    case GET_BLOCK:
+                        objOut.writeObject(this.blockchain.getBlock(Converters.convertByteArrayToInt(req.getData())));
                         hasReply = true;
                         break;
-                    case 5:
+                    case ADD_TRANSACTION:
                         if (ordered) {
                             if (req.hasData()) {
                                 Transaction t = null;
@@ -226,30 +224,6 @@ public class Replica extends DefaultSingleRecoverable {
                             hasReply = true;
                             break;
                         }
-                    case 6:
-                        if (ordered) {
-                            long timestamp = msgCtx.getTimestamp();
-                            Random random = new Random(timestamp);
-                            byte[] transactionData = new byte[300];
-                            List<Transaction> transactionList = new ArrayList<>();
-                            Configuration config = Configuration.getInstance();
-                            for (int t = 0; t < 5; t++) {
-                                random.nextBytes(transactionData);
-                                Transaction transaction = new Transaction(transactionData, config.getProtocolVersion(), timestamp);
-                                transactionList.add(transaction);
-                                timestamp += 1L;
-                            }
-                            Block previousBlock = this.blockchain.getMostRecentBlock();
-                            Block newBlock = new Block(previousBlock.getHash(), config.getProtocolVersion(),
-                                    previousBlock.getBlockHeight() + 1, transactionList, timestamp,
-                                    msgCtx.getNonces());
-
-                            // this.blockchain.createBlock(msgCtx.getTimestamp(), msgCtx.getNonces(), transactionList);
-                            this.blockchain.addBlock(newBlock);
-                            objOut.writeBoolean(true);
-                            hasReply = true;
-                        }
-                        break;
                     default:
                         logger.error("Unknown type of ClientMessageType");
                 }

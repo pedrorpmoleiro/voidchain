@@ -141,7 +141,7 @@ public class Configuration {
                                     }
                                 }
                                 continue;
-                            case "system.voidchain.memory.block_bytes":
+                            case "system.voidchain.memory.block_megabytes":
                                 aux = str.nextToken().trim();
                                 if (aux != null)
                                     this.memoryUsedForBlocks = Integer.parseInt(aux);
