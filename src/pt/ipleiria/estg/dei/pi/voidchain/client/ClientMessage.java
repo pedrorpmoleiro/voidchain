@@ -28,7 +28,8 @@ public class ClientMessage implements Serializable {
     public ClientMessage(ClientMessageType type, byte[] data) {
         this.type = type;
 
-        if (type == ClientMessageType.ADD_TRANSACTION || type == ClientMessageType.GET_BLOCK)
+        if (type == ClientMessageType.ADD_TRANSACTION || type == ClientMessageType.GET_BLOCK ||
+        type == ClientMessageType.GET_BLOCK_NO_TRANSACTIONS)
             this.data = data;
         else
             this.data = null;

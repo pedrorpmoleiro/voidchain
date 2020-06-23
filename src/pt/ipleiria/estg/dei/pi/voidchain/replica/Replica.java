@@ -202,6 +202,15 @@ public class Replica extends DefaultSingleRecoverable {
                         objOut.writeObject(this.blockchain.getBlock(Converters.convertByteArrayToInt(req.getData())));
                         hasReply = true;
                         break;
+                    case GET_BLOCK_NO_TRANSACTIONS:
+                        objOut.writeObject(this.blockchain.getBlock(Converters.convertByteArrayToInt(req.getData()))
+                                .getBlockNoTransactions());
+                        hasReply = true;
+                        break;
+                    case GET_MOST_RECENT_BLOCK_NO_TRANSACTIONS:
+                        objOut.writeObject(currentBlock.getBlockNoTransactions());
+                        hasReply = true;
+                        break;
                     case ADD_TRANSACTION:
                         if (ordered) {
                             if (req.hasData()) {
@@ -222,8 +231,8 @@ public class Replica extends DefaultSingleRecoverable {
                             }
 
                             hasReply = true;
-                            break;
                         }
+                        break;
                     default:
                         logger.error("Unknown type of ClientMessageType");
                 }

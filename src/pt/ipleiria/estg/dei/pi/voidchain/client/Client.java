@@ -8,6 +8,7 @@ import org.bouncycastle.util.encoders.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
+import pt.ipleiria.estg.dei.pi.voidchain.blockchain.BlockNoTransactions;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
 
@@ -34,8 +35,10 @@ public class Client {
     private JPanel transactionPanel;
     private JButton buttonQuit;
     private JTextArea transactionDataTextArea;
-    private JPanel blockPanel;
+    private JPanel getBlockPanel;
     private JTextField blockHeightTextField;
+    private JButton getCurrentBlockNoTransactionsButton;
+    private JButton getBlockNoTransactionsButton;
 
     private final ServiceProxy serviceProxy;
 
@@ -54,9 +57,8 @@ public class Client {
      * The entry point of application.
      */
     public static void main(String[] args) {
-        if (args.length < 1) {
+        if (args.length < 1)
             System.out.println("Usage: pt.ipleiria.estg.dei.pi.voidchain.client.Client <client id>");
-        }
 
         if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
             Security.addProvider(new BouncyCastleProvider());
@@ -73,13 +75,11 @@ public class Client {
         client.getCurrentBlockHeightButton.addActionListener(client.getCurrentBlockHeightButtonActionListener());
         client.getBlockButton.addActionListener(client.getBlockButtonActionListener());
         client.addTransactionButton.addActionListener(client.addTransactionButtonActionListener());
+        client.getBlockNoTransactionsButton.addActionListener(client.getBlockNoTransactionsButtonActionListener());
+        client.getCurrentBlockNoTransactionsButton.addActionListener(
+                client.getCurrentBlockNoTransactionsButtonActionListener());
 
-        client.buttonQuit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
+        client.buttonQuit.addActionListener(e -> System.exit(0));
 
         JFrame frame = new JFrame("Client");
         frame.setPreferredSize(new Dimension(600, 300));
@@ -111,6 +111,43 @@ public class Client {
                 ObjectInput objIn = new ObjectInputStream(byteIn);
 
                 Block currentBlock = (Block) objIn.readObject();
+
+                objIn.close();
+                byteIn.close();
+
+                //System.out.println(currentBlock.toString());
+                logger.info("Current block: ", currentBlock);
+                JOptionPane.showMessageDialog(null, currentBlock.toString(),
+                        "Current Block Data", JOptionPane.INFORMATION_MESSAGE);
+
+            } catch (IOException | ClassNotFoundException ex) {
+                logger.error("An error has occurred", ex);
+            }
+        };
+    }
+
+    private ActionListener getCurrentBlockNoTransactionsButtonActionListener() {
+        return e -> {
+            try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+                 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
+
+                ClientMessage req = new ClientMessage(ClientMessageType.GET_MOST_RECENT_BLOCK_NO_TRANSACTIONS);
+                objOut.writeObject(req);
+
+                objOut.flush();
+                byteOut.flush();
+
+                byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
+
+                if (reply.length == 0) {
+                    logger.error("Empty reply from replicas");
+                    return;
+                }
+
+                ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
+                ObjectInput objIn = new ObjectInputStream(byteIn);
+
+                BlockNoTransactions currentBlock = (BlockNoTransactions) objIn.readObject();
 
                 objIn.close();
                 byteIn.close();
@@ -193,6 +230,52 @@ public class Client {
                 ObjectInput objIn = new ObjectInputStream(byteIn);
 
                 Block block = (Block) objIn.readObject();
+
+                objIn.close();
+                byteIn.close();
+
+                //System.out.println(block.toString());
+                logger.info("Block " + blockHeight + " Data", block);
+                JOptionPane.showMessageDialog(null, block.toString(),
+                        "Block " + blockHeight + " Data", JOptionPane.INFORMATION_MESSAGE);
+
+            } catch (IOException | ClassNotFoundException ex) {
+                logger.error("An error has occurred", ex);
+            }
+        };
+    }
+
+    private ActionListener getBlockNoTransactionsButtonActionListener() {
+        return e -> {
+            try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+                 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
+
+                String blockHeightText = this.blockHeightTextField.getText();
+
+                if (blockHeightText.isBlank() || blockHeightText.isEmpty())
+                    return;
+
+                int blockHeight = Integer.parseInt(blockHeightText);
+
+                ClientMessage req = new ClientMessage(ClientMessageType.GET_BLOCK_NO_TRANSACTIONS,
+                        Converters.intToByteArray(blockHeight));
+
+                objOut.writeObject(req);
+
+                objOut.flush();
+                byteOut.flush();
+
+                byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
+
+                if (reply.length == 0) {
+                    logger.error("Empty reply from replicas");
+                    return;
+                }
+
+                ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
+                ObjectInput objIn = new ObjectInputStream(byteIn);
+
+                BlockNoTransactions block = (BlockNoTransactions) objIn.readObject();
 
                 objIn.close();
                 byteIn.close();

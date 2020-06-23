@@ -250,6 +250,16 @@ public class Block implements Serializable {
         return Hash.calculateSHA3512RIPEMD160(blockHeaderData);
     }
 
+    /**
+     * Gets a copy of the block without any transactions.
+     *
+     * @return the block no transactions
+     */
+    public BlockNoTransactions getBlockNoTransactions() {
+        return new BlockNoTransactions(this.blockHeader.clone(), this.transactionCounter, this.getBlockHeight(),
+                this.getSize());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

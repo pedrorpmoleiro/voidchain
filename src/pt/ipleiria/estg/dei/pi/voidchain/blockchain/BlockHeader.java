@@ -123,6 +123,11 @@ public class BlockHeader implements Serializable {
         return dataBytes;
     }
 
+    protected BlockHeader clone() {
+        return new BlockHeader(this.previousBlockHash, this.protocolVersion, this.timestamp,
+                this.nonce, this.merkleRoot);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
