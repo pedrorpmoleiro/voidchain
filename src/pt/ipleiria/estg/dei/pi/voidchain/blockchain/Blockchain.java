@@ -18,7 +18,7 @@ import java.util.*;
 public class Blockchain implements Serializable {
     /* Attributes */
     private final List<Block> blocks;
-    private int sizeInMemory = 0;
+    private int sizeInMemory;
 
     private static Blockchain INSTANCE = null;
 
@@ -39,7 +39,7 @@ public class Blockchain implements Serializable {
         this.sizeInMemory = genesisBlock.getSize();
     }
 
-    private Blockchain(List<Block> blocks,int sizeInMemory) {
+    private Blockchain(List<Block> blocks, int sizeInMemory) {
         this.blocks = new ArrayList<>(blocks);
         this.sizeInMemory = sizeInMemory;
     }
@@ -95,13 +95,11 @@ public class Blockchain implements Serializable {
                             continue;
                         }
 
-                        /*while (blocksDisk.size() > config.getNumBlockInMemory()) {
-                            blocksDisk.remove(blocksDisk.size() - 1);
-                        }*/
-                        while (sizeInMemory > (Configuration.getInstance().getMemoryUsedForBlocks() * 1000000)) {
-                            Block b = blocksDisk.remove(blocksDisk.size() - 1);
-                            sizeInMemory -= b.getSize();
-                        }
+                        if (blocksDisk.size() > 1)
+                            while (sizeInMemory > (Configuration.getInstance().getMemoryUsedForBlocks() * 1000000)) {
+                                Block b = blocksDisk.remove(blocksDisk.size() - 1);
+                                sizeInMemory -= b.getSize();
+                            }
                     }
                 }
 
@@ -135,21 +133,25 @@ public class Blockchain implements Serializable {
     public boolean addBlock(Block block) {
         if (block == null) return false;
         if (block.getBlockHeight() <= this.getMostRecentBlock().getBlockHeight()) return false;
+
         this.blocks.add(0, block);
         this.sizeInMemory += block.getSize();
         block.toDisk();
-        /*while (this.blocks.size() > Configuration.getInstance().getNumBlockInMemory())
-            this.blocks.remove(this.blocks.size() - 1);*/
-        int aux = (Configuration.getInstance().getMemoryUsedForBlocks() * 1000000);
-        while (this.sizeInMemory > aux) {
-            Block b = this.blocks.remove(this.blocks.size() - 1);
-            this.sizeInMemory -= b.getSize();
-        }
+
+        if (this.blocks.size() > 1)
+            while (this.sizeInMemory > (Configuration.getInstance().getMemoryUsedForBlocks() * 1000000)) {
+                Block b = this.blocks.remove(this.blocks.size() - 1);
+                this.sizeInMemory -= b.getSize();
+            }
 
         return true;
     }
 
     /* Getters */
+
+    public int getSizeInMemory() {
+        return sizeInMemory;
+    }
 
     /**
      * Gets the last added block to the chain, or in other words, the highest block in the blockchain
@@ -171,7 +173,7 @@ public class Blockchain implements Serializable {
      * @throws ClassNotFoundException Class not found exception if an error while converting block data to Block class instance
      */
     public Block getBlock(int blockHeight) throws NoSuchElementException, IOException, ClassNotFoundException {
-        for (Block b : blocks)
+        for (Block b : this.blocks)
             if (b.getBlockHeight() == blockHeight)
                 return b;
 
@@ -189,10 +191,6 @@ public class Blockchain implements Serializable {
                 return (Block) Storage.readObjectFromDisk(f.getName());
 
         throw new NoSuchElementException("Requested block doesn't exist");
-    }
-
-    public int getSizeInMemory() {
-        return sizeInMemory;
     }
 
     @Override

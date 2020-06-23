@@ -11,6 +11,8 @@ import java.util.StringTokenizer;
 public class Configuration {
     private static Configuration INSTANCE = null;
 
+    private boolean firstRun = true;
+
     public static final String CONFIG_FILE = "config" + File.separator + "voidchain.config";
 
     public static final String DEFAULT_PROTOCOL_VERSION = "1.0";
@@ -79,21 +81,27 @@ public class Configuration {
                                     this.numTransactionsInBlock = Integer.parseInt(aux);
                                 continue;
                             case "system.voidchain.storage.block_file_extension":
-                                aux = str.nextToken().trim();
-                                if (aux != null)
-                                    this.blockFileExtension = aux;
+                                if (firstRun) {
+                                    aux = str.nextToken().trim();
+                                    if (aux != null)
+                                        this.blockFileExtension = aux;
+                                }
                                 continue;
                             case "system.voidchain.storage.block_file_base_name":
-                                aux = str.nextToken().trim();
-                                if (aux != null)
-                                    this.blockFileBaseName = aux;
+                                if (firstRun) {
+                                    aux = str.nextToken().trim();
+                                    if (aux != null)
+                                        this.blockFileBaseName = aux;
+                                }
                                 continue;
                             case "system.voidchain.storage.block_file_directory":
-                                aux = str.nextToken().trim();
-                                if (aux != null) {
-                                    aux = aux.replace('/', File.separatorChar);
+                                if (firstRun) {
+                                    aux = str.nextToken().trim();
+                                    if (aux != null) {
+                                        aux = aux.replace('/', File.separatorChar);
 
-                                    this.blockFileDirectory = aux;
+                                        this.blockFileDirectory = aux;
+                                    }
                                 }
                                 continue;
                             case "system.voidchain.memory.block_bytes":
@@ -107,6 +115,8 @@ public class Configuration {
 
             fr.close();
             rd.close();
+
+            this.firstRun = false;
         } catch (IOException e) {
             logger.error("Could not load configuration", e);
         }
