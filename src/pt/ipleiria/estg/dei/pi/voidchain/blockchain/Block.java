@@ -47,7 +47,7 @@ public class Block implements Serializable {
 
         byte[] nonce = new byte[10];
         new Random(timestamp).nextBytes(nonce);
-        
+
         this.blockHeader = new BlockHeader(new byte[0], config.getProtocolVersion(), timestamp,
                 nonce, MerkleTree.getMerkleRoot(this.transactions));
         this.blockHeight = 0;
@@ -227,15 +227,6 @@ public class Block implements Serializable {
      */
     public String getProtocolVersion() {
         return this.blockHeader.protocolVersion;
-    }
-
-    /**
-     * Gets nonce, a random byte array, from the block header.
-     *
-     * @return the nonce (byte[])
-     */
-    public byte[] getNonce() {
-        return this.blockHeader.nonce;
     }
 
     /**

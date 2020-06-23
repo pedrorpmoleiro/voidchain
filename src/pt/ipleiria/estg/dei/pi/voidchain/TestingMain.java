@@ -40,6 +40,7 @@ public class TestingMain {
                 System.out.println("DIDN'T ADD ALL TRANSACTIONS");
                 break;
             }
+
             voidchain.addBlock(newBlock);
         }
     }
