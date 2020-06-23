@@ -36,12 +36,22 @@ public class Block implements Serializable {
      */
     // FOR USE BY BLOCKCHAIN CLASS TO CREATE GENESIS BLOCK
     protected Block(byte[] genesisBytes) {
-        byte[] auxBytes = new byte[0];
-        this.blockHeader = new BlockHeader(genesisBytes, Configuration.getInstance().getProtocolVersion(), 0L,
-                auxBytes, auxBytes);
-        this.blockHeight = 0;
-        this.transactionCounter = -1;
+        Configuration config = Configuration.getInstance();
+
+        // Date and time of the first meeting to plan the development of this project
+        long timestamp = 1582135200000L;
+
+        Transaction t = new Transaction(genesisBytes, config.getProtocolVersion(), timestamp);
         this.transactions = new Hashtable<>();
+        this.transactions.put(t.getHash(), t);
+
+        byte[] nonce = new byte[10];
+        new Random(timestamp).nextBytes(nonce);
+        
+        this.blockHeader = new BlockHeader(new byte[0], config.getProtocolVersion(), timestamp,
+                nonce, MerkleTree.getMerkleRoot(this.transactions));
+        this.blockHeight = 0;
+        this.transactionCounter = 1;
     }
 
     /**

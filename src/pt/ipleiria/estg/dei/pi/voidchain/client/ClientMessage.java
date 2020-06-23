@@ -27,7 +27,11 @@ public class ClientMessage implements Serializable {
      */
     public ClientMessage(ClientMessageType type, byte[] data) {
         this.type = type;
-        this.data = data;
+
+        if (type == ClientMessageType.ADD_TRANSACTION || type == ClientMessageType.GET_BLOCK)
+            this.data = data;
+        else
+            this.data = null;
     }
 
     /**
@@ -45,7 +49,7 @@ public class ClientMessage implements Serializable {
      * @return true if the message has data or false otherwise.
      */
     public boolean hasData() {
-        return this.data != null;
+        return this.data != null && this.data.length > 0;
     }
 
     /**
