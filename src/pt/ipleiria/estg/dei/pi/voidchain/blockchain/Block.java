@@ -114,7 +114,7 @@ public class Block implements Serializable {
 
         return Storage.writeObjectToDisk(this, config.getBlockFileDirectory(),
                 config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + this.blockHeight +
-                        config.getBlockFileExtensionSeparator() + config.getBlockFileExtension());
+                        config.BLOCK_FILE_EXTENSION_SEPARATOR + config.getBlockFileExtension());
     }
 
     /**
@@ -130,7 +130,7 @@ public class Block implements Serializable {
             Configuration config = Configuration.getInstance();
             return (Block) Storage.readObjectFromDisk(config.getBlockFileDirectory() +
                     config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + blockHeight +
-                    config.getBlockFileExtensionSeparator() + config.getBlockFileExtension());
+                    config.BLOCK_FILE_EXTENSION_SEPARATOR + config.getBlockFileExtension());
         } catch (IOException | ClassNotFoundException e) {
             logger.error("Error getting block " + blockHeight + " from disk", e);
             return null;

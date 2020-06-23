@@ -26,10 +26,6 @@ public class Blockchain implements Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(Blockchain.class.getName());
 
-    /**
-     * Instantiates the Blockchain data structure.
-     * Keep in mind that can only exist a valid "chain".
-     */
     private Blockchain() {
         Block genesisBlock = new Block(GENESIS_STRING.getBytes(StandardCharsets.UTF_8));
         genesisBlock.toDisk();
@@ -47,11 +43,10 @@ public class Blockchain implements Serializable {
     /* Methods */
 
     /**
-     * Gets the instance of singleton class.
+     * Gets the instance of Blockchain Singleton class.
      *
-     * @return the instance
+     * @return the Blockchain class instance
      */
-    // TODO: BLOCK DATA VALIDATE
     public static Blockchain getInstance() {
         if (INSTANCE == null) {
             Configuration config = Configuration.getInstance();
@@ -63,11 +58,11 @@ public class Blockchain implements Serializable {
 
                 Arrays.sort(blockFiles, (o1, o2) -> {
                     String[] aux1 = o1.getName().split(config.getBlockFileBaseNameSeparator());
-                    String aux2 = aux1[1].split(config.getBlockFileExtensionSeparatorSplit())[0];
+                    String aux2 = aux1[1].split(config.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
                     int o1Height = Integer.parseInt(aux2);
 
                     aux1 = o2.getName().split(config.getBlockFileBaseNameSeparator());
-                    aux2 = aux1[1].split(config.getBlockFileExtensionSeparatorSplit())[0];
+                    aux2 = aux1[1].split(config.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
                     int o2Height = Integer.parseInt(aux2);
 
                     return Integer.compare(o1Height, o2Height);
@@ -81,13 +76,14 @@ public class Blockchain implements Serializable {
                         continue;
                     }
 
-                    String blockHeightString = aux[1].split(config.getBlockFileExtensionSeparatorSplit())[0];
+                    String blockHeightString = aux[1].split(config.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
                     int currentFileBlockHeight = Integer.parseInt(blockHeightString);
 
                     if (currentFileBlockHeight > previousFileBlockHeight) {
                         previousFileBlockHeight = currentFileBlockHeight;
                         try {
                             Block b = (Block) Storage.readObjectFromDisk(blockFile.getAbsolutePath());
+                            if (b.getBlockHeight() != currentFileBlockHeight) continue;
                             blocksDisk.add(0, b);
                             sizeInMemory += b.getSize();
                         } catch (IOException | ClassNotFoundException e) {
@@ -129,6 +125,7 @@ public class Blockchain implements Serializable {
      * Adds a block to the front of the chain.
      *
      * @param block the block to be added
+     * @return true if the block was added successfully or false otherwise
      */
     public boolean addBlock(Block block) {
         if (block == null) return false;
@@ -149,6 +146,11 @@ public class Blockchain implements Serializable {
 
     /* Getters */
 
+    /**
+     * Gets size of blocks in memory.
+     *
+     * @return the size in memory
+     */
     public int getSizeInMemory() {
         return sizeInMemory;
     }
@@ -164,7 +166,7 @@ public class Blockchain implements Serializable {
 
     /**
      * Gets block, with defined block height, from memory or disk.
-     * Will return NULL if error occured while loading the block from disk.
+     * Will return NULL if error occurred while loading the block from disk.
      *
      * @param blockHeight the block height
      * @return the block

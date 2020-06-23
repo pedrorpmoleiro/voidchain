@@ -22,13 +22,19 @@ import java.util.Map;
  * The structure of a transaction is: timestamp (when it was created), its size
  * , the version of the protocol when the transaction was created and the hash of the transaction (trasaction ID).
  */
-// TODO: JAVADOC
 public class Transaction implements Serializable {
     /* Attributes */
     private static final Logger logger = LoggerFactory.getLogger(Transaction.class.getName());
 
+    /**
+     * The constant LIST_COMPARATOR provides a comparator to order transaction lists by timestamp.
+     */
     public static final Comparator<Transaction> LIST_COMPARATOR = (o1, o2) ->
             Long.compare(o2.getTimestamp(), o1.getTimestamp());
+    /**
+     * The constant MAP_COMPARATOR provides a comparator to order a list of map entries of transaction hashes and
+     * transactions by timestamp.
+     */
     public static final Comparator<Map.Entry<byte[], Transaction>> MAP_COMPARATOR = (o1, o2) ->
             Long.compare(o2.getValue().getTimestamp(), o1.getValue().getTimestamp());
 
@@ -134,7 +140,7 @@ public class Transaction implements Serializable {
      * Calculates the hash of the transaction.
      * To calculate the hash of a transaction, we double hash all it's attributes.
      * <p>
-     * SHA3_512(RIPEMD160(blockHeader))
+     * SHA3_512(RIPEMD160(transaction))
      * <p>
      * Will return byte[0] if error occurred while calculating hash.
      *
