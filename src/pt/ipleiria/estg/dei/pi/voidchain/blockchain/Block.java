@@ -22,11 +22,9 @@ import java.util.*;
  */
 public class Block implements Serializable {
     /* Attributes */
-    private static final Logger logger = LoggerFactory.getLogger(Block.class.getName());
-
-    private Map<byte[], Transaction> transactions;
+    private final Map<byte[], Transaction> transactions;
     private final BlockHeader blockHeader;
-    private int transactionCounter;
+    private final int transactionCounter;
     private final int blockHeight;
 
     /**
@@ -36,12 +34,22 @@ public class Block implements Serializable {
      */
     // FOR USE BY BLOCKCHAIN CLASS TO CREATE GENESIS BLOCK
     protected Block(byte[] genesisBytes) {
-        byte[] auxBytes = new byte[0];
-        this.blockHeader = new BlockHeader(genesisBytes, Configuration.getInstance().getProtocolVersion(), 0L,
-                auxBytes, auxBytes);
-        this.blockHeight = 0;
-        this.transactionCounter = -1;
+        Configuration config = Configuration.getInstance();
+
+        // Date and time of the first meeting to plan the development of this project
+        long timestamp = 1582135200000L;
+
+        Transaction t = new Transaction(genesisBytes, config.getProtocolVersion(), timestamp);
         this.transactions = new Hashtable<>();
+        this.transactions.put(t.getHash(), t);
+
+        byte[] nonce = new byte[10];
+        new Random(timestamp).nextBytes(nonce);
+
+        this.blockHeader = new BlockHeader(new byte[0], config.getProtocolVersion(), timestamp,
+                nonce, MerkleTree.getMerkleRoot(this.transactions));
+        this.blockHeight = 0;
+        this.transactionCounter = 1;
     }
 
     /**
@@ -114,7 +122,7 @@ public class Block implements Serializable {
 
         return Storage.writeObjectToDisk(this, config.getBlockFileDirectory(),
                 config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + this.blockHeight +
-                        config.getBlockFileExtensionSeparator() + config.getBlockFileExtension());
+                        Configuration.BLOCK_FILE_EXTENSION_SEPARATOR + config.getBlockFileExtension());
     }
 
     /**
@@ -125,16 +133,12 @@ public class Block implements Serializable {
      * @param blockHeight the block height of the wanted block
      * @return the block (Block)
      */
-    public static Block fromDisk(int blockHeight) {
-        try {
-            Configuration config = Configuration.getInstance();
-            return (Block) Storage.readObjectFromDisk(config.getBlockFileDirectory() +
-                    config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + blockHeight +
-                    config.getBlockFileExtensionSeparator() + config.getBlockFileExtension());
-        } catch (IOException | ClassNotFoundException e) {
-            logger.error("Error getting block " + blockHeight + " from disk", e);
-            return null;
-        }
+    public static Block fromDisk(int blockHeight) throws IOException, ClassNotFoundException {
+        Configuration config = Configuration.getInstance();
+
+        return (Block) Storage.readObjectFromDisk(config.getBlockFileDirectory() +
+                config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + blockHeight +
+                Configuration.BLOCK_FILE_EXTENSION_SEPARATOR + config.getBlockFileExtension());
     }
 
     /* Getters */
@@ -154,7 +158,7 @@ public class Block implements Serializable {
      * Calculates size of the block in bytes.
      * Includes the size of transactions.
      *
-     * @return the size (long)
+     * @return the size (int)
      */
     public int getSize() {
         int allTransactionSize = 0;
@@ -220,15 +224,6 @@ public class Block implements Serializable {
     }
 
     /**
-     * Gets nonce, a random byte array, from the block header.
-     *
-     * @return the nonce (byte[])
-     */
-    public byte[] getNonce() {
-        return this.blockHeader.nonce;
-    }
-
-    /**
      * Calculates the hash of the block.
      * To calculate the hash of a block, we double hash it's header (block header).
      * <p>
@@ -247,6 +242,16 @@ public class Block implements Serializable {
         }
 
         return Hash.calculateSHA3512RIPEMD160(blockHeaderData);
+    }
+
+    /**
+     * Gets a copy of the block without any transactions.
+     *
+     * @return the block no transactions
+     */
+    public BlockNoTransactions getBlockNoTransactions() {
+        return new BlockNoTransactions(this.blockHeader.clone(), this.transactionCounter, this.getBlockHeight(),
+                this.getSize());
     }
 
     @Override

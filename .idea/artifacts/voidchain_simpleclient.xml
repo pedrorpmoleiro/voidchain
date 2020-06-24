@@ -1,7 +1,7 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="voidchain_client:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/voidchain_client_jar</output-path>
-    <root id="archive" name="voidchain_client_jar.jar">
+  <artifact type="jar" name="voidchain_simpleclient">
+    <output-path>$PROJECT_DIR$/out/artifacts/voidchain_simpleclient</output-path>
+    <root id="archive" name="voidchain_simpleclient.jar">
       <element id="directory" name="META-INF">
         <element id="file-copy" path="$PROJECT_DIR$/src/pt/ipleiria/estg/dei/pi/voidchain/client/META-INF/MANIFEST.MF" />
       </element>

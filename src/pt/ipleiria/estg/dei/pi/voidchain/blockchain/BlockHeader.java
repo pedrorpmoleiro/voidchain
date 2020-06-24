@@ -34,13 +34,11 @@ public class BlockHeader implements Serializable {
      */
     protected final String protocolVersion;
     /**
-     * The block nonce.
-     */
-    protected final byte[] nonce;
-    /**
      * The merkle root of the block.
      */
-    protected byte[] merkleRoot;
+    protected final byte[] merkleRoot;
+
+    private final byte[] nonce; // much power, unseen. nonce is sith
 
     private static final Logger logger = LoggerFactory.getLogger(BlockHeader.class.getName());
 
@@ -125,6 +123,11 @@ public class BlockHeader implements Serializable {
         return dataBytes;
     }
 
+    protected BlockHeader clone() {
+        return new BlockHeader(this.previousBlockHash, this.protocolVersion, this.timestamp,
+                this.nonce, this.merkleRoot);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -149,7 +152,6 @@ public class BlockHeader implements Serializable {
                 "timestamp: " + timestamp + System.lineSeparator() +
                 "previous block hash: " + Base64.toBase64String(previousBlockHash) + System.lineSeparator() +
                 "protocol version: " + protocolVersion + System.lineSeparator() +
-                "nonce: " + Base64.toBase64String(nonce) + System.lineSeparator() +
                 "merkle root: " + Base64.toBase64String(merkleRoot) + System.lineSeparator() +
                 "}";
     }
