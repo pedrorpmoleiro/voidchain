@@ -39,6 +39,7 @@ public class Client {
     private JTextField blockHeightTextField;
     private JButton getCurrentBlockNoTransactionsButton;
     private JButton getBlockNoTransactionsButton;
+    private JButton isChainValidButton;
 
     private final ServiceProxy serviceProxy;
 
@@ -78,6 +79,7 @@ public class Client {
         client.getBlockNoTransactionsButton.addActionListener(client.getBlockNoTransactionsButtonActionListener());
         client.getCurrentBlockNoTransactionsButton.addActionListener(
                 client.getCurrentBlockNoTransactionsButtonActionListener());
+        client.isChainValidButton.addActionListener(client.isChainValidButtonActionListener());
 
         client.buttonQuit.addActionListener(e -> System.exit(0));
 
@@ -314,7 +316,7 @@ public class Client {
                 }
 
                 boolean added;
-                String error = null;
+                String error;
 
                 ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
                 ObjectInput objIn = new ObjectInputStream(byteIn);
@@ -324,13 +326,50 @@ public class Client {
                 String message;
                 if (added)
                     message = "Transaction added";
-                else
+                else {
                     error = objIn.readUTF();
                     message = "Transaction not added due to: " + error;
+                }
 
                 logger.info(message);
                 JOptionPane.showMessageDialog(null, message,
                         "Transaction added", JOptionPane.INFORMATION_MESSAGE);
+
+            } catch (IOException ex) {
+                logger.error("An error has occurred", ex);
+            }
+        };
+    }
+
+    private ActionListener isChainValidButtonActionListener() {
+        return e -> {
+            try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+                 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
+
+                ClientMessage req = new ClientMessage(ClientMessageType.IS_CHAIN_VALID);
+                objOut.writeObject(req);
+
+                objOut.flush();
+                byteOut.flush();
+
+                byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
+
+                if (reply.length == 0) {
+                    logger.error("Empty reply from replicas");
+                    return;
+                }
+
+                ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
+                ObjectInput objIn = new ObjectInputStream(byteIn);
+
+                boolean isValid = objIn.readBoolean();
+
+                objIn.close();
+                byteIn.close();
+
+                logger.info("Is chain valid: " + isValid);
+                JOptionPane.showMessageDialog(null, "Is chain valid: " + isValid,
+                        "Chain validity", JOptionPane.INFORMATION_MESSAGE);
 
             } catch (IOException ex) {
                 logger.error("An error has occurred", ex);

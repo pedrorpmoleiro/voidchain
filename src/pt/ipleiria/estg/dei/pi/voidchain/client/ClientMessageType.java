@@ -8,7 +8,8 @@ public enum ClientMessageType implements Serializable {
     GET_BLOCK,
     GET_BLOCK_NO_TRANSACTIONS,
     GET_MOST_RECENT_BLOCK_HEIGHT,
-    ADD_TRANSACTION;
+    ADD_TRANSACTION,
+    IS_CHAIN_VALID;
 
     public int toInt() {
         switch (this) {
@@ -18,6 +19,7 @@ public enum ClientMessageType implements Serializable {
             case ADD_TRANSACTION: return 3;
             case GET_BLOCK_NO_TRANSACTIONS: return 4;
             case GET_MOST_RECENT_BLOCK_NO_TRANSACTIONS: return 5;
+            case IS_CHAIN_VALID: return 6;
             default: return -1;
         }
     }
@@ -30,6 +32,7 @@ public enum ClientMessageType implements Serializable {
             case 3: return ADD_TRANSACTION;
             case 4: return GET_BLOCK_NO_TRANSACTIONS;
             case 5: return GET_MOST_RECENT_BLOCK_NO_TRANSACTIONS;
+            case 6: return IS_CHAIN_VALID;
             default: return null; // ?
         }
     }

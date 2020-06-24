@@ -43,5 +43,7 @@ public class TestingMain {
 
             voidchain.addBlock(newBlock);
         }
+
+        System.out.println("Chain valid: " + voidchain.isChainValid());
     }
 }

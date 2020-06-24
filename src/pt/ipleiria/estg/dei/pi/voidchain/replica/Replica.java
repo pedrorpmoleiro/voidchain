@@ -13,7 +13,6 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
-import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessageType;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
 
@@ -77,7 +76,7 @@ public class Replica extends DefaultSingleRecoverable {
         Block previousBlock = this.blockchain.getMostRecentBlock();
 
         try {
-            this.proposedBlock = new Block(previousBlock.getPreviousBlockHash(), config.getProtocolVersion(),
+            this.proposedBlock = new Block(previousBlock.getHash(), config.getProtocolVersion(),
                     previousBlock.getBlockHeight() + 1, transactions, -1L, new byte[0]);
 
         } catch (InstantiationException e) {
@@ -212,7 +211,7 @@ public class Replica extends DefaultSingleRecoverable {
                         hasReply = true;
                         break;
                     case ADD_TRANSACTION:
-                        if (ordered) {
+                        if (ordered)
                             if (req.hasData()) {
                                 Transaction t = null;
                                 try {
@@ -229,9 +228,11 @@ public class Replica extends DefaultSingleRecoverable {
                                 objOut.writeBoolean(false);
                                 objOut.writeUTF("Transaction cannot be created without any data");
                             }
-
-                            hasReply = true;
-                        }
+                        hasReply = true;
+                        break;
+                    case IS_CHAIN_VALID:
+                        objOut.writeBoolean(this.blockchain.isChainValid());
+                        hasReply = true;
                         break;
                     default:
                         logger.error("Unknown type of ClientMessageType");
