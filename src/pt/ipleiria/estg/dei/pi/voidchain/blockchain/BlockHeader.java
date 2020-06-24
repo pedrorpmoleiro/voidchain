@@ -36,7 +36,7 @@ public class BlockHeader implements Serializable {
     /**
      * The merkle root of the block.
      */
-    protected byte[] merkleRoot;
+    protected final byte[] merkleRoot;
 
     private final byte[] nonce; // much power, unseen. nonce is sith
 

@@ -58,11 +58,11 @@ public class Blockchain implements Serializable {
 
                 Arrays.sort(blockFiles, (o1, o2) -> {
                     String[] aux1 = o1.getName().split(config.getBlockFileBaseNameSeparator());
-                    String aux2 = aux1[1].split(config.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
+                    String aux2 = aux1[1].split(Configuration.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
                     int o1Height = Integer.parseInt(aux2);
 
                     aux1 = o2.getName().split(config.getBlockFileBaseNameSeparator());
-                    aux2 = aux1[1].split(config.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
+                    aux2 = aux1[1].split(Configuration.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
                     int o2Height = Integer.parseInt(aux2);
 
                     return Integer.compare(o1Height, o2Height);
@@ -76,7 +76,7 @@ public class Blockchain implements Serializable {
                         continue;
                     }
 
-                    String blockHeightString = aux[1].split(config.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
+                    String blockHeightString = aux[1].split(Configuration.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
                     int currentFileBlockHeight = Integer.parseInt(blockHeightString);
 
                     if (currentFileBlockHeight > previousFileBlockHeight) {
@@ -138,7 +138,7 @@ public class Blockchain implements Serializable {
             return Arrays.equals(b1.getPreviousBlockHash(), b2.getHash());
         else
             return Arrays.equals(b1.getPreviousBlockHash(), b2.getHash()) &&
-                recursivePreviousBlockHashValidation(b2.getBlockHeight(), b2.getBlockHeight() - 1);
+                    recursivePreviousBlockHashValidation(b2.getBlockHeight(), b2.getBlockHeight() - 1);
     }
 
     /**
@@ -202,20 +202,7 @@ public class Blockchain implements Serializable {
             if (b.getBlockHeight() == blockHeight)
                 return b;
 
-        Configuration config = Configuration.getInstance();
-
-        File[] blockFiles = new File(config.getBlockFileDirectory()).listFiles();
-        if (blockFiles == null)
-            throw new NoSuchElementException("Block doesn't exist");
-
-        String wantedFile = config.getBlockFileDirectory() + config.getBlockFileBaseName() +
-                blockHeight + config.getBlockFileExtension();
-
-        for (File f : blockFiles)
-            if (f.getName().equals(wantedFile))
-                return (Block) Storage.readObjectFromDisk(f.getName());
-
-        throw new NoSuchElementException("Requested block doesn't exist");
+        return Block.fromDisk(blockHeight);
     }
 
     @Override

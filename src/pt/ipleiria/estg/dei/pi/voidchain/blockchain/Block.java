@@ -22,11 +22,9 @@ import java.util.*;
  */
 public class Block implements Serializable {
     /* Attributes */
-    private static final Logger logger = LoggerFactory.getLogger(Block.class.getName());
-
-    private Map<byte[], Transaction> transactions;
+    private final Map<byte[], Transaction> transactions;
     private final BlockHeader blockHeader;
-    private int transactionCounter;
+    private final int transactionCounter;
     private final int blockHeight;
 
     /**
@@ -124,7 +122,7 @@ public class Block implements Serializable {
 
         return Storage.writeObjectToDisk(this, config.getBlockFileDirectory(),
                 config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + this.blockHeight +
-                        config.BLOCK_FILE_EXTENSION_SEPARATOR + config.getBlockFileExtension());
+                        Configuration.BLOCK_FILE_EXTENSION_SEPARATOR + config.getBlockFileExtension());
     }
 
     /**
@@ -135,16 +133,12 @@ public class Block implements Serializable {
      * @param blockHeight the block height of the wanted block
      * @return the block (Block)
      */
-    public static Block fromDisk(int blockHeight) {
-        try {
-            Configuration config = Configuration.getInstance();
-            return (Block) Storage.readObjectFromDisk(config.getBlockFileDirectory() +
-                    config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + blockHeight +
-                    config.BLOCK_FILE_EXTENSION_SEPARATOR + config.getBlockFileExtension());
-        } catch (IOException | ClassNotFoundException e) {
-            logger.error("Error getting block " + blockHeight + " from disk", e);
-            return null;
-        }
+    public static Block fromDisk(int blockHeight) throws IOException, ClassNotFoundException {
+        Configuration config = Configuration.getInstance();
+
+        return (Block) Storage.readObjectFromDisk(config.getBlockFileDirectory() +
+                config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + blockHeight +
+                Configuration.BLOCK_FILE_EXTENSION_SEPARATOR + config.getBlockFileExtension());
     }
 
     /* Getters */

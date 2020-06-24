@@ -15,8 +15,6 @@ import java.util.Objects;
  */
 public class BlockNoTransactions implements Serializable {
     /* Attributes */
-    private static final Logger logger = LoggerFactory.getLogger(BlockNoTransactions.class.getName());
-
     private final BlockHeader blockHeader;
     private final int transactionCounter;
     private final int blockHeight;
