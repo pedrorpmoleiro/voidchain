@@ -191,7 +191,7 @@ public class Replica extends DefaultSingleRecoverable {
 
                 switch (req.getType()) {
                     case GET_MOST_RECENT_BLOCK:
-                        objOut.writeObject(currentBlock);
+                        objOut.writeObject(currentBlock.getBlockNoTransactions());
                         hasReply = true;
                         break;
                     case GET_MOST_RECENT_BLOCK_HEIGHT:
@@ -199,16 +199,8 @@ public class Replica extends DefaultSingleRecoverable {
                         hasReply = true;
                         break;
                     case GET_BLOCK:
-                        objOut.writeObject(this.blockchain.getBlock(Converters.convertByteArrayToInt(req.getData())));
-                        hasReply = true;
-                        break;
-                    case GET_BLOCK_NO_TRANSACTIONS:
                         objOut.writeObject(this.blockchain.getBlock(Converters.convertByteArrayToInt(req.getData()))
                                 .getBlockNoTransactions());
-                        hasReply = true;
-                        break;
-                    case GET_MOST_RECENT_BLOCK_NO_TRANSACTIONS:
-                        objOut.writeObject(currentBlock.getBlockNoTransactions());
                         hasReply = true;
                         break;
                     case ADD_TRANSACTION:

@@ -76,7 +76,7 @@ public class Blockchain implements Serializable {
                         continue;
                     }
 
-                    String blockHeightString = aux[1].split(Configuration.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
+                    String blockHeightString = aux[1].split(config.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
                     int currentFileBlockHeight = Integer.parseInt(blockHeightString);
 
                     if (currentFileBlockHeight > previousFileBlockHeight) {
@@ -114,15 +114,18 @@ public class Blockchain implements Serializable {
      */
     public boolean isChainValid() {
         if (this.blocks.size() == 0) return false;
-        if (this.blocks.size() == 1) return true;
+        if (this.getMostRecentBlock().getBlockHeight() == 0) return true;
 
         try {
             Block currentBlock = this.getMostRecentBlock();
             int previousBlockHeight = currentBlock.getBlockHeight() - 1;
             Block previousBlock = this.getBlock(previousBlockHeight);
 
-            return Arrays.equals(currentBlock.getPreviousBlockHash(), previousBlock.getHash()) &&
-                    recursivePreviousBlockHashValidation(previousBlockHeight, previousBlockHeight - 1);
+            if (previousBlockHeight == 0)
+                return Arrays.equals(currentBlock.getPreviousBlockHash(), previousBlock.getHash());
+            else
+                return Arrays.equals(currentBlock.getPreviousBlockHash(), previousBlock.getHash()) &&
+                        recursivePreviousBlockHashValidation(previousBlockHeight, previousBlockHeight - 1);
 
         } catch (IOException | ClassNotFoundException e) {
             logger.error("Error occurred while validating chain", e);
