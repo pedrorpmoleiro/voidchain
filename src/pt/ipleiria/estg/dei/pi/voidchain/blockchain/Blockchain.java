@@ -112,16 +112,33 @@ public class Blockchain implements Serializable {
      *
      * @return true if the block chain is valid or false otherwise
      */
-    // TODO: ANALYZE
-    // ? DOES IT WORK IF PREVIOUS PREVIOUS BLOCK ALTERED
     public boolean isChainValid() {
         if (this.blocks.size() == 0) return false;
         if (this.blocks.size() == 1) return true;
 
-        Block currentBlock = this.getMostRecentBlock();
-        Block previousBlock = this.blocks.get(1);
+        try {
+            Block currentBlock = this.getMostRecentBlock();
+            int previousBlockHeight = currentBlock.getBlockHeight() - 1;
+            Block previousBlock = this.getBlock(previousBlockHeight);
 
-        return Arrays.equals(currentBlock.getPreviousBlockHash(), previousBlock.getHash());
+            return Arrays.equals(currentBlock.getPreviousBlockHash(), previousBlock.getHash()) &&
+                    recursivePreviousBlockHashValidation(previousBlockHeight, previousBlockHeight - 1);
+
+        } catch (IOException | ClassNotFoundException e) {
+            logger.error("Error occurred while validating chain", e);
+            return false;
+        }
+    }
+
+    private boolean recursivePreviousBlockHashValidation(int bH1, int bH2) throws IOException, ClassNotFoundException {
+        Block b1 = this.getBlock(bH1);
+        Block b2 = this.getBlock(bH2);
+
+        if (bH2 == 0)
+            return Arrays.equals(b1.getPreviousBlockHash(), b2.getHash());
+        else
+            return Arrays.equals(b1.getPreviousBlockHash(), b2.getHash()) &&
+                recursivePreviousBlockHashValidation(b2.getBlockHeight(), b2.getBlockHeight() - 1);
     }
 
     /**

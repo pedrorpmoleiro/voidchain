@@ -182,6 +182,7 @@ public class Replica extends DefaultSingleRecoverable {
              ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
             Object input = objIn.readObject();
+            Configuration config = Configuration.getInstance();
 
             if (input.getClass() == ClientMessage.class) {
                 Block currentBlock = this.blockchain.getMostRecentBlock();
@@ -215,7 +216,7 @@ public class Replica extends DefaultSingleRecoverable {
                             if (req.hasData()) {
                                 Transaction t = null;
                                 try {
-                                    t = new Transaction(req.getData(), currentBlock.getProtocolVersion(),
+                                    t = new Transaction(req.getData(), config.getProtocolVersion(),
                                             msgCtx.getTimestamp());
                                 } catch (IllegalArgumentException e) {
                                     logger.error(e.getMessage(), e);

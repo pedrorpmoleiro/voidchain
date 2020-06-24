@@ -22,7 +22,7 @@ public class TestingMain {
         final byte[] nonce = new byte[10];
         final byte[] transactionData = new byte[TRANSACTION_DATA_SIZE];
 
-        Random random = new Random();
+        Random random = new Random(System.currentTimeMillis());
 
         for (int b = 0; b < BLOCK_COUNT; b++) {
             random.nextBytes(nonce);
