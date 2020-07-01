@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Main-Class: pt.ipleiria.estg.dei.pi.voidchain.client.simpleclient.Simple
+ Client
+

@@ -10,7 +10,7 @@ import java.io.*;
 
 // TODO: JAVADOC
 public class ReplicaMessenger {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+    private static final Logger logger = LoggerFactory.getLogger(ReplicaMessenger.class.getName());
 
     private final ServiceProxy serviceProxy;
 

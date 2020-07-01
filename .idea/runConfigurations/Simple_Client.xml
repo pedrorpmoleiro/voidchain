@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Simple Client" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="pt.ipleiria.estg.dei.pi.voidchain.client.Client" />
+    <option name="MAIN_CLASS_NAME" value="pt.ipleiria.estg.dei.pi.voidchain.client.simpleclient.SimpleClient" />
     <module name="voidchain" />
     <option name="PROGRAM_PARAMETERS" value="8" />
     <extension name="coverage">

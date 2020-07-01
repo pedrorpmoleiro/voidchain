@@ -1,4 +1,4 @@
-package pt.ipleiria.estg.dei.pi.voidchain.client;
+package pt.ipleiria.estg.dei.pi.voidchain.client.simpleclient;
 
 import bftsmart.tom.ServiceProxy;
 
@@ -7,25 +7,20 @@ import org.bouncycastle.util.encoders.Base64;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
+
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.BlockNoTransactions;
-import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
+import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
+import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessageType;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.Security;
-import java.util.Hashtable;
-import java.util.Map;
 
-/**
- * The Client class.
- */
-public class Client {
+public class SimpleClient {
     private JButton getCurrentBlockButton;
     private JButton getCurrentBlockHeightButton;
     private JButton getBlockButton;
@@ -41,14 +36,14 @@ public class Client {
 
     private final ServiceProxy serviceProxy;
 
-    private static final Logger logger = LoggerFactory.getLogger(Client.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(SimpleClient.class.getName());
 
     /**
-     * Instantiates a new Client.
+     * Instantiates a new SimpleClient.
      *
      * @param id the id of the client
      */
-    public Client(int id) {
+    public SimpleClient(int id) {
         this.serviceProxy = new ServiceProxy(id);
     }
 
@@ -68,7 +63,7 @@ public class Client {
         }
 
         int clientId = Integer.parseInt(args[0]);
-        Client client = new Client(clientId);
+        SimpleClient client = new SimpleClient(clientId);
 
         client.getCurrentBlockButton.addActionListener(client.getCurrentBlockButtonActionListener());
         client.getCurrentBlockHeightButton.addActionListener(client.getCurrentBlockHeightButtonActionListener());
@@ -78,7 +73,7 @@ public class Client {
 
         client.buttonQuit.addActionListener(e -> System.exit(0));
 
-        JFrame frame = new JFrame("Client");
+        JFrame frame = new JFrame("Simple Client");
         frame.setPreferredSize(new Dimension(600, 300));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setContentPane(client.mainPanel);
@@ -97,7 +92,7 @@ public class Client {
                 objOut.flush();
                 byteOut.flush();
 
-                byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
+                byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
 
                 if (reply.length == 0) {
                     logger.error("Empty reply from replicas");
@@ -134,7 +129,7 @@ public class Client {
                 objOut.flush();
                 byteOut.flush();
 
-                byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
+                byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
 
                 if (reply.length == 0) {
                     logger.error("Empty reply from replicas");
@@ -179,7 +174,7 @@ public class Client {
                 objOut.flush();
                 byteOut.flush();
 
-                byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
+                byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
 
                 if (reply.length == 0) {
                     logger.error("Empty reply from replicas");

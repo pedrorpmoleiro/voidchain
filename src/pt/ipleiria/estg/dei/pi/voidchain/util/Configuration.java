@@ -57,6 +57,10 @@ public class Configuration {
      * to be used in split method.
      */
     public static final String BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT = "\\.";
+    /**
+     * The constant DEFAULT_BLOCK_SYNC_PORT stores the default value of the Block Synchronization service port.
+     */
+    public static final int DEFAULT_BLOCK_SYNC_PORT = 8989;
 
     private static final Logger logger = LoggerFactory.getLogger(Configuration.class.getName());
 
@@ -68,6 +72,7 @@ public class Configuration {
     private String blockFileBaseName = DEFAULT_BLOCK_FILE_BASE_NAME;
     private final String blockFileBaseNameSeparator = "_";
     private String blockFileDirectory = DEFAULT_BLOCK_FILE_DIRECTORY;
+    private int blockSyncPort = DEFAULT_BLOCK_SYNC_PORT;
 
     private Configuration() {
         this.loadConfigurationFromDisk();
@@ -145,6 +150,12 @@ public class Configuration {
                                 aux = str.nextToken().trim();
                                 if (aux != null)
                                     this.memoryUsedForBlocks = Integer.parseInt(aux);
+                            case "system.voidchain.sync.block_sync_port":
+                                if (firstRun) {
+                                    aux = str.nextToken().trim();
+                                    if (aux != null)
+                                        this.blockSyncPort = Integer.parseInt(aux);
+                                }
                         }
                     }
                 }
@@ -229,6 +240,15 @@ public class Configuration {
      */
     public int getMemoryUsedForBlocks() {
         return memoryUsedForBlocks;
+    }
+
+    /**
+     * Gets the port to be used in the Block Synchronization service.
+     *
+     * @return the port
+     */
+    public int getBlockSyncPort() {
+        return blockSyncPort;
     }
 
     @Override

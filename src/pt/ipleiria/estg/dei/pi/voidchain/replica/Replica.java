@@ -32,7 +32,7 @@ public class Replica extends DefaultSingleRecoverable {
     private static final Logger logger = LoggerFactory.getLogger(Replica.class.getName());
 
     private Blockchain blockchain;
-    private final List<Transaction> transactionPool;
+    private List<Transaction> transactionPool;
     private final ReplicaMessenger messenger;
 
     private Block proposedBlock = null;
@@ -123,43 +123,44 @@ public class Replica extends DefaultSingleRecoverable {
         return true;
     }
 
-    // TODO BLOCK SYNC
     @Override
     public void installSnapshot(byte[] state) {
-        if (Arrays.equals(state, new byte[0])) {
+        if (Arrays.equals(state, new byte[0]))
             return;
-        }
 
-        Blockchain aux = this.blockchain;
+        Blockchain blockchain2 = this.blockchain;
+        List<Transaction> transactionPool2 = this.transactionPool;
+
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(state);
              ObjectInput objIn = new ObjectInputStream(byteIn)) {
 
             this.blockchain = (Blockchain) objIn.readObject();
+            this.transactionPool = (List<Transaction>) objIn.readObject();
 
         } catch (IOException | ClassNotFoundException e) {
             logger.error("Error installing snapshot", e);
-            this.blockchain = aux;
+            this.blockchain = blockchain2;
+            this.transactionPool = transactionPool2;
         }
     }
 
-    // TODO BLOCK SYNC
     @Override
     public byte[] getSnapshot() {
-        byte[] snapshot = new byte[0];
-
         try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
              ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
             objOut.writeObject(this.blockchain);
+            objOut.writeObject(this.transactionPool);
+
             objOut.flush();
             byteOut.flush();
-            snapshot = byteOut.toByteArray();
+
+            return byteOut.toByteArray();
 
         } catch (IOException e) {
             logger.error("Error getting snapshot", e);
+            return new byte[0];
         }
-
-        return snapshot;
     }
 
     @Override
@@ -199,16 +200,16 @@ public class Replica extends DefaultSingleRecoverable {
                         hasReply = true;
                         break;
                     case GET_BLOCK:
-                        objOut.writeObject(this.blockchain.getBlock(Converters.convertByteArrayToInt(req.getData()))
+                        objOut.writeObject(this.blockchain.getBlock(Converters.convertByteArrayToInt(req.getContent()))
                                 .getBlockNoTransactions());
                         hasReply = true;
                         break;
                     case ADD_TRANSACTION:
                         if (ordered)
-                            if (req.hasData()) {
+                            if (req.hasContent()) {
                                 Transaction t = null;
                                 try {
-                                    t = new Transaction(req.getData(), config.getProtocolVersion(),
+                                    t = new Transaction(req.getContent(), config.getProtocolVersion(),
                                             msgCtx.getTimestamp());
                                 } catch (IllegalArgumentException e) {
                                     logger.error(e.getMessage(), e);
@@ -223,8 +224,24 @@ public class Replica extends DefaultSingleRecoverable {
                             }
                         hasReply = true;
                         break;
+                    case ADD_TRANSACTIONS:
+                        if (ordered)
+                            if (req.hasContent()) {
+                                ByteArrayInputStream byteIn2 = new ByteArrayInputStream(req.getContent());
+                                ObjectInput objIn2 = new ObjectInputStream(byteIn2);
+
+                                List<Transaction> t = (List<Transaction>) objIn2.readObject();
+
+                                objIn2.close();
+                                byteIn2.close();
+                            } else
+                                objOut.writeBoolean(false);
                     case IS_CHAIN_VALID:
                         objOut.writeBoolean(this.blockchain.isChainValid());
+                        hasReply = true;
+                        break;
+                    case GET_LEADER:
+                        objOut.writeInt(msgCtx.getLeader());
                         hasReply = true;
                         break;
                     default:
@@ -234,9 +251,6 @@ public class Replica extends DefaultSingleRecoverable {
                 ReplicaMessage req = (ReplicaMessage) input;
 
                 switch (req.getType()) {
-                    case SYNC_BLOCKS:
-                        // TODO
-                        break;
                     case NEW_BLOCK:
                         if (req.getSender() != msgCtx.getLeader()) {
                             objOut.writeBoolean(false);

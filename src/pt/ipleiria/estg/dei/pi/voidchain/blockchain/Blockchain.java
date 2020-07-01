@@ -76,7 +76,7 @@ public class Blockchain implements Serializable {
                         continue;
                     }
 
-                    String blockHeightString = aux[1].split(config.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
+                    String blockHeightString = aux[1].split(Configuration.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
                     int currentFileBlockHeight = Integer.parseInt(blockHeightString);
 
                     if (currentFileBlockHeight > previousFileBlockHeight) {

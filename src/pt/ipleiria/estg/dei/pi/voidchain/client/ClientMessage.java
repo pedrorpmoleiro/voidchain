@@ -2,12 +2,9 @@ package pt.ipleiria.estg.dei.pi.voidchain.client;
 
 import java.io.Serializable;
 
-/**
- * The Client message.
- */
 public class ClientMessage implements Serializable {
     private final ClientMessageType type;
-    private final byte[] data;
+    private final byte[] content;
 
     /**
      * Instantiates a new Client message.
@@ -16,26 +13,23 @@ public class ClientMessage implements Serializable {
      */
     public ClientMessage(ClientMessageType type) {
         this.type = type;
-        this.data = null;
+        this.content = null;
     }
 
     /**
      * Instantiates a new Client message.
      *
      * @param type the type
-     * @param data the data
+     * @param content the data
      */
-    public ClientMessage(ClientMessageType type, byte[] data) {
+    public ClientMessage(ClientMessageType type, byte[] content) {
         this.type = type;
-
-        if (type == ClientMessageType.ADD_TRANSACTION || type == ClientMessageType.GET_BLOCK)
-            this.data = data;
-        else
-            this.data = null;
+        this.content = content;
     }
 
+    /* Getter */
     /**
-     * Gets the type of the message.
+     * Returns the type of the message.
      *
      * @return the type of the message
      */
@@ -44,20 +38,20 @@ public class ClientMessage implements Serializable {
     }
 
     /**
-     * Has data.
+     * Has content.
      *
      * @return true if the message has data or false otherwise.
      */
-    public boolean hasData() {
-        return this.data != null && this.data.length > 0;
+    public boolean hasContent() {
+        return this.content != null && this.content.length > 0;
     }
 
     /**
-     * Gets the data of the message.
+     * Returns the content of the message.
      *
      * @return the data (byte[])
      */
-    public byte[] getData() {
-        return data;
+    public byte[] getContent() {
+        return content;
     }
 }
