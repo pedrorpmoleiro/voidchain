@@ -13,8 +13,10 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
+import pt.ipleiria.estg.dei.pi.voidchain.sync.BlockSyncServer;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
+import pt.ipleiria.estg.dei.pi.voidchain.util.SignatureKeyGenerator;
 
 import java.io.*;
 import java.security.Security;
@@ -29,11 +31,12 @@ import java.util.*;
     ? MEMORY POOL SYNC
 */
 public class Replica extends DefaultSingleRecoverable {
-    private static final Logger logger = LoggerFactory.getLogger(Replica.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(Replica.class);
 
     private Blockchain blockchain;
     private List<Transaction> transactionPool;
     private final ReplicaMessenger messenger;
+    //private final BlockSyncServer blockSyncServer;
 
     private Block proposedBlock = null;
 
@@ -41,6 +44,10 @@ public class Replica extends DefaultSingleRecoverable {
         this.blockchain = Blockchain.getInstance();
         this.transactionPool = new ArrayList<>();
         this.messenger = new ReplicaMessenger(id);
+        //this.blockSyncServer = new BlockSyncServer();
+
+        // Not working
+        //new Thread(this.blockSyncServer::run);
 
         new ServiceReplica(id, this, this);
     }
@@ -54,7 +61,11 @@ public class Replica extends DefaultSingleRecoverable {
         if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
             Security.addProvider(new BouncyCastleProvider());
 
-        new Replica(Integer.parseInt(args[0]));
+        int id = Integer.parseInt(args[0]);
+
+        SignatureKeyGenerator.generatePubAndPrivKeys(id);
+
+        new Replica(id);
     }
 
     private void createProposedBlock() {
@@ -123,6 +134,7 @@ public class Replica extends DefaultSingleRecoverable {
         return true;
     }
 
+    // TODO: see if sync is needed
     @Override
     public void installSnapshot(byte[] state) {
         if (Arrays.equals(state, new byte[0]))
@@ -144,6 +156,7 @@ public class Replica extends DefaultSingleRecoverable {
         }
     }
 
+    // TODO: see if sync is needed
     @Override
     public byte[] getSnapshot() {
         try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
@@ -177,6 +190,11 @@ public class Replica extends DefaultSingleRecoverable {
         byte[] reply = null;
         boolean hasReply = false;
 
+        /*if (!this.blockSyncServer.isRunning()) {
+            logger.error("Block sync server is not working");
+            this.blockSyncServer.run();
+        }*/
+
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(command);
              ObjectInput objIn = new ObjectInputStream(byteIn);
              ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
@@ -187,7 +205,6 @@ public class Replica extends DefaultSingleRecoverable {
 
             if (input.getClass() == ClientMessage.class) {
                 Block currentBlock = this.blockchain.getMostRecentBlock();
-
                 ClientMessage req = (ClientMessage) input;
 
                 switch (req.getType()) {

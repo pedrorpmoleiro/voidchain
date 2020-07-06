@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 
 // https://medium.com/@vinayprabhu19/merkel-tree-in-java-b45093c8c6bd
 public class MerkleTree {
-    private static final Logger logger = LoggerFactory.getLogger(MerkleTree.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(MerkleTree.class);
 
     /**
      * Return the merkle root of the given set of hashes.

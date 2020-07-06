@@ -1,16 +1,25 @@
 package pt.ipleiria.estg.dei.pi.voidchain;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
+import pt.ipleiria.estg.dei.pi.voidchain.util.SignatureKeyGenerator;
 
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class TestingMain {
-    public static void main(String[] args) throws InstantiationException {
+    public static void main(String[] args) throws Exception {
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
+            Security.addProvider(new BouncyCastleProvider());
+
+        SignatureKeyGenerator.generatePubAndPrivKeys(100);
+
         Blockchain voidchain = Blockchain.getInstance();
 
         String protocolVersion = Configuration.getInstance().getProtocolVersion();

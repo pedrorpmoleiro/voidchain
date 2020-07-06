@@ -16,7 +16,7 @@ import java.net.Socket;
 
 // TODO: JAVADOC
 public class BlockSyncClient {
-    private static final Logger logger = LoggerFactory.getLogger(BlockSyncClient.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(BlockSyncClient.class);
 
     private final ServiceProxy serviceProxy;
 
@@ -24,12 +24,23 @@ public class BlockSyncClient {
         this.serviceProxy = serviceProxy;
     }
 
-    public void sync(boolean allBlocks) throws IOException, ClassNotFoundException {
-        int highestBlockHeight = this.getHighestBlockHeight();
+    public void sync(boolean allBlocks) {
+        int highestBlockHeight = 0;
+        try {
+            highestBlockHeight = this.getHighestBlockHeight();
+        } catch (IOException e) {
+            logger.error("Error while retrieving highest block height in the chain", e);
+            return;
+        }
         if (highestBlockHeight == -1)
             return;
 
-        int leader = this.getLeader();
+        int leader = 0;
+        try {
+            leader = this.getLeader();
+        } catch (IOException e) {
+            logger.error("Error while retrieving consensus leader", e);
+        }
         if (leader == -1)
             return;
 
@@ -52,16 +63,56 @@ public class BlockSyncClient {
 
         InetSocketAddress ipLeader = this.serviceProxy.getViewManager().getStaticConf().getLocalAddress(leader);
         Configuration config = Configuration.getInstance();
-        Socket s = new Socket(ipLeader.getAddress(), config.getBlockSyncPort());
-        ObjectInputStream objIn = new ObjectInputStream(s.getInputStream());
-        ObjectOutputStream objOut = new ObjectOutputStream(s.getOutputStream());
+        Socket s = null;
+        try {
+            s = new Socket(ipLeader.getAddress(), config.getBlockSyncPort());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ObjectOutputStream objOut = null;
+        ObjectInputStream objIn = null;
+        try {
+            objOut = new ObjectOutputStream(s.getOutputStream());
+            objIn = new ObjectInputStream(s.getInputStream());
 
-        objOut.writeInt(bottom);
-        objOut.writeInt(top);
+            objOut.writeInt(bottom);
+            objOut.writeInt(top);
+
+            objOut.flush();
+        } catch (IOException e) {
+            logger.error("Error", e);
+            try {
+                objIn.close();
+                objOut.close();
+                s.close();
+            } catch (IOException ioException) {
+                logger.error("Unable to close socket to server", ioException);
+            }
+        }
 
         for (int i = 0; i <= blockNum; i++) {
-            Block b = (Block) objIn.readObject();
-            b.toDisk();
+            Block b = null;
+            try {
+                b = (Block) objIn.readObject();
+
+                if (b == null)
+                    throw new IllegalArgumentException();
+
+                b.toDisk();
+            } catch (IOException | ClassNotFoundException | IllegalArgumentException e) {
+                e.printStackTrace();
+                logger.error("Error while retrieving block from server", e);
+                break;
+            }
+        }
+
+        try {
+            objIn.close();
+            objOut.close();
+            s.close();
+            logger.debug("Server socket closed");
+        } catch (IOException e) {
+            logger.error("Unable to close socket to server", e);
         }
     }
 

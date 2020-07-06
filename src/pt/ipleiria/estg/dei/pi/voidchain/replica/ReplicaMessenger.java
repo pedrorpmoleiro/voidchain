@@ -10,7 +10,7 @@ import java.io.*;
 
 // TODO: JAVADOC
 public class ReplicaMessenger {
-    private static final Logger logger = LoggerFactory.getLogger(ReplicaMessenger.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(ReplicaMessenger.class);
 
     private final ServiceProxy serviceProxy;
 
@@ -59,6 +59,10 @@ public class ReplicaMessenger {
             logger.error("Error while processing proposal of new block", ex);
             return false;
         }
+    }
+
+    protected ServiceProxy getServiceProxy() {
+        return serviceProxy;
     }
 
     // TODO

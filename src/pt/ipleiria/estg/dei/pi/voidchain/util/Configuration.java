@@ -60,9 +60,13 @@ public class Configuration {
     /**
      * The constant DEFAULT_BLOCK_SYNC_PORT stores the default value of the Block Synchronization service port.
      */
-    public static final int DEFAULT_BLOCK_SYNC_PORT = 8989;
+    public static final int DEFAULT_BLOCK_SYNC_PORT = 18189;
+    /**
+     * The constant DEFAULT_EC_PARAM stores the default value of the Elliptic Curve Domain Param.
+     */
+    public static final String DEFAULT_EC_PARAM = "secp256k1";
 
-    private static final Logger logger = LoggerFactory.getLogger(Configuration.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
 
     private String protocolVersion = DEFAULT_PROTOCOL_VERSION;
     private int transactionMaxSize = DEFAULT_TRANSACTION_MAX_SIZE;
@@ -73,6 +77,7 @@ public class Configuration {
     private final String blockFileBaseNameSeparator = "_";
     private String blockFileDirectory = DEFAULT_BLOCK_FILE_DIRECTORY;
     private int blockSyncPort = DEFAULT_BLOCK_SYNC_PORT;
+    private String ecParam = DEFAULT_EC_PARAM;
 
     private Configuration() {
         this.loadConfigurationFromDisk();
@@ -102,61 +107,69 @@ public class Configuration {
 
             String line;
             while ((line = rd.readLine()) != null) {
-                if (!line.startsWith("#")) {
-                    StringTokenizer str = new StringTokenizer(line, "=");
-                    if (str.countTokens() > 1) {
-                        String aux;
-                        switch (str.nextToken().trim()) {
-                            case "system.voidchain.protocol_version":
-                                aux = str.nextToken().trim();
-                                if (aux != null)
-                                    this.protocolVersion = aux;
-                                continue;
-                            case "system.voidchain.transaction.max_size":
-                                aux = str.nextToken().trim();
-                                if (aux != null)
-                                    this.transactionMaxSize = Integer.parseInt(aux);
-                                continue;
-                            case "system.voidchain.block.num_transaction":
-                                aux = str.nextToken().trim();
-                                if (aux != null)
-                                    this.numTransactionsInBlock = Integer.parseInt(aux);
-                                continue;
-                            case "system.voidchain.storage.block_file_extension":
-                                if (firstRun) {
-                                    aux = str.nextToken().trim();
-                                    if (aux != null)
-                                        this.blockFileExtension = aux;
-                                }
-                                continue;
-                            case "system.voidchain.storage.block_file_base_name":
-                                if (firstRun) {
-                                    aux = str.nextToken().trim();
-                                    if (aux != null)
-                                        this.blockFileBaseName = aux;
-                                }
-                                continue;
-                            case "system.voidchain.storage.block_file_directory":
-                                if (firstRun) {
-                                    aux = str.nextToken().trim();
-                                    if (aux != null) {
-                                        aux = aux.replace('/', File.separatorChar);
+                if (line.startsWith("#"))
+                    return;
 
-                                        this.blockFileDirectory = aux;
-                                    }
-                                }
-                                continue;
-                            case "system.voidchain.memory.block_megabytes":
+                StringTokenizer str = new StringTokenizer(line, "=");
+                if (str.countTokens() > 1) {
+                    String aux;
+                    switch (str.nextToken().trim()) {
+                        case "system.voidchain.protocol_version":
+                            aux = str.nextToken().trim();
+                            if (aux != null)
+                                this.protocolVersion = aux;
+                            continue;
+                        case "system.voidchain.transaction.max_size":
+                            aux = str.nextToken().trim();
+                            if (aux != null)
+                                this.transactionMaxSize = Integer.parseInt(aux);
+                            continue;
+                        case "system.voidchain.block.num_transaction":
+                            aux = str.nextToken().trim();
+                            if (aux != null)
+                                this.numTransactionsInBlock = Integer.parseInt(aux);
+                            continue;
+                        case "system.voidchain.storage.block_file_extension":
+                            if (firstRun) {
                                 aux = str.nextToken().trim();
                                 if (aux != null)
-                                    this.memoryUsedForBlocks = Integer.parseInt(aux);
-                            case "system.voidchain.sync.block_sync_port":
-                                if (firstRun) {
-                                    aux = str.nextToken().trim();
-                                    if (aux != null)
-                                        this.blockSyncPort = Integer.parseInt(aux);
+                                    this.blockFileExtension = aux;
+                            }
+                            continue;
+                        case "system.voidchain.storage.block_file_base_name":
+                            if (firstRun) {
+                                aux = str.nextToken().trim();
+                                if (aux != null)
+                                    this.blockFileBaseName = aux;
+                            }
+                            continue;
+                        case "system.voidchain.storage.block_file_directory":
+                            if (firstRun) {
+                                aux = str.nextToken().trim();
+                                if (aux != null) {
+                                    aux = aux.replace('/', File.separatorChar);
+
+                                    this.blockFileDirectory = aux;
                                 }
-                        }
+                            }
+                            continue;
+                        case "system.voidchain.memory.block_megabytes":
+                            aux = str.nextToken().trim();
+                            if (aux != null)
+                                this.memoryUsedForBlocks = Integer.parseInt(aux);
+                            continue;
+                        case "system.voidchain.sync.block_sync_port":
+                            if (firstRun) {
+                                aux = str.nextToken().trim();
+                                if (aux != null)
+                                    this.blockSyncPort = Integer.parseInt(aux);
+                            }
+                            continue;
+                        case "DEFAULT_EC_PARAM":
+                                aux = str.nextToken().trim();
+                                if (aux != null)
+                                    this.ecParam = aux;
+                            continue;
                     }
                 }
             }
@@ -249,6 +262,15 @@ public class Configuration {
      */
     public int getBlockSyncPort() {
         return blockSyncPort;
+    }
+
+    /**
+     * Gets the Elliptic Curve param to be used in the creation of new Key pairs.
+     *
+     * @return the Domain Param
+     */
+    public String getEcParam() {
+        return ecParam;
     }
 
     @Override

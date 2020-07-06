@@ -40,7 +40,7 @@ public class BlockHeader implements Serializable {
 
     private final byte[] nonce; // much power, unseen. nonce is sith
 
-    private static final Logger logger = LoggerFactory.getLogger(BlockHeader.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(BlockHeader.class);
 
     /**
      * Instantiates a new Block header.

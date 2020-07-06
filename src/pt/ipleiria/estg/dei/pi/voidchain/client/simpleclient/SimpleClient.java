@@ -11,7 +11,9 @@ import org.slf4j.LoggerFactory;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.BlockNoTransactions;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessageType;
+import pt.ipleiria.estg.dei.pi.voidchain.sync.BlockSyncClient;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
+import pt.ipleiria.estg.dei.pi.voidchain.util.SignatureKeyGenerator;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,10 +35,12 @@ public class SimpleClient {
     private JPanel getBlockPanel;
     private JTextField blockHeightTextField;
     private JButton isChainValidButton;
+    private JButton getLeaderButton;
+    private JButton syncBlocksButton;
 
     private final ServiceProxy serviceProxy;
 
-    private static final Logger logger = LoggerFactory.getLogger(SimpleClient.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(SimpleClient.class);
 
     /**
      * Instantiates a new SimpleClient.
@@ -63,6 +67,9 @@ public class SimpleClient {
         }
 
         int clientId = Integer.parseInt(args[0]);
+
+        SignatureKeyGenerator.generatePubAndPrivKeys(clientId);
+
         SimpleClient client = new SimpleClient(clientId);
 
         client.getCurrentBlockButton.addActionListener(client.getCurrentBlockButtonActionListener());
@@ -70,6 +77,9 @@ public class SimpleClient {
         client.getBlockButton.addActionListener(client.getBlockButtonActionListener());
         client.addTransactionButton.addActionListener(client.addTransactionButtonActionListener());
         client.isChainValidButton.addActionListener(client.isChainValidButtonActionListener());
+        client.getLeaderButton.addActionListener(client.getLeaderButtonActionListener());
+
+        client.syncBlocksButton.addActionListener(client.syncBlocksButtonActionListener());
 
         client.buttonQuit.addActionListener(e -> System.exit(0));
 
@@ -281,6 +291,49 @@ public class SimpleClient {
             } catch (IOException ex) {
                 logger.error("An error has occurred", ex);
             }
+        };
+    }
+
+    private ActionListener getLeaderButtonActionListener() {
+        return e -> {
+            try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+                 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
+
+                ClientMessage req = new ClientMessage(ClientMessageType.GET_LEADER);
+                objOut.writeObject(req);
+
+                objOut.flush();
+                byteOut.flush();
+
+                byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
+
+                if (reply.length == 0) {
+                    logger.error("Empty reply from replicas");
+                    return;
+                }
+
+                ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
+                ObjectInput objIn = new ObjectInputStream(byteIn);
+
+                int leaderID = objIn.readInt();
+
+                objIn.close();
+                byteIn.close();
+
+                logger.info("Leader Replica ID: " + leaderID);
+                JOptionPane.showMessageDialog(null, "Leader Replica ID: " + leaderID,
+                        "Leader Replica", JOptionPane.INFORMATION_MESSAGE);
+
+            } catch (IOException ex) {
+                logger.error("An error has occurred", ex);
+            }
+        };
+    }
+
+    private ActionListener syncBlocksButtonActionListener() {
+        return e -> {
+            BlockSyncClient syncClient = new BlockSyncClient(this.serviceProxy);
+            syncClient.sync(true);
         };
     }
 }

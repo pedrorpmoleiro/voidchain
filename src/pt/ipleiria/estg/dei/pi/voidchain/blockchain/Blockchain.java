@@ -24,7 +24,7 @@ public class Blockchain implements Serializable {
 
     private static final String GENESIS_STRING = "What to Know and What to Do About the Global Pandemic";
 
-    private static final Logger logger = LoggerFactory.getLogger(Blockchain.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(Blockchain.class);
 
     private Blockchain() {
         Block genesisBlock = new Block(GENESIS_STRING.getBytes(StandardCharsets.UTF_8));
@@ -106,6 +106,7 @@ public class Blockchain implements Serializable {
 
         return INSTANCE;
     }
+    // TODO: (re) load from disk method
 
     /**
      * Tests if this blockchain is a valid blockchain.
