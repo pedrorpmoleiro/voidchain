@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import pt.ipleiria.estg.dei.pi.voidchain.util.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
@@ -120,7 +121,7 @@ public class Block implements Serializable {
     public boolean toDisk() {
         Configuration config = Configuration.getInstance();
 
-        return Storage.writeObjectToDisk(this, config.getBlockFileDirectory(),
+        return Storage.writeObjectToDisk(this, config.getBlockFileDirectory() + File.separator,
                 config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + this.blockHeight +
                         Configuration.BLOCK_FILE_EXTENSION_SEPARATOR + config.getBlockFileExtension());
     }
