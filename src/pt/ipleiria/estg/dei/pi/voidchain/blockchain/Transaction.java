@@ -41,6 +41,7 @@ public class Transaction implements Serializable {
     private final long timestamp;
     private final byte[] data;
     private final String protocolVersion;
+    private final byte[] ownerKey;
 
     /**
      * Instantiates a new Transaction.
@@ -48,9 +49,10 @@ public class Transaction implements Serializable {
      * @param data            the data
      * @param protocolVersion the protocol version
      * @param timestamp       the timestamp
+     * @param ownerKey        the owner key
      * @throws IllegalArgumentException illegal argument exception will be thrown if transaction size exceeds max value of transacion
      */
-    public Transaction(byte[] data, String protocolVersion, long timestamp) {
+    public Transaction(byte[] data, String protocolVersion, long timestamp, byte[] ownerKey) {
         int size = Long.BYTES + data.length + Integer.BYTES + Float.BYTES;
 
         int transactionMaxSize = Configuration.getInstance().getTransactionMaxSize();
@@ -61,6 +63,7 @@ public class Transaction implements Serializable {
         this.timestamp = timestamp;
         this.data = data;
         this.protocolVersion = protocolVersion;
+        this.ownerKey = ownerKey;
     }
 
     /* Methods */
@@ -83,7 +86,7 @@ public class Transaction implements Serializable {
             return new byte[0];
         }
 
-        int sizeAux = protocolVersionBytes.length + timestampBytes.length + this.data.length;
+        int sizeAux = protocolVersionBytes.length + timestampBytes.length + this.data.length + this.ownerKey.length;
         byte[] dataBytes = new byte[sizeAux];
         int i = 0;
 
@@ -96,6 +99,10 @@ public class Transaction implements Serializable {
             i++;
         }
         for (byte b : this.data) {
+            dataBytes[i] = b;
+            i++;
+        }
+        for (byte b : this.ownerKey) {
             dataBytes[i] = b;
             i++;
         }
@@ -128,12 +135,22 @@ public class Transaction implements Serializable {
     }
 
     /**
+     * Gets the owner's public key.
+     *
+     * @return the owner public key (byte[])
+     */
+    public byte[] getOwnerKey() {
+        return ownerKey;
+    }
+
+    /**
      * Calculates the size of a transaction in Bytes.
      *
      * @return the size (int)
      */
     public int getSize() {
-        return Long.BYTES + this.data.length + this.protocolVersion.getBytes(StandardCharsets.UTF_8).length;
+        return Long.BYTES + this.data.length + this.ownerKey.length +
+                this.protocolVersion.getBytes(StandardCharsets.UTF_8).length;
     }
 
     /**
@@ -169,6 +186,7 @@ public class Transaction implements Serializable {
     public String toString() {
         return "Transaction: {" + System.lineSeparator() +
                 "timestamp: " + this.timestamp + System.lineSeparator() +
+                "owner: " + Base64.toBase64String(this.ownerKey) + System.lineSeparator() +
                 "data: " + Base64.toBase64String(this.data) + System.lineSeparator() +
                 "size: " + this.getSize() + System.lineSeparator() +
                 "protocol version: " + this.protocolVersion + System.lineSeparator() +

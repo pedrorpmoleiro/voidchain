@@ -9,6 +9,7 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 import java.io.*;
 
 // TODO: JAVADOC
+// TODO: Logging
 public class ReplicaMessenger {
     private static final Logger logger = LoggerFactory.getLogger(ReplicaMessenger.class);
 

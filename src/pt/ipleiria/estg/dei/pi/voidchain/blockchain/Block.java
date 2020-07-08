@@ -40,7 +40,7 @@ public class Block implements Serializable {
         // Date and time of the first meeting to plan the development of this project
         long timestamp = 1582135200000L;
 
-        Transaction t = new Transaction(genesisBytes, config.getProtocolVersion(), timestamp);
+        Transaction t = new Transaction(genesisBytes, config.getProtocolVersion(), timestamp, new byte[0]);
         this.transactions = new Hashtable<>();
         this.transactions.put(t.getHash(), t);
 
@@ -137,7 +137,7 @@ public class Block implements Serializable {
     public static Block fromDisk(int blockHeight) throws IOException, ClassNotFoundException {
         Configuration config = Configuration.getInstance();
 
-        return (Block) Storage.readObjectFromDisk(config.getBlockFileDirectory() +
+        return (Block) Storage.readObjectFromDisk(config.getBlockFileDirectory() + File.separator +
                 config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + blockHeight +
                 Configuration.BLOCK_FILE_EXTENSION_SEPARATOR + config.getBlockFileExtension());
     }

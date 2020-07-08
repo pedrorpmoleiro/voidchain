@@ -107,8 +107,8 @@ public class Configuration {
 
             String line;
             while ((line = rd.readLine()) != null) {
-                if (line.startsWith("#"))
-                    return;
+                if (line.startsWith("#")) continue;
+                if (line.equalsIgnoreCase("")) continue;
 
                 StringTokenizer str = new StringTokenizer(line, "=");
                 if (str.countTokens() > 1) {

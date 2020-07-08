@@ -9,10 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.BlockNoTransactions;
+import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessageType;
 import pt.ipleiria.estg.dei.pi.voidchain.sync.BlockSyncClient;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Hash;
 import pt.ipleiria.estg.dei.pi.voidchain.util.SignatureKeyGenerator;
 
 import javax.swing.*;
@@ -21,7 +24,9 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.Security;
+import java.time.Instant;
 
+// TODO: Logging
 public class SimpleClient {
     private JButton getCurrentBlockButton;
     private JButton getCurrentBlockHeightButton;
@@ -120,7 +125,7 @@ public class SimpleClient {
                 //System.out.println(currentBlock.toString());
                 logger.info("Current block: ", currentBlock);
                 JOptionPane.showMessageDialog(null, currentBlock.toString(),
-                        "Current Block Data", JOptionPane.INFORMATION_MESSAGE);
+                        "Response", JOptionPane.INFORMATION_MESSAGE);
 
             } catch (IOException | ClassNotFoundException ex) {
                 logger.error("An error has occurred", ex);
@@ -156,7 +161,7 @@ public class SimpleClient {
 
                 logger.info("Block height: " + blockHeight);
                 JOptionPane.showMessageDialog(null, "Block height: " + blockHeight,
-                        "Current Block Height", JOptionPane.INFORMATION_MESSAGE);
+                        "Response", JOptionPane.INFORMATION_MESSAGE);
 
             } catch (IOException ex) {
                 logger.error("An error has occurred", ex);
@@ -202,7 +207,7 @@ public class SimpleClient {
                 //System.out.println(block.toString());
                 logger.info("Block " + blockHeight + " Data", block);
                 JOptionPane.showMessageDialog(null, block.toString(),
-                        "Block " + blockHeight + " Data", JOptionPane.INFORMATION_MESSAGE);
+                        "Response", JOptionPane.INFORMATION_MESSAGE);
 
             } catch (IOException | ClassNotFoundException ex) {
                 logger.error("An error has occurred", ex);
@@ -215,11 +220,40 @@ public class SimpleClient {
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                byte[] data = transactionDataTextArea.getText().getBytes(StandardCharsets.UTF_8);
+                Configuration config = Configuration.getInstance();
 
-                System.out.println("Data bytes: " + Base64.toBase64String(data));
+                byte[] key = this.serviceProxy.getViewManager().getStaticConf().getPublicKey().getEncoded();
 
-                ClientMessage req = new ClientMessage(ClientMessageType.ADD_TRANSACTION, data);
+                if (key == null) {
+                    logger.error("Unable to retrieve encoded public key");
+                }
+
+                Transaction t;
+                try {
+                    t = new Transaction(transactionDataTextArea.getText().getBytes(StandardCharsets.UTF_8),
+                            config.getProtocolVersion(), Instant.now().toEpochMilli(),
+                            Hash.calculateSHA3512RIPEMD160(key));
+                    
+                } catch (IllegalArgumentException illegalArgumentException) {
+                    logger.error("Unable to create transaction", illegalArgumentException);
+                    JOptionPane.showMessageDialog(null, "Unable to create transaction check logs",
+                            "Transaction creation", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                ByteArrayOutputStream byteOut2 = new ByteArrayOutputStream();
+                ObjectOutput objOut2 = new ObjectOutputStream(byteOut2);
+
+                objOut2.writeObject(t);
+                objOut2.flush();
+                byteOut.flush();
+
+                byte[] tBytes = byteOut2.toByteArray();
+
+                objOut2.close();
+                byteOut2.close();
+
+                ClientMessage req = new ClientMessage(ClientMessageType.ADD_TRANSACTION, tBytes);
                 objOut.writeObject(req);
 
                 objOut.flush();
@@ -233,24 +267,24 @@ public class SimpleClient {
                 }
 
                 boolean added;
-                String error;
 
                 ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
                 ObjectInput objIn = new ObjectInputStream(byteIn);
 
                 added = objIn.readBoolean();
 
+                objIn.close();
+                byteIn.close();
+
                 String message;
                 if (added)
                     message = "Transaction added";
-                else {
-                    error = objIn.readUTF();
-                    message = "Transaction not added due to: " + error;
-                }
+                else
+                    message = "Transaction not added";
 
                 logger.info(message);
                 JOptionPane.showMessageDialog(null, message,
-                        "Transaction added", JOptionPane.INFORMATION_MESSAGE);
+                        "Response", JOptionPane.INFORMATION_MESSAGE);
 
             } catch (IOException ex) {
                 logger.error("An error has occurred", ex);
@@ -286,7 +320,7 @@ public class SimpleClient {
 
                 logger.info("Is chain valid: " + isValid);
                 JOptionPane.showMessageDialog(null, "Is chain valid: " + isValid,
-                        "Chain validity", JOptionPane.INFORMATION_MESSAGE);
+                        "Response", JOptionPane.INFORMATION_MESSAGE);
 
             } catch (IOException ex) {
                 logger.error("An error has occurred", ex);
@@ -322,7 +356,7 @@ public class SimpleClient {
 
                 logger.info("Leader Replica ID: " + leaderID);
                 JOptionPane.showMessageDialog(null, "Leader Replica ID: " + leaderID,
-                        "Leader Replica", JOptionPane.INFORMATION_MESSAGE);
+                        "Response", JOptionPane.INFORMATION_MESSAGE);
 
             } catch (IOException ex) {
                 logger.error("An error has occurred", ex);

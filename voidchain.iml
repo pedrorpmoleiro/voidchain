@@ -15,6 +15,6 @@
     <orderEntry type="library" name="SLF4J API" level="project" />
     <orderEntry type="library" name="Bouncy Castle PKIX" level="project" />
     <orderEntry type="library" name="Bouncy Castle Prov" level="project" />
-    <orderEntry type="module" module-name="bft-smart" />
+    <orderEntry type="library" name="BFT-SMaRt" level="project" />
   </component>
 </module>

@@ -27,8 +27,7 @@ import java.util.*;
     JAVA DOC
     API
     BLOCKS IN DISK SYNC
-    VALIDATE BLOCKS
-    ? MEMORY POOL SYNC
+    Logging
 */
 public class Replica extends DefaultSingleRecoverable {
     private static final Logger logger = LoggerFactory.getLogger(Replica.class);
@@ -91,9 +90,11 @@ public class Replica extends DefaultSingleRecoverable {
                     previousBlock.getBlockHeight() + 1, transactions, -1L, new byte[0]);
 
         } catch (InstantiationException e) {
-            logger.error("Error creating new block instance", e);
+            logger.error("Error creating new proposed block instance", e);
             this.transactionPool.addAll(transactions);
         }
+
+        logger.info("Proposed block created");
     }
 
     private void processNewBlock() {
@@ -101,11 +102,15 @@ public class Replica extends DefaultSingleRecoverable {
 
         if (this.proposedBlock == null) return;
 
-        if (this.messenger.proposeBlock(this.proposedBlock)) {
-            if (this.proposedBlock != null)
+        logger.info("Proposing block to the network");
+        if (this.messenger.proposeBlock(this.proposedBlock))
+            if (this.proposedBlock != null) {
                 this.blockchain.addBlock(this.proposedBlock);
-        } else
-            this.transactionPool.addAll(this.proposedBlock.getTransactions().values());
+                logger.info("Block proposal accepted, adding block to local blockchain");
+            } else {
+                this.transactionPool.addAll(this.proposedBlock.getTransactions().values());
+                logger.info("Block proposal failed");
+            }
 
         this.proposedBlock = null;
     }
@@ -114,11 +119,14 @@ public class Replica extends DefaultSingleRecoverable {
         int aux = this.transactionPool.size();
         this.transactionPool.add(transaction);
 
-        if (aux == this.transactionPool.size() || (aux + 1) != this.transactionPool.size())
+        if (aux == this.transactionPool.size() || (aux + 1) != this.transactionPool.size()) {
+            logger.error("Error occurred while adding transaction to memory pool", transaction, this.transactionPool);
             return false;
+        }
 
         new Thread(this::processNewBlock).start();
 
+        logger.info("Transaction added to memory pool");
         return true;
     }
 
@@ -126,11 +134,14 @@ public class Replica extends DefaultSingleRecoverable {
         int aux = this.transactionPool.size();
         this.transactionPool.addAll(transactions);
 
-        if (aux == this.transactionPool.size() || (aux + transactions.size()) != this.transactionPool.size())
+        if (aux == this.transactionPool.size() || (aux + transactions.size()) != this.transactionPool.size()) {
+            logger.error("Error occurred while adding transactions to memory pool", transactions, this.transactionPool);
             return false;
+        }
 
         new Thread(this::processNewBlock).start();
 
+        logger.info("Transactions added to memory pool");
         return true;
     }
 
@@ -209,55 +220,72 @@ public class Replica extends DefaultSingleRecoverable {
 
                 switch (req.getType()) {
                     case GET_MOST_RECENT_BLOCK:
+                        logger.info("Returning Most Recently Created Block data to client");
                         objOut.writeObject(currentBlock.getBlockNoTransactions());
                         hasReply = true;
                         break;
                     case GET_MOST_RECENT_BLOCK_HEIGHT:
+                        logger.info("Returning Most Recently Created Block Height to client");
                         objOut.writeInt(currentBlock.getBlockHeight());
                         hasReply = true;
                         break;
                     case GET_BLOCK:
-                        objOut.writeObject(this.blockchain.getBlock(Converters.convertByteArrayToInt(req.getContent()))
-                                .getBlockNoTransactions());
-                        hasReply = true;
+                        if (req.hasContent()) {
+                            int bh = Converters.convertByteArrayToInt(req.getContent());
+                            logger.info("Returning Block " + bh + " data to client");
+                            objOut.writeObject(this.blockchain.getBlock(bh)
+                                    .getBlockNoTransactions());
+                            hasReply = true;
+                        } else
+                            logger.error("Message has no content, ignoring");
                         break;
                     case ADD_TRANSACTION:
-                        if (ordered)
+                        if (ordered) {
                             if (req.hasContent()) {
-                                Transaction t = null;
-                                try {
-                                    t = new Transaction(req.getContent(), config.getProtocolVersion(),
-                                            msgCtx.getTimestamp());
-                                } catch (IllegalArgumentException e) {
-                                    logger.error(e.getMessage(), e);
-                                    objOut.writeBoolean(false);
-                                    objOut.writeUTF(e.getMessage());
-                                }
+                                logger.info("Processing ADD_TRANSACTION request");
 
-                                objOut.writeBoolean(addTransaction(t));
-                            } else {
-                                objOut.writeBoolean(false);
-                                objOut.writeUTF("Transaction cannot be created without any data");
-                            }
-                        hasReply = true;
-                        break;
-                    case ADD_TRANSACTIONS:
-                        if (ordered)
-                            if (req.hasContent()) {
                                 ByteArrayInputStream byteIn2 = new ByteArrayInputStream(req.getContent());
                                 ObjectInput objIn2 = new ObjectInputStream(byteIn2);
 
-                                List<Transaction> t = (List<Transaction>) objIn2.readObject();
+                                Transaction t = (Transaction) objIn2.readObject();
 
                                 objIn2.close();
                                 byteIn2.close();
+
+                                objOut.writeBoolean(this.addTransaction(t));
+                                hasReply = true;
                             } else
-                                objOut.writeBoolean(false);
+                                logger.error("Message has no content, ignoring");
+                        } else
+                            logger.info("Received unordered ADD_TRANSACTION message, ignoring");
+                        break;
+                    case ADD_TRANSACTIONS:
+                        if (ordered) {
+                            if (req.hasContent()) {
+                                logger.info("Processing ADD_TRANSACTIONS request");
+
+                                ByteArrayInputStream byteIn2 = new ByteArrayInputStream(req.getContent());
+                                ObjectInput objIn2 = new ObjectInputStream(byteIn2);
+
+                                List<Transaction> tl = (List<Transaction>) objIn2.readObject();
+
+                                objIn2.close();
+                                byteIn2.close();
+
+                                objOut.writeBoolean(this.addTransactions(tl));
+                                hasReply = true;
+                            } else
+                                logger.error("Message has no content, ignoring");
+                        } else
+                            logger.info("Received unordered ADD_TRANSACTIONS message, ignoring");
+                        break;
                     case IS_CHAIN_VALID:
+                        logger.info("Returning Blockchain validity to client");
                         objOut.writeBoolean(this.blockchain.isChainValid());
                         hasReply = true;
                         break;
                     case GET_LEADER:
+                        logger.info("Returning last consensus leader to client");
                         objOut.writeInt(msgCtx.getLeader());
                         hasReply = true;
                         break;

@@ -78,3 +78,6 @@ target/
 data/
 
 config/currentView
+bft-smart/bin
+bft-smart/lib
+config/keysECDSA
