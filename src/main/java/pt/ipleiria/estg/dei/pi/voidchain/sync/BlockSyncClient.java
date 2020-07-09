@@ -25,9 +25,10 @@ public class BlockSyncClient {
     }
 
     public void sync(boolean allBlocks) {
-        int highestBlockHeight = 0;
+        int highestBlockHeight;
         try {
             highestBlockHeight = this.getHighestBlockHeight();
+            logger.info("Highest block in the chain: " + highestBlockHeight);
         } catch (IOException e) {
             logger.error("Error while retrieving highest block height in the chain", e);
             return;
@@ -35,14 +36,17 @@ public class BlockSyncClient {
         if (highestBlockHeight == -1)
             return;
 
-        int leader = 0;
-        try {
+        int leader;
+        /*try {
             leader = this.getLeader();
+            logger.info("Last consensus leader: " + leader);
         } catch (IOException e) {
             logger.error("Error while retrieving consensus leader", e);
+            return;
         }
         if (leader == -1)
-            return;
+            return;*/
+        leader = 0;
 
         if (!this.serviceProxy.getViewManager().isCurrentViewMember(leader))
             return;
@@ -51,7 +55,7 @@ public class BlockSyncClient {
         int top;
 
         if (allBlocks) {
-            bottom = 1;
+            bottom = 0;
             top = highestBlockHeight;
         } else {
             // TODO: DEFINE TOP & BOTTOM WITH BLOCKS IN DISK
@@ -59,10 +63,19 @@ public class BlockSyncClient {
             top = 0;
         }
 
-        int blockNum = top - bottom + 1;
-
-        InetSocketAddress ipLeader = this.serviceProxy.getViewManager().getStaticConf().getLocalAddress(leader);
         Configuration config = Configuration.getInstance();
+
+        int blockNum;
+        if (bottom == 0)
+            blockNum = top;
+        else
+            blockNum = top - bottom + 1;
+
+        InetSocketAddress ipLeader = new InetSocketAddress(
+                this.serviceProxy.getViewManager().getStaticConf().getRemoteAddress(leader).getAddress(),
+                config.getBlockSyncPort());
+        //InetSocketAddress ipLeader = new InetSocketAddress("127.0.0.1", config.getBlockSyncPort()); // For testing
+
         Socket s = null;
         try {
             s = new Socket(ipLeader.getAddress(), config.getBlockSyncPort());
@@ -91,7 +104,7 @@ public class BlockSyncClient {
         }
 
         for (int i = 0; i <= blockNum; i++) {
-            Block b = null;
+            Block b;
             try {
                 b = (Block) objIn.readObject();
 
@@ -117,6 +130,8 @@ public class BlockSyncClient {
     }
 
     private int getHighestBlockHeight() throws IOException {
+        logger.info("Retrieving highest block in the chain from network");
+
         ClientMessage cm = new ClientMessage(ClientMessageType.GET_MOST_RECENT_BLOCK_HEIGHT);
 
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
@@ -127,10 +142,10 @@ public class BlockSyncClient {
         objOut.flush();
         byteOut.flush();
 
+        byte[] reply = this.serviceProxy.invokeUnordered(byteOut.toByteArray());
+
         objOut.close();
         byteOut.close();
-
-        byte[] reply = this.serviceProxy.invokeUnordered(byteOut.toByteArray());
 
         if (reply.length == 0) {
             logger.error("Empty reply from replicas");
@@ -149,6 +164,8 @@ public class BlockSyncClient {
     }
 
     private int getLeader() throws IOException {
+        logger.info("Retrieving last consensus leader from network");
+
         ClientMessage cm = new ClientMessage(ClientMessageType.GET_LEADER);
 
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
@@ -159,10 +176,10 @@ public class BlockSyncClient {
         objOut.flush();
         byteOut.flush();
 
+        byte[] reply = this.serviceProxy.invokeUnordered(byteOut.toByteArray());
+
         objOut.close();
         byteOut.close();
-
-        byte[] reply = this.serviceProxy.invokeUnordered(byteOut.toByteArray());
 
         if (reply.length == 0) {
             logger.error("Empty reply from replicas");
@@ -172,11 +189,23 @@ public class BlockSyncClient {
         ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
         ObjectInput objIn = new ObjectInputStream(byteIn);
 
+        // ERROR ALWAYS READING -1
         int l = objIn.readInt();
 
         objIn.close();
         byteIn.close();
 
         return l;
+    }
+
+    // TESTING MAIN
+    /*
+     * Before running make sure either to create a bft-smart service proxy and have a replicas running or
+     * comment the try catch blocks of getHighestBlockHeigh and getLeader and replace the IP of the leader replica
+     * with a static IP
+     */
+    public static void main(String[] args) {
+        BlockSyncClient client = new BlockSyncClient(null);
+        client.sync(true);
     }
 }

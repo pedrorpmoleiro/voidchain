@@ -12,17 +12,32 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-// TODO: JAVADOC
+/**
+ * The Block sync server is a service that is responsible for sending block files located in disk to other replicas
+ * in order to maintain synchronicity between replicas.
+ */
 public class BlockSyncServer {
     private static final Logger logger = LoggerFactory.getLogger(BlockSyncServer.class);
 
     private ServerSocket serverSocket;
     private boolean running;
+    private Thread thread;
+    private boolean stop;
 
+    /**
+     * This will start a new thread to execute the server and wait for client connections.
+     */
     public void run() {
         if (running)
             return;
 
+        logger.info("Block Sync server is starting.");
+        //this.thread = new Thread(this::execute);
+        //this.thread.start();
+        new Thread(this::execute).start();
+    }
+
+    private void execute() {
         Configuration config = Configuration.getInstance();
 
         try {
@@ -34,22 +49,30 @@ public class BlockSyncServer {
         }
 
         this.running = true;
+        this.stop = false;
         logger.info("Block Sync Server Running");
 
         while (true) {
-            Socket s = null;
+            if (stop || !running) {
+                this.stop = false;
+                this.running = false;
+                break;
+            }
+
+            Socket s;
             try {
                 s = this.serverSocket.accept();
+                logger.info("Accepted client with ip: " + s.getInetAddress());
             } catch (IOException e) {
                 logger.error("Error while accepting client", e);
                 continue;
             }
 
-            ObjectOutputStream objOut = null;
-            ObjectInputStream objIn = null;
+            ObjectOutputStream objOut;
+            ObjectInputStream objIn;
 
-            int bottom = 0;
-            int top = 0;
+            int bottom;
+            int top;
 
             try {
                 objOut = new ObjectOutputStream(s.getOutputStream());
@@ -57,11 +80,10 @@ public class BlockSyncServer {
 
                 bottom = objIn.readInt();
                 top = objIn.readInt();
+                logger.info("Read interval of blocks to send [" + bottom + "," + top + "]");
             } catch (IOException e) {
                 logger.error("Error", e);
                 try {
-                    objIn.close();
-                    objOut.close();
                     s.close();
                     continue;
                 } catch (IOException ioException) {
@@ -72,6 +94,7 @@ public class BlockSyncServer {
 
             for (int i = top; i >= bottom; i--) {
                 try {
+                    logger.info("Sending block " + i + " to client");
                     objOut.writeObject(Block.fromDisk(i));
                     objOut.flush();
                 } catch (IOException | ClassNotFoundException e) {
@@ -86,6 +109,7 @@ public class BlockSyncServer {
             }
 
             try {
+                logger.info("Order completed, closing connection");
                 objIn.close();
                 objOut.flush();
                 objOut.close();
@@ -94,26 +118,59 @@ public class BlockSyncServer {
                 logger.error("Error while closing client socket", e);
             }
         }
+
+        try {
+            this.serverSocket.close();
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+            logger.error("Error while closing server socket", ioException);
+        }
     }
 
+    /**
+     * This will stop the the server from receiving any more client connections and shutdown the execution.
+     */
     public void stop() {
-        if (running)
+        if (running) {
+            logger.info("Stopping Block Sync server");
             try {
+                this.stop = true;
                 this.serverSocket.close();
                 this.running = false;
+                //this.thread.join();
+                //this.thread = null;
                 logger.info("Block Sync server has stopped");
             } catch (IOException e) {
                 logger.error("Unable to stop the service", e);
             }
+        }
     }
 
+    /**
+     * This will stop the exection of the server and restart it right after.
+     */
     public void restart() {
-        logger.info("Block Sync server restarting");
-        this.stop();
+        if (running) {
+            logger.info("Block Sync server restarting");
+            this.stop();
+        } else
+            logger.info("Block Sync server is not running. Starting the server");
         this.run();
     }
 
+    /**
+     * Returns if the server is currently running or not.
+     *
+     * @return true if the server is running, false otherwise
+     */
     public boolean isRunning() {
         return running;
+    }
+
+    // TESTING MAIN
+    public static void main(String[] args) {
+        BlockSyncServer server = new BlockSyncServer();
+
+        server.run();
     }
 }

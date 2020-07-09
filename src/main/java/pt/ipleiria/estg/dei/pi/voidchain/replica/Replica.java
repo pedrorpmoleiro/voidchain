@@ -35,7 +35,7 @@ public class Replica extends DefaultSingleRecoverable {
     private Blockchain blockchain;
     private List<Transaction> transactionPool;
     private final ReplicaMessenger messenger;
-    //private final BlockSyncServer blockSyncServer;
+    private final BlockSyncServer blockSyncServer;
 
     private Block proposedBlock = null;
 
@@ -43,10 +43,8 @@ public class Replica extends DefaultSingleRecoverable {
         this.blockchain = Blockchain.getInstance();
         this.transactionPool = new ArrayList<>();
         this.messenger = new ReplicaMessenger(id);
-        //this.blockSyncServer = new BlockSyncServer();
-
-        // Not working
-        //new Thread(this.blockSyncServer::run);
+        this.blockSyncServer = new BlockSyncServer();
+        this.blockSyncServer.run();
 
         new ServiceReplica(id, this, this);
     }
@@ -201,10 +199,8 @@ public class Replica extends DefaultSingleRecoverable {
         byte[] reply = null;
         boolean hasReply = false;
 
-        /*if (!this.blockSyncServer.isRunning()) {
+        if (!this.blockSyncServer.isRunning())
             logger.error("Block sync server is not working");
-            this.blockSyncServer.run();
-        }*/
 
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(command);
              ObjectInput objIn = new ObjectInputStream(byteIn);
