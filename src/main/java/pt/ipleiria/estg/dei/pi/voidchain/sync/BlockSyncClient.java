@@ -25,6 +25,11 @@ public class BlockSyncClient {
     }
 
     public void sync(boolean allBlocks) {
+        if (this.serviceProxy == null) {
+            logger.error("BFT-SMaRt service proxy is not defined");
+            return;
+        }
+
         int highestBlockHeight;
         try {
             highestBlockHeight = this.getHighestBlockHeight();
@@ -37,7 +42,7 @@ public class BlockSyncClient {
             return;
 
         int leader;
-        /*try {
+        try {
             leader = this.getLeader();
             logger.info("Last consensus leader: " + leader);
         } catch (IOException e) {
@@ -45,8 +50,7 @@ public class BlockSyncClient {
             return;
         }
         if (leader == -1)
-            return;*/
-        leader = 0;
+            return;
 
         if (!this.serviceProxy.getViewManager().isCurrentViewMember(leader))
             return;

@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
-import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Pair;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public class Blockchain implements Serializable {
     /* Attributes */
-    private final List<Block> blocks;
+    private List<Block> blocks;
     private int sizeInMemory;
 
     private static Blockchain INSTANCE = null;
@@ -49,64 +49,22 @@ public class Blockchain implements Serializable {
      */
     public static Blockchain getInstance() {
         if (INSTANCE == null) {
-            Configuration config = Configuration.getInstance();
-
-            File[] blockFiles = new File(config.getBlockFileDirectory()).listFiles();
-            if (blockFiles != null) {
-                List<Block> blocksDisk = new ArrayList<>();
-                int previousFileBlockHeight = Integer.MIN_VALUE;
-
-                Arrays.sort(blockFiles, (o1, o2) -> {
-                    String[] aux1 = o1.getName().split(config.getBlockFileBaseNameSeparator());
-                    String aux2 = aux1[1].split(Configuration.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
-                    int o1Height = Integer.parseInt(aux2);
-
-                    aux1 = o2.getName().split(config.getBlockFileBaseNameSeparator());
-                    aux2 = aux1[1].split(Configuration.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
-                    int o2Height = Integer.parseInt(aux2);
-
-                    return Integer.compare(o1Height, o2Height);
-                });
-
-                int sizeInMemory = 0;
-                for (File blockFile : blockFiles) {
-                    String[] aux = blockFile.getName().split(config.getBlockFileBaseNameSeparator());
-
-                    if (!aux[0].equals(config.getBlockFileBaseName())) {
-                        continue;
-                    }
-
-                    String blockHeightString = aux[1].split(Configuration.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
-                    int currentFileBlockHeight = Integer.parseInt(blockHeightString);
-
-                    if (currentFileBlockHeight > previousFileBlockHeight) {
-                        previousFileBlockHeight = currentFileBlockHeight;
-                        try {
-                            Block b = (Block) Storage.readObjectFromDisk(blockFile.getAbsolutePath());
-                            if (b.getBlockHeight() != currentFileBlockHeight) continue;
-                            blocksDisk.add(0, b);
-                            sizeInMemory += b.getSize();
-                        } catch (IOException | ClassNotFoundException e) {
-                            logger.error("Error loading block from disk", e);
-                            continue;
-                        }
-
-                        if (blocksDisk.size() > 1)
-                            while (sizeInMemory > (Configuration.getInstance().getMemoryUsedForBlocks() * 1000000)) {
-                                Block b = blocksDisk.remove(blocksDisk.size() - 1);
-                                sizeInMemory -= b.getSize();
-                            }
-                    }
-                }
-
-                INSTANCE = new Blockchain(blocksDisk, sizeInMemory);
-            } else
-                INSTANCE = new Blockchain();
-        }
+            Pair<Integer, List<Block>> r = getBlocksListFromDisk();
+            INSTANCE = new Blockchain(r.getO2(), r.getO1());
+        } else
+            INSTANCE = new Blockchain();
 
         return INSTANCE;
     }
-    // TODO: (re) load from disk method
+
+    /**
+     * Reloads blocks from disk.
+     */
+    public void reloadBlocksFromDisk() {
+        Pair<Integer, List<Block>> r = getBlocksListFromDisk();
+        this.sizeInMemory = r.getO1();
+        this.blocks = r.getO2();
+    }
 
     /**
      * Tests if this blockchain is a valid blockchain.
@@ -169,6 +127,68 @@ public class Blockchain implements Serializable {
     }
 
     /* Getters */
+
+    private static File[] getBlockFilesArray() {
+        Configuration config = Configuration.getInstance();
+
+        return new File(config.getBlockFileDirectory()).listFiles();
+    }
+
+    private static Pair<Integer, List<Block>> getBlocksListFromDisk() {
+        List<Integer> blocksDisk = getBlockFileHeightArray();
+        List<Block> blocks = new ArrayList<>();
+        int sizeInMemory = 0;
+
+        if (blocksDisk == null)
+            return null;
+
+        for (Integer i : blocksDisk) {
+            try {
+                Block b = Block.fromDisk(i);
+                blocks.add(0, b);
+            } catch (IOException | ClassNotFoundException ioException) {
+                ioException.printStackTrace();
+            }
+        }
+
+        if (blocks.size() > 1)
+            while (sizeInMemory > (Configuration.getInstance().getMemoryUsedForBlocks() * 1000000)) {
+                Block b = blocks.remove(blocksDisk.size() - 1);
+                sizeInMemory -= b.getSize();
+            }
+
+        return new Pair<>(sizeInMemory, blocks);
+    }
+
+    /**
+     * Gets a list of block height from block files stored in disk.
+     *
+     * @return the block height list
+     */
+    public static List<Integer> getBlockFileHeightArray() {
+        Configuration config = Configuration.getInstance();
+        File[] blockFiles = getBlockFilesArray();
+
+        if (blockFiles != null) {
+            List<Integer> blockHeightList = new ArrayList<>();
+
+            for (File blockFile : blockFiles) {
+                String[] aux = blockFile.getName().split(config.getBlockFileBaseNameSeparator());
+
+                if (!aux[0].equals(config.getBlockFileBaseName()))
+                    continue;
+
+                String blockHeightString = aux[1].split(Configuration.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
+                int currentFileBlockHeight = Integer.parseInt(blockHeightString);
+                blockHeightList.add(currentFileBlockHeight);
+            }
+
+            blockHeightList.sort(Integer::compare);
+
+            return blockHeightList;
+        } else
+            return null;
+    }
 
     /**
      * Gets size of blocks in memory.
