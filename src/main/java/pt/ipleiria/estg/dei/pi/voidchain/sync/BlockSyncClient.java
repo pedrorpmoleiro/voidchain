@@ -59,18 +59,25 @@ public class BlockSyncClient {
         if (highestBlockHeight == -1)
             return;
 
-        int bottom;
-        int top = highestBlockHeight;
+        List<Integer> heightArray = Blockchain.getBlockFileHeightArray();
+        if (heightArray == null) {
+            logger.error("Error retriving block file heights from disk");
+            return;
+        }
 
+        int top= highestBlockHeight;
+        if (heightArray.get(heightArray.size() - 1) == highestBlockHeight) {
+            logger.info("Highest block from network is equal to the highest block in disk");
+            return;
+        }
+
+        int bottom;
         if (allBlocks)
             bottom = 0;
-        else {
-            List<Integer> heightArray = Blockchain.getBlockFileHeightArray();
-            if (heightArray.size() == 0)
-                bottom = 0;
-            else
-                bottom = heightArray.get(heightArray.size() - 1);
-        }
+        else
+            bottom = heightArray.get(heightArray.size() - 1);
+
+        logger.info("Requesting [" + bottom + "," + top + "] blocks");
 
         Configuration config = Configuration.getInstance();
 
@@ -84,10 +91,10 @@ public class BlockSyncClient {
         Map<Long, InetAddress> pingTimesAdd = new TreeMap<>();
 
         for (int p : processes) {
-            long time = Instant.now().toEpochMilli();
             InetAddress address = this.serviceProxy.getViewManager().getCurrentView().getAddress(p).getAddress();
             logger.info("Pinging replica " + p + " on " + address.toString());
             try {
+                long time = Instant.now().toEpochMilli();
                 // 2 second timeout
                 if (address.isReachable(2000)) {
                     time = Instant.now().toEpochMilli() - time;
@@ -99,6 +106,9 @@ public class BlockSyncClient {
                 logger.error("Error while pinging replica " + p + " on " + address.toString());
             }
         }
+
+        if (pingTimesAdd.size() == 0)
+            return;
 
         ArrayList<Long> pingTimes = new ArrayList<>(pingTimesAdd.keySet());
         pingTimes.sort(Long::compare);

@@ -13,6 +13,7 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
+import pt.ipleiria.estg.dei.pi.voidchain.sync.BlockSyncClient;
 import pt.ipleiria.estg.dei.pi.voidchain.sync.BlockSyncServer;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
@@ -23,11 +24,9 @@ import java.security.Security;
 import java.util.*;
 
 /*
-    TODO: READ BELOW
-    JAVA DOC
-    API
-    BLOCKS IN DISK SYNC
-    Logging
+    TODO: JAVA DOC
+    TODO: API
+    TODO: Logging
 */
 public class Replica extends DefaultSingleRecoverable {
     private static final Logger logger = LoggerFactory.getLogger(Replica.class);
@@ -36,15 +35,18 @@ public class Replica extends DefaultSingleRecoverable {
     private List<Transaction> transactionPool;
     private final ReplicaMessenger messenger;
     private final BlockSyncServer blockSyncServer;
+    private final BlockSyncClient blockSyncClient;
 
     private Block proposedBlock = null;
 
     public Replica(int id) {
-        this.blockchain = Blockchain.getInstance();
         this.transactionPool = new ArrayList<>();
         this.messenger = new ReplicaMessenger(id);
         this.blockSyncServer = new BlockSyncServer();
         this.blockSyncServer.run();
+        this.blockSyncClient = new BlockSyncClient(this.messenger.getServiceProxy());
+        this.blockSyncClient.sync(false);
+        this.blockchain = Blockchain.getInstance();
 
         new ServiceReplica(id, this, this);
     }
@@ -143,29 +145,26 @@ public class Replica extends DefaultSingleRecoverable {
         return true;
     }
 
-    // TODO: see if sync is needed
     @Override
     public void installSnapshot(byte[] state) {
         if (Arrays.equals(state, new byte[0]))
             return;
 
-        Blockchain blockchain2 = this.blockchain;
         List<Transaction> transactionPool2 = this.transactionPool;
 
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(state);
              ObjectInput objIn = new ObjectInputStream(byteIn)) {
 
-            this.blockchain = (Blockchain) objIn.readObject();
             this.transactionPool = (List<Transaction>) objIn.readObject();
+            this.blockSyncClient.sync(false);
+            this.blockchain.reloadBlocksFromDisk();
 
         } catch (IOException | ClassNotFoundException e) {
             logger.error("Error installing snapshot", e);
-            this.blockchain = blockchain2;
             this.transactionPool = transactionPool2;
         }
     }
 
-    // TODO: see if sync is needed
     @Override
     public byte[] getSnapshot() {
         try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
