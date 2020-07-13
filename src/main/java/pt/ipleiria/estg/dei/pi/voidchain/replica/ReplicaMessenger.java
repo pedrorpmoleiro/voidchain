@@ -8,22 +8,37 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 
 import java.io.*;
 
-// TODO: JAVADOC
-// TODO: Logging
+/**
+ * The Replica messenger is a replica "client" that is tasked with communicating with allowing a replica to communicate
+ * with other replicas in the network.
+ */
 public class ReplicaMessenger {
     private static final Logger logger = LoggerFactory.getLogger(ReplicaMessenger.class);
 
     private final ServiceProxy serviceProxy;
 
+    /**
+     * Instantiates a new Replica messenger.
+     *
+     * @param id the id
+     */
     public ReplicaMessenger(int id) {
         this.serviceProxy = new ServiceProxy(id);
     }
 
+    /**
+     * Proposes a new block to the network.
+     *
+     * @param block the block
+     * @return true if the proposed block was accepted or false otherwise
+     */
     public boolean proposeBlock(Block block) {
         try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
              ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
             ReplicaMessage req;
+
+            logger.info("Proposing new block (" + block.getBlockHeight() + ") to network");
 
             try (ByteArrayOutputStream byteOut2 = new ByteArrayOutputStream();
                  ObjectOutput objOut2 = new ObjectOutputStream(byteOut2)) {
@@ -43,7 +58,7 @@ public class ReplicaMessenger {
             byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
 
             if (reply.length == 0) {
-                System.err.println("ERROR");
+                System.err.println("No reply from network");
                 return false;
             }
 
@@ -54,6 +69,8 @@ public class ReplicaMessenger {
                 accepted = objIn.readBoolean();
             }
 
+            logger.info("Block proposal " + (accepted ? "accepted" : "failed"));
+
             return accepted;
 
         } catch (IOException ex) {
@@ -62,11 +79,12 @@ public class ReplicaMessenger {
         }
     }
 
+    /**
+     * Returns the bft-smart service proxy used to communicate with the network.
+     *
+     * @return the service proxy
+     */
     protected ServiceProxy getServiceProxy() {
         return serviceProxy;
-    }
-
-    // TODO
-    public void syncBlocksDisk() {
     }
 }

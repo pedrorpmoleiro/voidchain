@@ -26,7 +26,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.Security;
 import java.time.Instant;
 
-// TODO: Logging
 public class SimpleClient {
     private JButton getCurrentBlockButton;
     private JButton getCurrentBlockHeightButton;
@@ -98,6 +97,7 @@ public class SimpleClient {
 
     private ActionListener getCurrentBlockButtonActionListener() {
         return e -> {
+            logger.info("Sending GET_MOST_RECENT_BLOCK request to network");
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -135,6 +135,7 @@ public class SimpleClient {
 
     private ActionListener getCurrentBlockHeightButtonActionListener() {
         return e -> {
+            logger.info("Sending GET_MOST_RECENT_BLOCK_HEIGHT request to network");
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -171,6 +172,7 @@ public class SimpleClient {
 
     private ActionListener getBlockButtonActionListener() {
         return e -> {
+            logger.info("Sending GET_BLOCK ("+ this.blockHeightTextField.getText() + ") request to network");
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -217,6 +219,7 @@ public class SimpleClient {
 
     private ActionListener addTransactionButtonActionListener() {
         return e -> {
+            logger.info("Sending ADD_TRANSACTION request to network");
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -294,6 +297,7 @@ public class SimpleClient {
 
     private ActionListener isChainValidButtonActionListener() {
         return e -> {
+            logger.info("Sending IS_CHAIN_VALID request to network");
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -330,6 +334,7 @@ public class SimpleClient {
 
     private ActionListener getLeaderButtonActionListener() {
         return e -> {
+            logger.info("Sending GET_LEADER request to network");
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 

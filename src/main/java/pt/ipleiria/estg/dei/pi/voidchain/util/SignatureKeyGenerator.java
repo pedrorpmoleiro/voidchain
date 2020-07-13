@@ -11,12 +11,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.StringTokenizer;
 
-// TODO: JAVADOC
 public class SignatureKeyGenerator {
     private static final Logger logger = LoggerFactory.getLogger(SignatureKeyGenerator.class);
 
-    public static final String BFT_SMART_CONFIG_FILE = "config" + File.separator + "system.config";
+    private static final String BFT_SMART_CONFIG_FILE = "config" + File.separator + "system.config";
 
+    /**
+     * Generates public and private ECDSA keys according to 'system.config' configuration file.
+     *
+     * @param id the id of the key
+     */
     // TODO: SSL_TLS KEYS
     public static void generatePubAndPrivKeys(int id) {
         boolean defaultKeys = false;
