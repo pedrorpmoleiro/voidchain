@@ -55,9 +55,6 @@ public class SimpleClient {
         this.serviceProxy = new ServiceProxy(id);
     }
 
-    /**
-     * The entry point of application.
-     */
     public static void main(String[] args) {
         if (args.length < 1)
             System.out.println("Usage: pt.ipleiria.estg.dei.pi.voidchain.client.Client <client id>");

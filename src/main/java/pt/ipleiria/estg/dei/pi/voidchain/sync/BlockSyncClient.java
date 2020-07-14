@@ -43,6 +43,8 @@ public class BlockSyncClient {
      * @param allBlocks pass true if you wish to overwrite the blocks already stored in disk and false to only sync the missing blocks
      */
     public void sync(boolean allBlocks) {
+        logger.info("Attempting block sync");
+
         if (this.serviceProxy == null) {
             logger.error("BFT-SMaRt service proxy is not defined");
             return;
@@ -52,7 +54,7 @@ public class BlockSyncClient {
         try {
             highestBlockHeight = this.getHighestBlockHeight();
             logger.info("Highest block in the chain: " + highestBlockHeight);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             logger.error("Error while retrieving highest block height in the chain", e);
             return;
         }
@@ -91,6 +93,8 @@ public class BlockSyncClient {
         Map<Long, InetAddress> pingTimesAdd = new TreeMap<>();
 
         for (int p : processes) {
+            if (p == this.serviceProxy.getViewManager().getStaticConf().getProcessId())
+                continue;
             InetAddress address = this.serviceProxy.getViewManager().getCurrentView().getAddress(p).getAddress();
             logger.info("Pinging replica " + p + " on " + address.toString());
             try {
@@ -113,14 +117,15 @@ public class BlockSyncClient {
         ArrayList<Long> pingTimes = new ArrayList<>(pingTimesAdd.keySet());
         pingTimes.sort(Long::compare);
 
-        InetSocketAddress replicaAdd = new InetSocketAddress(pingTimesAdd.get(pingTimes.get(0)),
-                config.getBlockSyncPort());
-        //InetSocketAddress replicaAdd = new InetSocketAddress(this.serviceProxy.getViewManager().getCurrentView().getAddress(0).getAddress(), config.getBlockSyncPort()); // For testing
-        //InetSocketAddress ipLeader = new InetSocketAddress("127.0.0.1", config.getBlockSyncPort()); // For testing
+        InetSocketAddress add = new InetSocketAddress(pingTimesAdd.get(pingTimes.get(0)), config.getBlockSyncPort());
+        //InetSocketAddress add = new InetSocketAddress(this.serviceProxy.getViewManager().getCurrentView().getAddress(0).getAddress(), config.getBlockSyncPort()); // For testing
+        //InetSocketAddress add = new InetSocketAddress("127.0.0.1", config.getBlockSyncPort()); // For testing
 
+        logger.info("Lowest ping replica (ip: " + pingTimesAdd.get(pingTimes.get(0)) +
+                ", ping time: " + pingTimes.get(0) + ")");
         Socket s;
         try {
-            s = new Socket(replicaAdd.getAddress(), config.getBlockSyncPort());
+            s = new Socket(add.getAddress(), config.getBlockSyncPort());
         } catch (IOException e) {
             logger.error("Error while opening socket to server", e);
             return;
@@ -157,7 +162,6 @@ public class BlockSyncClient {
 
                 b.toDisk();
             } catch (IOException | ClassNotFoundException | IllegalArgumentException e) {
-                e.printStackTrace();
                 logger.error("Error while retrieving block from server", e);
                 break;
             }

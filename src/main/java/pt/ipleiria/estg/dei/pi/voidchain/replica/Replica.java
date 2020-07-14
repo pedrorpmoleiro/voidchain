@@ -23,11 +23,6 @@ import java.io.*;
 import java.security.Security;
 import java.util.*;
 
-/*
-    TODO: JAVA DOC
-    TODO: API
-    TODO: Logging
-*/
 public class Replica extends DefaultSingleRecoverable {
     private static final Logger logger = LoggerFactory.getLogger(Replica.class);
 
@@ -39,14 +34,19 @@ public class Replica extends DefaultSingleRecoverable {
 
     private Block proposedBlock = null;
 
+    /**
+     * Instantiates a new Replica.
+     *
+     * @param id the id
+     */
     public Replica(int id) {
+        this.blockchain = Blockchain.getInstance();
         this.transactionPool = new ArrayList<>();
         this.messenger = new ReplicaMessenger(id);
-        this.blockSyncServer = new BlockSyncServer();
-        this.blockSyncServer.run();
         this.blockSyncClient = new BlockSyncClient(this.messenger.getServiceProxy());
         this.blockSyncClient.sync(false);
-        this.blockchain = Blockchain.getInstance();
+        this.blockSyncServer = new BlockSyncServer();
+        this.blockSyncServer.run();
 
         new ServiceReplica(id, this, this);
     }
@@ -72,11 +72,11 @@ public class Replica extends DefaultSingleRecoverable {
 
         Configuration config = Configuration.getInstance();
         int transactionsPerBlock = config.getNumTransactionsInBlock();
-
         if (this.transactionPool.size() < transactionsPerBlock) return;
 
-        List<Transaction> transactions = new ArrayList<>();
+        logger.info("Creating block to be proposed from memory pool transactions");
 
+        List<Transaction> transactions = new ArrayList<>();
         while (transactions.size() < transactionsPerBlock) {
             Transaction t = this.transactionPool.get(0);
             transactions.add(t);
@@ -115,6 +115,12 @@ public class Replica extends DefaultSingleRecoverable {
         this.proposedBlock = null;
     }
 
+    /**
+     * Adds a single transaction to the memory pool. Starts the process of proposing new blocks if conditions are met.
+     *
+     * @param transaction the transaction
+     * @return true if the transaction was successfully added to the memory pool or false otherwise
+     */
     public boolean addTransaction(Transaction transaction) {
         int aux = this.transactionPool.size();
         this.transactionPool.add(transaction);
@@ -130,6 +136,12 @@ public class Replica extends DefaultSingleRecoverable {
         return true;
     }
 
+    /**
+     * Adds a list of transactions to the memory pool. Starts the process of proposing new blocks if conditions are met.
+     *
+     * @param transactions the transactions
+     * @return true if the transactions were successfully added to the memory pool or false otherwise
+     */
     public boolean addTransactions(List<Transaction> transactions) {
         int aux = this.transactionPool.size();
         this.transactionPool.addAll(transactions);
@@ -150,6 +162,7 @@ public class Replica extends DefaultSingleRecoverable {
         if (Arrays.equals(state, new byte[0]))
             return;
 
+        logger.info("Installing snapshot from network");
         List<Transaction> transactionPool2 = this.transactionPool;
 
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(state);
@@ -170,7 +183,6 @@ public class Replica extends DefaultSingleRecoverable {
         try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
              ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-            objOut.writeObject(this.blockchain);
             objOut.writeObject(this.transactionPool);
 
             objOut.flush();

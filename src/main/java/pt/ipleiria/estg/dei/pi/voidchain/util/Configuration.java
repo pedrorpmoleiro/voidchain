@@ -148,7 +148,8 @@ public class Configuration {
                                 aux = str.nextToken().trim();
                                 if (aux != null) {
                                     aux = aux.replace('/', File.separatorChar);
-
+                                    if (aux.endsWith(File.separator))
+                                        aux = aux.substring(0, aux.length() - 1);
                                     this.blockFileDirectory = aux;
                                 }
                             }

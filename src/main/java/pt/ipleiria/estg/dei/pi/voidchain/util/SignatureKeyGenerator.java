@@ -21,7 +21,6 @@ public class SignatureKeyGenerator {
      *
      * @param id the id of the key
      */
-    // TODO: SSL_TLS KEYS
     public static void generatePubAndPrivKeys(int id) {
         boolean defaultKeys = false;
         String signatureAlgorithmProvider = "BC";

@@ -50,7 +50,10 @@ public class Blockchain implements Serializable {
     public static Blockchain getInstance() {
         if (INSTANCE == null) {
             Pair<Integer, List<Block>> r = getBlocksListFromDisk();
-            INSTANCE = new Blockchain(r.getO2(), r.getO1());
+            if (r == null)
+                INSTANCE = new Blockchain();
+            else
+                INSTANCE = new Blockchain(r.getO2(), r.getO1());
         } else
             INSTANCE = new Blockchain();
 
@@ -61,6 +64,7 @@ public class Blockchain implements Serializable {
      * Reloads blocks from disk.
      */
     public void reloadBlocksFromDisk() {
+        logger.info("Refreshing blocks from disk to memory");
         Pair<Integer, List<Block>> r = getBlocksListFromDisk();
         this.sizeInMemory = r.getO1();
         this.blocks = r.getO2();
@@ -136,26 +140,28 @@ public class Blockchain implements Serializable {
 
     private static Pair<Integer, List<Block>> getBlocksListFromDisk() {
         List<Integer> blocksDisk = getBlockFileHeightArray();
-        List<Block> blocks = new ArrayList<>();
-        int sizeInMemory = 0;
 
         if (blocksDisk == null)
             return null;
+
+        List<Block> blocks = new ArrayList<>();
+        int sizeInMemory = 0;
 
         for (Integer i : blocksDisk) {
             try {
                 Block b = Block.fromDisk(i);
                 blocks.add(0, b);
+                sizeInMemory += b.getSize();
             } catch (IOException | ClassNotFoundException ioException) {
-                ioException.printStackTrace();
+                logger.error("Error retrieving block from disk", ioException);
             }
-        }
 
-        if (blocks.size() > 1)
-            while (sizeInMemory > (Configuration.getInstance().getMemoryUsedForBlocks() * 1000000)) {
-                Block b = blocks.remove(blocksDisk.size() - 1);
-                sizeInMemory -= b.getSize();
-            }
+            if (blocks.size() > 1)
+                while (sizeInMemory > (Configuration.getInstance().getMemoryUsedForBlocks() * 1000000)) {
+                    Block b = blocks.remove(blocksDisk.size() - 1);
+                    sizeInMemory -= b.getSize();
+                }
+        }
 
         return new Pair<>(sizeInMemory, blocks);
     }
