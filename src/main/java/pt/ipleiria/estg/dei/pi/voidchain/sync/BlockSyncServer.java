@@ -167,4 +167,8 @@ public class BlockSyncServer {
     public boolean isRunning() {
         return running;
     }
+
+    public static void main(String[] args) {
+        new BlockSyncServer().run();
+    }
 }

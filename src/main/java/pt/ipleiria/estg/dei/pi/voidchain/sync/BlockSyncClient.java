@@ -62,13 +62,11 @@ public class BlockSyncClient {
             return;
 
         List<Integer> heightArray = Blockchain.getBlockFileHeightArray();
+        int top = highestBlockHeight;
         if (heightArray == null) {
-            logger.error("Error retriving block file heights from disk");
-            return;
-        }
-
-        int top= highestBlockHeight;
-        if (heightArray.get(heightArray.size() - 1) == highestBlockHeight) {
+            logger.warn("No block files in disk");
+            allBlocks = true;
+        } else if (heightArray.get(heightArray.size() - 1) == highestBlockHeight) {
             logger.info("Highest block from network is equal to the highest block in disk");
             return;
         }
@@ -77,7 +75,7 @@ public class BlockSyncClient {
         if (allBlocks)
             bottom = 0;
         else
-            bottom = heightArray.get(heightArray.size() - 1);
+            bottom = heightArray.get(heightArray.size() - 1) + 1;
 
         logger.info("Requesting [" + bottom + "," + top + "] blocks");
 
@@ -152,11 +150,11 @@ public class BlockSyncClient {
             return;
         }
 
-        for (int i = 0; i <= blockNum; i++) {
+        for (int i = 0; i < blockNum; i++) {
             Block b;
             try {
                 b = (Block) objIn.readObject();
-
+                logger.info("Received Block " + b.getBlockHeight());
                 if (b == null)
                     throw new IllegalArgumentException();
 
@@ -209,5 +207,14 @@ public class BlockSyncClient {
         byteIn.close();
 
         return hbh;
+    }
+
+    public static void main(String[] args) {
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
+            Security.addProvider(new BouncyCastleProvider());
+
+        Blockchain.getInstance();
+        BlockSyncClient client = new BlockSyncClient(new ServiceProxy(100));
+        client.sync(false);
     }
 }
