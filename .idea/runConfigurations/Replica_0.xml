@@ -2,7 +2,7 @@
   <configuration default="false" name="Replica 0" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="pt.ipleiria.estg.dei.pi.voidchain.replica.Replica" />
     <module name="voidchain" />
-    <option name="PROGRAM_PARAMETERS" value="0" />
+    <option name="PROGRAM_PARAMETERS" value="0 -s" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="pt.ipleiria.estg.dei.pi.voidchain.client.*" />

@@ -210,18 +210,4 @@ public class BlockSyncClient {
 
         return hbh;
     }
-
-    // TESTING MAIN
-    /*
-     * Before running make sure either to create a bft-smart service proxy and have a replicas running or
-     * comment the try catch blocks of getHighestBlockHeigh and getLeader and replace the IP of the leader replica
-     * with a static IP
-     */
-    public static void main(String[] args) {
-        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
-            Security.addProvider(new BouncyCastleProvider());
-
-        BlockSyncClient client = new BlockSyncClient(new ServiceProxy(100));
-        client.sync(true);
-    }
 }

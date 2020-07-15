@@ -32,9 +32,8 @@ public class BlockSyncServer {
             return;
 
         logger.info("Block Sync server is starting.");
-        //this.thread = new Thread(this::execute);
-        //this.thread.start();
-        new Thread(this::execute).start();
+        this.thread = new Thread(this::execute);
+        this.thread.start();
     }
 
     private void execute() {
@@ -137,11 +136,13 @@ public class BlockSyncServer {
                 this.stop = true;
                 this.serverSocket.close();
                 this.running = false;
-                //this.thread.join();
-                //this.thread = null;
+                this.thread.join();
+                this.thread = null;
                 logger.info("Block Sync server has stopped");
             } catch (IOException e) {
                 logger.error("Unable to stop the service", e);
+            } catch (InterruptedException e) {
+                logger.error("Error while joining threads", e);
             }
         }
     }
@@ -165,12 +166,5 @@ public class BlockSyncServer {
      */
     public boolean isRunning() {
         return running;
-    }
-
-    // TESTING MAIN
-    public static void main(String[] args) {
-        BlockSyncServer server = new BlockSyncServer();
-
-        server.run();
     }
 }
