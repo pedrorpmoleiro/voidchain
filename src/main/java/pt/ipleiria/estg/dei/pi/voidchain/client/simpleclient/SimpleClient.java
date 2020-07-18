@@ -1,13 +1,9 @@
 package pt.ipleiria.estg.dei.pi.voidchain.client.simpleclient;
 
 import bftsmart.tom.ServiceProxy;
-
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.util.encoders.Base64;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.BlockNoTransactions;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
@@ -120,7 +116,7 @@ public class SimpleClient {
                 byteIn.close();
 
                 //System.out.println(currentBlock.toString());
-                logger.info("Current block: ", currentBlock);
+                logger.info("Current block: " + currentBlock);
                 JOptionPane.showMessageDialog(null, currentBlock.toString(),
                         "Response", JOptionPane.INFORMATION_MESSAGE);
 
@@ -204,7 +200,7 @@ public class SimpleClient {
                 byteIn.close();
 
                 //System.out.println(block.toString());
-                logger.info("Block " + blockHeight + " Data", block);
+                logger.info("Block " + blockHeight + " Data: " + block);
                 JOptionPane.showMessageDialog(null, block.toString(),
                         "Response", JOptionPane.INFORMATION_MESSAGE);
 
@@ -222,7 +218,7 @@ public class SimpleClient {
 
                 Configuration config = Configuration.getInstance();
 
-                byte[] key = this.serviceProxy.getViewManager().getStaticConf().getPublicKey().getEncoded();
+                byte[] key = this.serviceProxy.getViewManager().getStaticConf().getPrivateKey().getEncoded();
 
                 if (key == null) {
                     logger.error("Unable to retrieve encoded public key");

@@ -1,13 +1,11 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
+import org.bouncycastle.util.encoders.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Hash;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.bouncycastle.util.encoders.Base64;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -49,7 +47,7 @@ public class Transaction implements Serializable {
      * @param data            the data
      * @param protocolVersion the protocol version
      * @param timestamp       the timestamp
-     * @param ownerKey        the hash of the owner key
+     * @param ownerKey        the hash of the owner private key
      * @throws IllegalArgumentException illegal argument exception will be thrown if transaction size exceeds max value of transacion
      */
     public Transaction(byte[] data, String protocolVersion, long timestamp, byte[] ownerKey) {
@@ -135,7 +133,7 @@ public class Transaction implements Serializable {
     }
 
     /**
-     * Gets the hash owner's public key.
+     * Gets the hash owner's private key.
      *
      * @return the hash of the owner key
      */
