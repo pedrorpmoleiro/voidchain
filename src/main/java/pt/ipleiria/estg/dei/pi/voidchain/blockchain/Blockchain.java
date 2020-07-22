@@ -8,6 +8,9 @@ import pt.ipleiria.estg.dei.pi.voidchain.util.Pair;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.util.*;
 
 /**
@@ -26,7 +29,7 @@ public class Blockchain implements Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(Blockchain.class);
 
-    private Blockchain() {
+    private Blockchain() throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         Block genesisBlock = new Block(GENESIS_STRING.getBytes(StandardCharsets.UTF_8));
         genesisBlock.toDisk();
 
@@ -50,12 +53,24 @@ public class Blockchain implements Serializable {
     public static Blockchain getInstance() {
         if (INSTANCE == null) {
             Pair<Integer, List<Block>> r = getBlocksListFromDisk();
-            if (r == null)
-                INSTANCE = new Blockchain();
+            if (r == null) {
+                try {
+                    INSTANCE = new Blockchain();
+                } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+                    logger.error("Unable to create Genesis Block", e);
+                    INSTANCE = new Blockchain(new ArrayList<>(), 0);
+                }
+            }
             else
                 INSTANCE = new Blockchain(r.getO2(), r.getO1());
-        } else
-            INSTANCE = new Blockchain();
+        } else {
+            try {
+                INSTANCE = new Blockchain();
+            } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+                logger.error("Unable to create Genesis Block", e);
+                INSTANCE = new Blockchain(new ArrayList<>(), 0);
+            }
+        }
 
         return INSTANCE;
     }

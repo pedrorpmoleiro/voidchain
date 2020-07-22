@@ -99,9 +99,9 @@ public class BlockNoTransactions implements Serializable {
     /**
      * Calculates the hash of the block.
      * To calculate the hash of a block, we double hash it's header (block header).
-     * <p>
+     * <br>
      * SHA3_512(RIPEMD160(blockHeader))
-     * <p>
+     * <br>
      * Will return byte[0] if error occurred while calculating hash.
      *
      * @return the block hash

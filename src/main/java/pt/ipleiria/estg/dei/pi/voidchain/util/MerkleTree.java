@@ -13,7 +13,7 @@ public class MerkleTree {
 
     /**
      * Return the merkle root of the given set of hashes.
-     * <p>
+     * <br>
      * Returns byte[0] if error occurred while calculating the markle tree.
      *
      * @param transactionMap the transaction map

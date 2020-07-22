@@ -89,6 +89,7 @@ public class Replica extends DefaultSingleRecoverable {
 
         int id = Integer.parseInt(args[0]);
         SignatureKeyGenerator.generatePubAndPrivKeys(id);
+        SignatureKeyGenerator.generatePubAndPrivKeys(-42); // Genesis Block Priv & Pub Key
 
         new Replica(id, sync);
     }
@@ -139,6 +140,7 @@ public class Replica extends DefaultSingleRecoverable {
             }
 
         this.proposedBlock = null;
+        processNewBlock();
     }
 
     /**
@@ -360,8 +362,9 @@ public class Replica extends DefaultSingleRecoverable {
 
                         createProposedBlock();
 
-                        if (this.proposedBlock == null) {
-                            objOut.writeBoolean(recvBlock.equals(this.blockchain.getMostRecentBlock()));
+                        boolean aux = recvBlock.equals(this.blockchain.getMostRecentBlock());
+                        if (this.proposedBlock == null || aux) {
+                            objOut.writeBoolean(aux);
                         } else {
                             if (recvBlock.equals(this.proposedBlock)) {
                                 this.blockchain.addBlock(recvBlock);

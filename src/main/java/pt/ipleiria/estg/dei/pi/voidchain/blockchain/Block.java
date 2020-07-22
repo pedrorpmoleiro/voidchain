@@ -1,5 +1,7 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
+import bftsmart.reconfiguration.util.TOMConfiguration;
+
 import org.bouncycastle.util.encoders.Base64;
 
 import org.slf4j.Logger;
@@ -10,6 +12,10 @@ import pt.ipleiria.estg.dei.pi.voidchain.util.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.util.*;
 
 /**
@@ -28,19 +34,32 @@ public class Block implements Serializable {
     private final int transactionCounter;
     private final int blockHeight;
 
+    private static final Logger logger = LoggerFactory.getLogger(Block.class);
+
     /**
      * Instantiates a new Genesis Block.
+     * <br>
+     * The transaction contained in this block is signed by id -42
      *
      * @param genesisBytes the genesis bytes
+     * @throws IllegalArgumentException illegal argument exception will be thrown if transaction size exceeds max
+     *                                  value of transaction
+     * @throws SignatureException       signature exception will be thrown if error occurs while signing the transaction
+     *                                  data
+     * @throws NoSuchAlgorithmException no such algorithm exception will be thrown if algorithm for signing the
+     *                                  transaction
+     * @throws InvalidKeyException      invalid key exception will be thrown if private key is invalid
      */
-    // FOR USE BY BLOCKCHAIN CLASS TO CREATE GENESIS BLOCK
-    protected Block(byte[] genesisBytes) {
+// FOR USE BY BLOCKCHAIN CLASS TO CREATE GENESIS BLOCK
+    protected Block(byte[] genesisBytes) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         Configuration config = Configuration.getInstance();
 
         // Date and time of the first meeting to plan the development of this project
         long timestamp = 1582135200000L;
 
-        Transaction t = new Transaction(genesisBytes, config.getProtocolVersion(), timestamp, new byte[0]);
+        TOMConfiguration tomConf = new TOMConfiguration(-42, "config" + File.separator, null);
+
+        Transaction t = new Transaction(genesisBytes, config.getProtocolVersion(), timestamp, tomConf);
         this.transactions = new Hashtable<>();
         this.transactions.put(t.getHash(), t);
 
@@ -128,11 +147,13 @@ public class Block implements Serializable {
 
     /**
      * Loads block from disk.
-     * <p>
+     * <br>
      * Will return NULL upon block not found or error occurred while loading from disk
      *
      * @param blockHeight the block height of the wanted block
      * @return the block
+     * @throws IOException            the io exception
+     * @throws ClassNotFoundException the class not found exception
      */
     public static Block fromDisk(int blockHeight) throws IOException, ClassNotFoundException {
         Configuration config = Configuration.getInstance();
@@ -227,9 +248,9 @@ public class Block implements Serializable {
     /**
      * Calculates the hash of the block.
      * To calculate the hash of a block, we double hash it's header (block header).
-     * <p>
+     * <br>
      * SHA3_512(RIPEMD160(blockHeader))
-     * <p>
+     * <br>
      * Will return byte[0] if error occurred while calculating hash.
      *
      * @return the block hash

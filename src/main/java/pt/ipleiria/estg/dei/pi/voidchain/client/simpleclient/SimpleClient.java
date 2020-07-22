@@ -1,9 +1,13 @@
 package pt.ipleiria.estg.dei.pi.voidchain.client.simpleclient;
 
 import bftsmart.tom.ServiceProxy;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Base64;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.BlockNoTransactions;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
@@ -11,7 +15,6 @@ import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessageType;
 import pt.ipleiria.estg.dei.pi.voidchain.sync.BlockSyncClient;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
-import pt.ipleiria.estg.dei.pi.voidchain.util.Hash;
 import pt.ipleiria.estg.dei.pi.voidchain.util.SignatureKeyGenerator;
 
 import javax.swing.*;
@@ -19,7 +22,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.security.Security;
+import java.security.*;
 import java.time.Instant;
 
 public class SimpleClient {
@@ -218,22 +221,18 @@ public class SimpleClient {
 
                 Configuration config = Configuration.getInstance();
 
-                byte[] key = this.serviceProxy.getViewManager().getStaticConf().getPrivateKey().getEncoded();
-
-                if (key == null) {
-                    logger.error("Unable to retrieve encoded public key");
-                }
-
                 Transaction t;
                 try {
                     t = new Transaction(transactionDataTextArea.getText().getBytes(StandardCharsets.UTF_8),
                             config.getProtocolVersion(), Instant.now().toEpochMilli(),
-                            Hash.calculateSHA3512RIPEMD160(key));
-
-                } catch (IllegalArgumentException illegalArgumentException) {
-                    logger.error("Unable to create transaction", illegalArgumentException);
+                            this.serviceProxy.getViewManager().getStaticConf());
+                    logger.debug("Transaction Hash: " + Base64.toBase64String(t.getHash()));
+                    logger.debug("Transaction Signature: " + Base64.toBase64String(t.getSignature()));
+                } catch (IllegalArgumentException | SignatureException | NoSuchAlgorithmException |
+                        InvalidKeyException exception) {
+                    logger.error("Unable to create transaction", exception);
                     JOptionPane.showMessageDialog(null, "Unable to create transaction check logs",
-                            "Transaction creation", JOptionPane.ERROR_MESSAGE);
+                            "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
