@@ -18,6 +18,7 @@ import pt.ipleiria.estg.dei.pi.voidchain.sync.BlockSyncServer;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
 import pt.ipleiria.estg.dei.pi.voidchain.util.SignatureKeyGenerator;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
 import java.io.*;
 import java.security.Security;
@@ -56,7 +57,7 @@ public class Replica extends DefaultSingleRecoverable {
         new ServiceReplica(id, this, this);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         if (args.length < 1) {
             String args1 = args[0];
             args = new String[2];
@@ -86,6 +87,8 @@ public class Replica extends DefaultSingleRecoverable {
                     default:
                         logger.info("Unknown option '" + args[i] + "'");
                 }
+
+        Storage.createDefaultConfigFiles();
 
         int id = Integer.parseInt(args[0]);
         SignatureKeyGenerator.generatePubAndPrivKeys(id);

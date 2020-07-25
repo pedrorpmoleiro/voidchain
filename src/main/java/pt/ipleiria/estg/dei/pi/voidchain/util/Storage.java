@@ -51,4 +51,49 @@ public class Storage {
 
         return ois.readObject();
     }
+
+    // TODO: Javadoc
+    public static void createDefaultConfigFiles() throws IOException {
+        Path configDir = Paths.get(Configuration.CONFIG_DIR);
+
+        if (!Files.notExists(configDir))
+            return;
+
+        logger.info("Config files not found, creating with default values");
+
+        try {
+            logger.debug("Creating config directory");
+            Files.createDirectories(configDir);
+        } catch (IOException e) {
+            logger.error("Unable to create config directory");
+            throw new IOException("Unable to create config dir");
+        }
+
+        //File[] files = new File(ClassLoader.getSystemResource("config").getPath()).listFiles();
+        File[] files = new File(Storage.class.getClassLoader().getResource("config").getPath()).listFiles();
+        try {
+            copyFilesRecursive(files, configDir);
+        } catch (IOException e) {
+            logger.error("Error while creating default config files");
+            throw new IOException("Error while creating default config files", e);
+        }
+    }
+
+    private static void copyFilesRecursive(File[] files, Path dir) throws IOException {
+        for (File f : files)
+            if (f.isDirectory()) {
+                logger.debug("creating directory'" + f.getName() + "' in '" + dir + "'");
+                Path path = Paths.get(dir + File.separator + f.getName());
+                Files.createDirectories(path);
+                copyFilesRecursive(f.listFiles(), path);
+            } else {
+                logger.debug("Creating file '" + f.getName() + "' in '" + dir + "'");
+                Path path = Paths.get(dir + File.separator + f.getName());
+                Files.copy(f.toPath(), path);
+            }
+    }
+
+    public static void main(String[] args) throws IOException {
+        createDefaultConfigFiles();
+    }
 }

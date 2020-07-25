@@ -15,9 +15,13 @@ public class Configuration {
     private boolean firstRun = true;
 
     /**
+     * The constant CONFIG_DIR stores the location of the configuration directory.
+     */
+    public static final String CONFIG_DIR = "config" + File.separator;
+    /**
      * The constant CONFIG_FILE stores the location of the configuration file.
      */
-    public static final String CONFIG_FILE = "config" + File.separator + "voidchain.config";
+    public static final String CONFIG_FILE = CONFIG_DIR + "voidchain.config";
     /**
      * The constant DEFAULT_PROTOCOL_VERSION stores the default value of the protocol version.
      */
@@ -47,7 +51,7 @@ public class Configuration {
     /**
      * The constant DEFAULT_BLOCK_FILE_DIRECTORY stores the default value of block file directory.
      */
-    public static final String DEFAULT_BLOCK_FILE_DIRECTORY = "data" + File.separator + "blocks";
+    public static final String DEFAULT_BLOCK_FILE_DIRECTORY = "data" + File.separator + "blocks" + File.separator;
     /**
      * The constant BLOCK_FILE_EXTENSION_SEPARATOR stores the block file extension separator.
      */
@@ -148,8 +152,9 @@ public class Configuration {
                                 aux = str.nextToken().trim();
                                 if (aux != null) {
                                     aux = aux.replace('/', File.separatorChar);
-                                    if (aux.endsWith(File.separator))
-                                        aux = aux.substring(0, aux.length() - 1);
+                                    if (!aux.endsWith(File.separator))
+                                        //aux = aux.substring(0, aux.length() - 1);
+                                        aux = aux.concat(File.separator);
                                     this.blockFileDirectory = aux;
                                 }
                             }

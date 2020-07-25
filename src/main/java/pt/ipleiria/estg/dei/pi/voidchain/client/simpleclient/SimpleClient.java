@@ -16,6 +16,7 @@ import pt.ipleiria.estg.dei.pi.voidchain.sync.BlockSyncClient;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
 import pt.ipleiria.estg.dei.pi.voidchain.util.SignatureKeyGenerator;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
 import javax.swing.*;
 import java.awt.*;
@@ -54,12 +55,14 @@ public class SimpleClient {
         this.serviceProxy = new ServiceProxy(id);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         if (args.length < 1)
-            System.out.println("Usage: pt.ipleiria.estg.dei.pi.voidchain.client.Client <client id>");
+            System.out.println("Usage: voidchain-simpleclient <client id>");
 
         if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
             Security.addProvider(new BouncyCastleProvider());
+
+        Storage.createDefaultConfigFiles();
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());

@@ -7,7 +7,9 @@ import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import pt.ipleiria.estg.dei.pi.voidchain.util.SignatureKeyGenerator;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
+import java.io.IOException;
 import java.security.Security;
 
 /**
@@ -48,7 +50,7 @@ public class FaultyReplica2 extends DefaultSingleRecoverable {
         return new byte[0];
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         if (args.length < 1) {
             System.out.println("Usage: FaultyReplica2 <id>");
             System.exit(-1);
@@ -56,6 +58,8 @@ public class FaultyReplica2 extends DefaultSingleRecoverable {
 
         if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
             Security.addProvider(new BouncyCastleProvider());
+
+        Storage.createDefaultConfigFiles();
 
         int id = Integer.parseInt(args[0]);
         SignatureKeyGenerator.generatePubAndPrivKeys(id);

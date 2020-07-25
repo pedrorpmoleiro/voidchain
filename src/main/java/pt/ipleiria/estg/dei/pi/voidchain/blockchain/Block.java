@@ -50,14 +50,14 @@ public class Block implements Serializable {
      *                                  transaction
      * @throws InvalidKeyException      invalid key exception will be thrown if private key is invalid
      */
-// FOR USE BY BLOCKCHAIN CLASS TO CREATE GENESIS BLOCK
+    // FOR USE BY BLOCKCHAIN CLASS TO CREATE GENESIS BLOCK
     protected Block(byte[] genesisBytes) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         Configuration config = Configuration.getInstance();
 
         // Date and time of the first meeting to plan the development of this project
         long timestamp = 1582135200000L;
 
-        TOMConfiguration tomConf = new TOMConfiguration(-42, "config" + File.separator, null);
+        TOMConfiguration tomConf = new TOMConfiguration(-42, Configuration.CONFIG_DIR, null);
 
         Transaction t = new Transaction(genesisBytes, config.getProtocolVersion(), timestamp, tomConf);
         this.transactions = new Hashtable<>();
@@ -140,7 +140,7 @@ public class Block implements Serializable {
     public boolean toDisk() {
         Configuration config = Configuration.getInstance();
 
-        return Storage.writeObjectToDisk(this, config.getBlockFileDirectory() + File.separator,
+        return Storage.writeObjectToDisk(this, config.getBlockFileDirectory(),
                 config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + this.blockHeight +
                         Configuration.BLOCK_FILE_EXTENSION_SEPARATOR + config.getBlockFileExtension());
     }
@@ -158,7 +158,7 @@ public class Block implements Serializable {
     public static Block fromDisk(int blockHeight) throws IOException, ClassNotFoundException {
         Configuration config = Configuration.getInstance();
 
-        return (Block) Storage.readObjectFromDisk(config.getBlockFileDirectory() + File.separator +
+        return (Block) Storage.readObjectFromDisk(config.getBlockFileDirectory() +
                 config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + blockHeight +
                 Configuration.BLOCK_FILE_EXTENSION_SEPARATOR + config.getBlockFileExtension());
     }

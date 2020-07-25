@@ -11,6 +11,7 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
 import pt.ipleiria.estg.dei.pi.voidchain.util.SignatureKeyGenerator;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
 import java.io.*;
 import java.security.Security;
@@ -263,7 +264,7 @@ public class FaultyReplica4 extends DefaultSingleRecoverable {
         return reply;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         if (args.length < 1) {
             System.out.println("Usage: FaultyReplica4 <id>");
             System.exit(-1);
@@ -271,6 +272,8 @@ public class FaultyReplica4 extends DefaultSingleRecoverable {
 
         if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
             Security.addProvider(new BouncyCastleProvider());
+
+        Storage.createDefaultConfigFiles();
 
         int id = Integer.parseInt(args[0]);
         SignatureKeyGenerator.generatePubAndPrivKeys(id);
