@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -61,6 +62,10 @@ public class Storage {
 
         logger.info("Config files not found, creating with default values");
 
+        File[] files = new File(Storage.class.getClassLoader().getResource("config").getPath()).listFiles();
+        //File[] files2 = new File(ClassLoader.getSystemResource("config").getPath()).listFiles();
+        //File[] files3 = new File(URLClassLoader.getSystemResource("config").getPath()).listFiles();
+
         try {
             logger.debug("Creating config directory");
             Files.createDirectories(configDir);
@@ -69,8 +74,6 @@ public class Storage {
             throw new IOException("Unable to create config dir");
         }
 
-        //File[] files = new File(ClassLoader.getSystemResource("config").getPath()).listFiles();
-        File[] files = new File(Storage.class.getClassLoader().getResource("config").getPath()).listFiles();
         try {
             copyFilesRecursive(files, configDir);
         } catch (IOException e) {

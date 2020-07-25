@@ -53,6 +53,9 @@ public class Replica extends DefaultSingleRecoverable {
         this.blockSyncServer = new BlockSyncServer();
         if (sync)
             this.blockSyncServer.run();
+        else
+            logger.warn("Block sync server is not running on this replica, make sure at least one replica on this " +
+                    "machine is running the service (-s option)");
 
         new ServiceReplica(id, this, this);
     }
@@ -240,9 +243,6 @@ public class Replica extends DefaultSingleRecoverable {
     private byte[] execute(byte[] command, MessageContext msgCtx, boolean ordered) {
         byte[] reply = null;
         boolean hasReply = false;
-
-        if (!this.blockSyncServer.isRunning())
-            logger.error("Block sync server is not running on this replica");
 
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(command);
              ObjectInput objIn = new ObjectInputStream(byteIn);
