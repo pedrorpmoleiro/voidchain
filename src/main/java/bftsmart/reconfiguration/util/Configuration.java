@@ -43,7 +43,7 @@ public class Configuration {
 	public static final String DEFAULT_SECRETKEY = "PBKDF2WithHmacSHA1";
 	public static final String DEFAULT_SECRETKEY_PROVIDER = "SunJCE";
 
-	public static final String DEFAULT_SIGNATURE = "SHA256withECDSA";
+	public static final String DEFAULT_SIGNATURE = "SHA3-256withECDSA";
 	public static final String DEFAULT_SIGNATURE_PROVIDER = "BC";
 	public static final String DEFAULT_KEYLOADER = "ECDSA";
 

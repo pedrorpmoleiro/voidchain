@@ -1,5 +1,6 @@
 package pt.ipleiria.estg.dei.pi.voidchain.util;
 
+import bftsmart.reconfiguration.util.TOMConfiguration;
 import bftsmart.tom.util.ECDSAKeyPairGenerator;
 
 import org.slf4j.Logger;
@@ -10,23 +11,80 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.StringTokenizer;
+import java.util.concurrent.TimeUnit;
 
 public class SignatureKeyGenerator {
     private static final Logger logger = LoggerFactory.getLogger(SignatureKeyGenerator.class);
 
-    private static final String BFT_SMART_CONFIG_FILE = "config" + File.separator + "system.config";
+    private static final String BFT_SMART_CONFIG_FILE = Configuration.CONFIG_DIR + "system.config";
+
+    private static final String SECRET = "Q2o3^TjE9OcrcZqG";
+
+    /**
+     * Generates public and private SSL/TLS keys according to 'system.config' configuration file.
+     *
+     * @param id the id of the client/replica
+     */
+    public static void generateSSLKey(int id) {
+        try {
+            Path keyDir = Paths.get(Configuration.CONFIG_DIR + "keysSSL_TLS");
+            if (Files.notExists(keyDir))
+                Files.createDirectories(keyDir);
+        } catch (IOException e) {
+            logger.error("Error occurred while creating directory for key file storage ('" + Configuration.CONFIG_DIR +
+                    "keysSSL_TLS" + File.separator + "')", e);
+            return;
+        }
+
+        TOMConfiguration tomConf = new TOMConfiguration(id, Configuration.CONFIG_DIR, null);
+
+        String[] aux = tomConf.getSSLTLSKeyStore().split("_");
+
+        if (!aux[0].equals("EC"))
+            logger.warn("Recommended use of EC for key generation");
+
+        String alg = aux[0];
+        int keySize = Integer.parseInt(aux[2].split("\\.")[0]);
+
+        String keyFile = "config" + File.separator + "keysSSL_TLS" + File.separator + alg + "_KeyPair_" +
+                keySize + ".pkcs12";
+
+        if (!Storage.fileExists(keyFile)) {
+            logger.warn("SSL/TLS Key not found, attemping to generate a new one");
+
+            String command = "keytool -genkey -keyalg " + alg + " -keysize " + keySize + " -alias bftsmartEC -keypass " +
+                    SignatureKeyGenerator.SECRET + " -storepass " + SignatureKeyGenerator.SECRET + " -keystore " + keyFile +
+                    " -dname \"CN=BFT-SMaRT\"";
+
+            try {
+                Process tr = Runtime.getRuntime().exec(command);
+                tr.waitFor(10, TimeUnit.SECONDS);
+            } catch (IOException e) {
+                logger.error("Error while calling 'keytool'");
+            } catch (InterruptedException e) {
+                logger.error("Error while waiting for command to finish", e);
+            }
+
+            if (Storage.fileExists(keyFile))
+                logger.info("SSL/TLS Key pair generated successfully");
+            else
+                logger.warn("Could not generate SSL/TLS Key pair");
+        } else
+            logger.info("SSL/TLS Key pair already present in system");
+    }
 
     /**
      * Generates public and private ECDSA keys according to 'system.config' configuration file.
      *
-     * @param id the id of the key
+     * @param id the id of the client/replica
      */
     public static void generatePubAndPrivKeys(int id) {
-        boolean defaultKeys = false;
-        String signatureAlgorithmProvider = "BC";
-        String keyLoader = "ECDSA";
-
         Configuration config = Configuration.getInstance();
+        TOMConfiguration tomConf = new TOMConfiguration(id, Configuration.CONFIG_DIR, null);
+
+        String signatureAlgorithmProvider = tomConf.getSignatureAlgorithmProvider();
+        boolean defaultKeys = tomConf.useDefaultKeys();
+        String keyLoader = "ECDSA";
 
         try {
             FileReader fr = new FileReader(BFT_SMART_CONFIG_FILE);
@@ -40,14 +98,8 @@ public class SignatureKeyGenerator {
                 StringTokenizer str = new StringTokenizer(line, "=");
                 if (str.countTokens() > 1) {
                     switch (str.nextToken().trim()) {
-                        case "system.communication.signatureAlgorithmProvider":
-                            signatureAlgorithmProvider = str.nextToken().trim();
-                            continue;
                         case "system.communication.defaultKeyLoader":
                             keyLoader = str.nextToken().trim();
-                            continue;
-                        case "system.communication.defaultkeys":
-                            defaultKeys = str.nextToken().trim().equalsIgnoreCase("true");
                             continue;
                     }
                 }
@@ -59,7 +111,7 @@ public class SignatureKeyGenerator {
 
         String keyDir;
         if (keyLoader.equalsIgnoreCase("ECDSA"))
-            keyDir = "config" + File.separator + "keysECDSA";
+            keyDir = Configuration.CONFIG_DIR + "keysECDSA";
         else {
             logger.warn("########### WARNING ###########" + System.lineSeparator() +
                     "Voidchain recommends utilizing ECDSA keys for increased security. Furthermore Voichain" +
@@ -77,15 +129,12 @@ public class SignatureKeyGenerator {
             if (Files.notExists(pD))
                 Files.createDirectories(pD);
         } catch (IOException ioException) {
-            logger.error("Error occurred while creating directory for key file storage ('config" +
-                    File.separator + "keysECDSA" + File.separator, ioException);
+            logger.error("Error occurred while creating directory for key file storage ('" + Configuration.CONFIG_DIR +
+                    "keysECDSA" + File.separator + "')", ioException);
             return;
         }
 
-
-        try {
-            new FileReader(keyDir + File.separator + "privatekey" + id);
-        } catch (FileNotFoundException e) {
+        if (!Storage.fileExists(keyDir + File.separator + "privatekey" + id)) {
             logger.warn("Private Key file not found, generating new keys");
 
             try {
@@ -95,5 +144,9 @@ public class SignatureKeyGenerator {
                 logger.error("Error occurred while creating and/or storing the new key pair", exception);
             }
         }
+    }
+
+    public static void main(String[] args) {
+        SignatureKeyGenerator.generateSSLKey(-42);
     }
 }

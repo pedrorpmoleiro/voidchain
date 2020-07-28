@@ -77,7 +77,7 @@ public class ServerConnection {
 	private TrustManagerFactory trustMgrFactory;
 	private SSLContext context;
 	private SSLSocketFactory socketFactory;
-	private static final String SECRET = "MySeCreT_2hMOygBwY";
+	private static final String SECRET = "Q2o3^TjE9OcrcZqG";
     
     public ServerConnection(ServerViewController controller,
                             SSLSocket socket, int remoteId,

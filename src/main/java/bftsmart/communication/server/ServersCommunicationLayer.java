@@ -84,7 +84,7 @@ public class ServersCommunicationLayer extends Thread {
 	private TrustManagerFactory trustMgrFactory;
 	private SSLContext context;
 	private SSLServerSocketFactory serverSocketFactory;
-	private static final String SECRET = "MySeCreT_2hMOygBwY";
+	private static final String SECRET = "Q2o3^TjE9OcrcZqG";
 	private SecretKey selfPwd;
 	private SSLServerSocket serverSocketSSLTLS;
 	private String ssltlsProtocolVersion;

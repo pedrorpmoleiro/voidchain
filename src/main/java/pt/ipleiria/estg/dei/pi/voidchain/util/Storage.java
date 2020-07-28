@@ -54,6 +54,17 @@ public class Storage {
     }
 
     // TODO: Javadoc
+    public static boolean fileExists(String fileName) {
+        try {
+            new FileReader(fileName);
+        } catch (FileNotFoundException e) {
+            logger.warn("Requested file '" + fileName + "' has a problem", e);
+            return false;
+        }
+
+        return true;
+    }
+
     public static void createDefaultConfigFiles() throws IOException {
         Path configDir = Paths.get(Configuration.CONFIG_DIR);
 
