@@ -9,6 +9,7 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
 import pt.ipleiria.estg.dei.pi.voidchain.util.SignatureKeyGenerator;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
@@ -27,6 +28,8 @@ public class FaultyReplica4 extends DefaultSingleRecoverable {
     private List<Transaction> transactionPool;
     private final ReplicaMessenger messenger;
     private Block proposedBlock = null;
+    private Thread blockProposalThread = null;
+    private int leader = -1;
 
     public FaultyReplica4(int id) {
         this.blockchain = Blockchain.getInstance();
@@ -47,17 +50,26 @@ public class FaultyReplica4 extends DefaultSingleRecoverable {
     }
 
     private void processNewBlock() {
-        createProposedBlock();
+        if (this.replicaContext.getStaticConfiguration().getProcessId() == leader) {
+            createProposedBlock();
 
-        if (this.proposedBlock == null) return;
+            if (this.proposedBlock == null) return;
 
-        if (this.messenger.proposeBlock(this.proposedBlock))
-            if (this.proposedBlock != null)
-                this.blockchain.addBlock(this.proposedBlock);
-            else
-                this.transactionPool.addAll(this.proposedBlock.getTransactions().values());
+            if (this.messenger.proposeBlock(this.proposedBlock))
+                if (this.proposedBlock != null) {
+                    this.blockchain.addBlock(this.proposedBlock);
+                } else {
+                    this.transactionPool.addAll(this.proposedBlock.getTransactions().values());
+                }
+            this.proposedBlock = null;
+        }
 
-        this.proposedBlock = null;
+        try {
+            Thread.sleep(5000);
+            processNewBlock();
+        } catch (InterruptedException e) {
+            this.blockProposalThread = null;
+        }
     }
 
     public boolean addTransaction(Transaction transaction) {
@@ -130,12 +142,21 @@ public class FaultyReplica4 extends DefaultSingleRecoverable {
         byte[] reply = null;
         boolean hasReply = false;
 
+        if (msgCtx.getLeader() != -1 && msgCtx.getLeader() != this.leader)
+            this.leader = msgCtx.getLeader();
+
+        if (this.blockProposalThread == null) {
+            this.blockProposalThread = new Thread(this::processNewBlock);
+            this.blockProposalThread.start();
+        }
+
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(command);
              ObjectInput objIn = new ObjectInputStream(byteIn);
              ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
              ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
             Object input = objIn.readObject();
+            Configuration config = Configuration.getInstance();
 
             if (input.getClass() == ClientMessage.class) {
                 Block currentBlock = this.blockchain.getMostRecentBlock();
@@ -159,7 +180,7 @@ public class FaultyReplica4 extends DefaultSingleRecoverable {
                         }
                         break;
                     case ADD_TRANSACTION:
-                        if (ordered)
+                        if (ordered) {
                             if (req.hasContent()) {
                                 ByteArrayInputStream byteIn2 = new ByteArrayInputStream(req.getContent());
                                 ObjectInput objIn2 = new ObjectInputStream(byteIn2);
@@ -172,9 +193,10 @@ public class FaultyReplica4 extends DefaultSingleRecoverable {
                                 objOut.writeBoolean(this.addTransaction(t));
                                 hasReply = true;
                             }
+                        }
                         break;
                     case ADD_TRANSACTIONS:
-                        if (ordered)
+                        if (ordered) {
                             if (req.hasContent()) {
                                 ByteArrayInputStream byteIn2 = new ByteArrayInputStream(req.getContent());
                                 ObjectInput objIn2 = new ObjectInputStream(byteIn2);
@@ -187,6 +209,7 @@ public class FaultyReplica4 extends DefaultSingleRecoverable {
                                 objOut.writeBoolean(this.addTransactions(tl));
                                 hasReply = true;
                             }
+                        }
                         break;
                     case IS_CHAIN_VALID:
                         objOut.writeBoolean(this.blockchain.isChainValid());
@@ -197,7 +220,7 @@ public class FaultyReplica4 extends DefaultSingleRecoverable {
                         hasReply = true;
                         break;
                     default:
-                        System.out.println("...");
+                        System.out.println("blablabla");
                 }
             } else if (input.getClass() == ReplicaMessage.class) {
                 ReplicaMessage req = (ReplicaMessage) input;
@@ -234,8 +257,9 @@ public class FaultyReplica4 extends DefaultSingleRecoverable {
 
                         createProposedBlock();
 
-                        if (this.proposedBlock == null) {
-                            objOut.writeBoolean(recvBlock.equals(this.blockchain.getMostRecentBlock()));
+                        boolean aux = recvBlock.equals(this.blockchain.getMostRecentBlock());
+                        if (this.proposedBlock == null || aux) {
+                            objOut.writeBoolean(aux);
                         } else {
                             if (recvBlock.equals(this.proposedBlock)) {
                                 this.blockchain.addBlock(recvBlock);
@@ -247,7 +271,7 @@ public class FaultyReplica4 extends DefaultSingleRecoverable {
                         hasReply = true;
                         break;
                     default:
-                        System.out.println("...2");
+                        System.out.println("blablabla");
                 }
             }
 
@@ -277,6 +301,9 @@ public class FaultyReplica4 extends DefaultSingleRecoverable {
 
         int id = Integer.parseInt(args[0]);
         SignatureKeyGenerator.generatePubAndPrivKeys(id);
+        SignatureKeyGenerator.generateSSLKey(id);
+
+        SignatureKeyGenerator.generatePubAndPrivKeys(-42); // Genesis Block Priv & Pub Key
 
         new FaultyReplica4(id);
     }

@@ -33,6 +33,8 @@ public class Replica extends DefaultSingleRecoverable {
     private final BlockSyncServer blockSyncServer;
     private final BlockSyncClient blockSyncClient;
     private Block proposedBlock = null;
+    private Thread blockProposalThread = null;
+    private int leader = -1;
 
     /**
      * Instantiates a new Replica.
@@ -95,6 +97,8 @@ public class Replica extends DefaultSingleRecoverable {
 
         int id = Integer.parseInt(args[0]);
         SignatureKeyGenerator.generatePubAndPrivKeys(id);
+        SignatureKeyGenerator.generateSSLKey(id);
+
         SignatureKeyGenerator.generatePubAndPrivKeys(-42); // Genesis Block Priv & Pub Key
 
         new Replica(id, sync);
@@ -131,22 +135,30 @@ public class Replica extends DefaultSingleRecoverable {
     }
 
     private void processNewBlock() {
-        createProposedBlock();
+        if (this.replicaContext.getStaticConfiguration().getProcessId() == leader) {
+            createProposedBlock();
 
-        if (this.proposedBlock == null) return;
+            if (this.proposedBlock == null) return;
 
-        logger.info("Proposing block to the network");
-        if (this.messenger.proposeBlock(this.proposedBlock))
-            if (this.proposedBlock != null) {
-                this.blockchain.addBlock(this.proposedBlock);
-                logger.info("Block proposal accepted, adding block to local blockchain");
-            } else {
-                this.transactionPool.addAll(this.proposedBlock.getTransactions().values());
-                logger.info("Block proposal failed");
-            }
+            logger.info("Proposing block to the network");
+            if (this.messenger.proposeBlock(this.proposedBlock))
+                if (this.proposedBlock != null) {
+                    this.blockchain.addBlock(this.proposedBlock);
+                    logger.info("Block proposal accepted, adding block to local blockchain");
+                } else {
+                    this.transactionPool.addAll(this.proposedBlock.getTransactions().values());
+                    logger.info("Block proposal failed");
+                }
+            this.proposedBlock = null;
+        }
 
-        this.proposedBlock = null;
-        processNewBlock();
+        try {
+            Thread.sleep(5000);
+            processNewBlock();
+        } catch (InterruptedException e) {
+            logger.error("Block Proposal Thread error while waiting", e);
+            this.blockProposalThread = null;
+        }
     }
 
     /**
@@ -163,8 +175,6 @@ public class Replica extends DefaultSingleRecoverable {
             logger.error("Error occurred while adding transaction to memory pool", transaction, this.transactionPool);
             return false;
         }
-
-        new Thread(this::processNewBlock).start();
 
         logger.info("Transaction added to memory pool");
         return true;
@@ -184,8 +194,6 @@ public class Replica extends DefaultSingleRecoverable {
             logger.error("Error occurred while adding transactions to memory pool", transactions, this.transactionPool);
             return false;
         }
-
-        new Thread(this::processNewBlock).start();
 
         logger.info("Transactions added to memory pool");
         return true;
@@ -243,6 +251,14 @@ public class Replica extends DefaultSingleRecoverable {
     private byte[] execute(byte[] command, MessageContext msgCtx, boolean ordered) {
         byte[] reply = null;
         boolean hasReply = false;
+
+        if (msgCtx.getLeader() != -1 && msgCtx.getLeader() != this.leader)
+            this.leader = msgCtx.getLeader();
+
+        if (this.blockProposalThread == null) {
+            this.blockProposalThread = new Thread(this::processNewBlock);
+            this.blockProposalThread.start();
+        }
 
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(command);
              ObjectInput objIn = new ObjectInputStream(byteIn);

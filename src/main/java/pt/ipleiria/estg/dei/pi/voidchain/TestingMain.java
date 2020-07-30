@@ -58,20 +58,15 @@ public class TestingMain {
                 return;
             }
             transactions.add(t);
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                return;
-            }
         }
 
-        /*
+        System.out.println("Created 100 transactions");
+
         for (Transaction t : transactions) {
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-                objOut.writeObject(transactions);
+                objOut.writeObject(t);
                 objOut.flush();
                 byteOut.flush();
                 byte[] tBytes = byteOut.toByteArray();
@@ -85,6 +80,7 @@ public class TestingMain {
                 objOut2.flush();
                 byteOut2.flush();
 
+                System.out.println("Sending transactions");
                 byte[] reply = serviceProxy.invokeOrdered(byteOut2.toByteArray());
 
                 if (reply.length == 0) {
@@ -106,12 +102,15 @@ public class TestingMain {
 
             } catch (IOException ioException) {
                 ioException.printStackTrace();
-                continue;
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
-        */
 
-        try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+        /*try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
              ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
             objOut.writeObject(transactions);
@@ -128,6 +127,7 @@ public class TestingMain {
             objOut2.flush();
             byteOut2.flush();
 
+            System.out.println("Sending all transactions");
             byte[] reply = serviceProxy.invokeOrdered(byteOut2.toByteArray());
 
             if (reply.length == 0) {
@@ -150,6 +150,6 @@ public class TestingMain {
         } catch (IOException ioException) {
             ioException.printStackTrace();
             return;
-        }
+        }*/
     }
 }

@@ -208,13 +208,4 @@ public class BlockSyncClient {
 
         return hbh;
     }
-
-    public static void main(String[] args) {
-        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
-            Security.addProvider(new BouncyCastleProvider());
-
-        Blockchain.getInstance();
-        BlockSyncClient client = new BlockSyncClient(new ServiceProxy(100));
-        client.sync(false);
-    }
 }

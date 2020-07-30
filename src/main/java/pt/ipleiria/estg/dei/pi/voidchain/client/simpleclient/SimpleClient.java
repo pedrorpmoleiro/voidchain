@@ -40,7 +40,6 @@ public class SimpleClient {
     private JTextField blockHeightTextField;
     private JButton isChainValidButton;
     private JButton getLeaderButton;
-    private JButton syncBlocksButton;
 
     private final ServiceProxy serviceProxy;
 
@@ -72,6 +71,7 @@ public class SimpleClient {
         int clientId = Integer.parseInt(args[0]);
 
         SignatureKeyGenerator.generatePubAndPrivKeys(clientId);
+        SignatureKeyGenerator.generateSSLKey(clientId);
 
         SimpleClient client = new SimpleClient(clientId);
 
@@ -81,8 +81,6 @@ public class SimpleClient {
         client.addTransactionButton.addActionListener(client.addTransactionButtonActionListener());
         client.isChainValidButton.addActionListener(client.isChainValidButtonActionListener());
         client.getLeaderButton.addActionListener(client.getLeaderButtonActionListener());
-
-        client.syncBlocksButton.addActionListener(client.syncBlocksButtonActionListener());
 
         client.buttonQuit.addActionListener(e -> System.exit(0));
 
@@ -361,13 +359,6 @@ public class SimpleClient {
             } catch (IOException ex) {
                 logger.error("An error has occurred", ex);
             }
-        };
-    }
-
-    private ActionListener syncBlocksButtonActionListener() {
-        return e -> {
-            BlockSyncClient syncClient = new BlockSyncClient(this.serviceProxy);
-            syncClient.sync(true);
         };
     }
 }

@@ -145,8 +145,4 @@ public class SignatureKeyGenerator {
             }
         }
     }
-
-    public static void main(String[] args) {
-        SignatureKeyGenerator.generateSSLKey(-42);
-    }
 }

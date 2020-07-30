@@ -63,6 +63,9 @@ public class FaultyReplica2 extends DefaultSingleRecoverable {
 
         int id = Integer.parseInt(args[0]);
         SignatureKeyGenerator.generatePubAndPrivKeys(id);
+        SignatureKeyGenerator.generateSSLKey(id);
+
+        SignatureKeyGenerator.generatePubAndPrivKeys(-42); // Genesis Block Priv & Pub Key
 
         new FaultyReplica2(id);
     }

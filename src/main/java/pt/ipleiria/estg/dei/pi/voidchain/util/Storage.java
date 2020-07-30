@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -73,9 +72,13 @@ public class Storage {
 
         logger.info("Config files not found, creating with default values");
 
-        File[] files = new File(Storage.class.getClassLoader().getResource("config").getPath()).listFiles();
+        File confDir = new File(Storage.class.getClassLoader().getResource("config").getPath());
         //File[] files2 = new File(ClassLoader.getSystemResource("config").getPath()).listFiles();
         //File[] files3 = new File(URLClassLoader.getSystemResource("config").getPath()).listFiles();
+        File files4 = new File(Storage.class.getClassLoader().getResource("logback.xml").getPath());
+        File[] confFiles = confDir.listFiles();
+        //File files6 = new File(Storage.class.getClassLoader().getResource("config" + File.separator + "hosts.config").getPath());
+        boolean filesDir = confDir.isDirectory();
 
         try {
             logger.debug("Creating config directory");
@@ -86,7 +89,8 @@ public class Storage {
         }
 
         try {
-            copyFilesRecursive(files, configDir);
+            assert confFiles != null;
+            copyFilesRecursive(confFiles, configDir);
         } catch (IOException e) {
             logger.error("Error while creating default config files");
             throw new IOException("Error while creating default config files", e);
@@ -99,7 +103,9 @@ public class Storage {
                 logger.debug("creating directory'" + f.getName() + "' in '" + dir + "'");
                 Path path = Paths.get(dir + File.separator + f.getName());
                 Files.createDirectories(path);
-                copyFilesRecursive(f.listFiles(), path);
+                File[] filesAux = f.listFiles();
+                assert filesAux != null;
+                copyFilesRecursive(filesAux, path);
             } else {
                 logger.debug("Creating file '" + f.getName() + "' in '" + dir + "'");
                 Path path = Paths.get(dir + File.separator + f.getName());
