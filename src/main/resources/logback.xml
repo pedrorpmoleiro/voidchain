@@ -1,4 +1,4 @@
-<configuration debug="true">
+<configuration debug="false">
 
     <!-- Logging to console -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
@@ -10,7 +10,7 @@
     <!-- Logging to console wih medium output -->
     <appender name="MED-STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>-- [%-5level] %logger{16} - %msg%n</pattern>
+            <pattern>[%-5level] -- %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -27,25 +27,21 @@
     </appender>
 
     <root level="INFO">
-        <appender-ref ref="MIN-STDOUT"/>
-    </root>
-
-    <logger name="bftsmart" level="INFO">
-        <appender-ref ref="MIN-STDOUT"/>
-    </logger>
-
-    <logger name="pt.ipleiria.estg.dei.pi.voidchain" level="INFO">
         <appender-ref ref="MED-STDOUT"/>
-    </logger>
+    </root>
 
     <logger name="io.netty" level="OFF"/>
     <logger name="ch.qos.logback" level="OFF"/>
 
-    <logger name="" level="ERROR">
-        <appender-ref ref="STDOUT"/>
+    <logger name="pt.ipleiria.estg.dei.pi.voidchain" level="DEBUG">
+        <appender-ref ref="MED-STDOUT"/>
     </logger>
 
     <!--
+    <logger name="bftsmart" level="DEBUG">
+        <appender-ref ref="MED-STDOUT"/>
+    </logger>
+
     <logger name="bftsmart.consensus.roles.AcceptorSSLTLS" level="TRACE"/>
     <logger name="bftsmart.consensus.roles.Acceptor" level="TRACE"/>
     <logger name="bftsmart.communication.server.ServersCommunicationLayerSSLTLS" level="DEBUG"/>

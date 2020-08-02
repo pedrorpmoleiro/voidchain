@@ -23,15 +23,26 @@ import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 import java.io.*;
 import java.security.Security;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
+
+/**
+ * TODO
+ * Thread that 'validates' chain among other replicas and if invalid redownloads it
+ */
 
 public class Replica extends DefaultSingleRecoverable {
     private static final Logger logger = LoggerFactory.getLogger(Replica.class);
 
     private Blockchain blockchain;
+
+    private ReentrantLock transactionPoolLock = new ReentrantLock();
     private List<Transaction> transactionPool;
+
     private final ReplicaMessenger messenger;
+
     private final BlockSyncServer blockSyncServer;
     private final BlockSyncClient blockSyncClient;
+
     private Block proposedBlock = null;
     private Thread blockProposalThread = null;
     private int leader = -1;
@@ -109,50 +120,51 @@ public class Replica extends DefaultSingleRecoverable {
 
         Configuration config = Configuration.getInstance();
         int transactionsPerBlock = config.getNumTransactionsInBlock();
-        if (this.transactionPool.size() < transactionsPerBlock) return;
 
-        logger.info("Creating block to be proposed from memory pool transactions");
+        transactionPoolLock.lock();
+        if (this.transactionPool.size() >= transactionsPerBlock) {
+            logger.info("Creating block to be proposed from memory pool transactions");
 
-        List<Transaction> transactions = new ArrayList<>();
-        while (transactions.size() < transactionsPerBlock) {
-            Transaction t = this.transactionPool.get(0);
-            transactions.add(t);
-            this.transactionPool.remove(0);
+            List<Transaction> transactions = new ArrayList<>();
+            while (transactions.size() < transactionsPerBlock) {
+                Transaction t = this.transactionPool.get(0);
+                transactions.add(t);
+                this.transactionPool.remove(0);
+            }
+
+            Block previousBlock = this.blockchain.getMostRecentBlock();
+
+            try {
+                this.proposedBlock = new Block(previousBlock.getHash(), config.getProtocolVersion(),
+                        previousBlock.getBlockHeight() + 1, transactions, -1L, new byte[0]);
+                logger.info("Proposed block created");
+            } catch (InstantiationException e) {
+                logger.error("Error creating new proposed block instance", e);
+                this.transactionPool.addAll(transactions);
+            }
         }
-
-        Block previousBlock = this.blockchain.getMostRecentBlock();
-
-        try {
-            this.proposedBlock = new Block(previousBlock.getHash(), config.getProtocolVersion(),
-                    previousBlock.getBlockHeight() + 1, transactions, -1L, new byte[0]);
-
-        } catch (InstantiationException e) {
-            logger.error("Error creating new proposed block instance", e);
-            this.transactionPool.addAll(transactions);
-        }
-
-        logger.info("Proposed block created");
+        transactionPoolLock.unlock();
     }
 
     private void processNewBlock() {
         if (this.replicaContext.getStaticConfiguration().getProcessId() == leader) {
             createProposedBlock();
 
-            if (this.proposedBlock == null) return;
+            if (this.proposedBlock != null) {
+                logger.info("Proposing block to the network");
+                if (this.messenger.proposeBlock(this.proposedBlock))
+                    if (this.proposedBlock != null) {
+                        this.blockchain.addBlock(this.proposedBlock);
+                        logger.info("Adding proposed block to local blockchain");
+                    } else
+                        this.transactionPool.addAll(this.proposedBlock.getTransactions().values());
 
-            logger.info("Proposing block to the network");
-            if (this.messenger.proposeBlock(this.proposedBlock))
-                if (this.proposedBlock != null) {
-                    this.blockchain.addBlock(this.proposedBlock);
-                    logger.info("Block proposal accepted, adding block to local blockchain");
-                } else {
-                    this.transactionPool.addAll(this.proposedBlock.getTransactions().values());
-                    logger.info("Block proposal failed");
-                }
-            this.proposedBlock = null;
+                this.proposedBlock = null;
+            }
         }
 
         try {
+            // TODO: CONFIG
             Thread.sleep(5000);
             processNewBlock();
         } catch (InterruptedException e) {
@@ -169,7 +181,10 @@ public class Replica extends DefaultSingleRecoverable {
      */
     public boolean addTransaction(Transaction transaction) {
         int aux = this.transactionPool.size();
+
+        transactionPoolLock.lock();
         this.transactionPool.add(transaction);
+        transactionPoolLock.unlock();
 
         if (aux == this.transactionPool.size() || (aux + 1) != this.transactionPool.size()) {
             logger.error("Error occurred while adding transaction to memory pool", transaction, this.transactionPool);
@@ -188,7 +203,10 @@ public class Replica extends DefaultSingleRecoverable {
      */
     public boolean addTransactions(List<Transaction> transactions) {
         int aux = this.transactionPool.size();
+
+        transactionPoolLock.lock();
         this.transactionPool.addAll(transactions);
+        transactionPoolLock.unlock();
 
         if (aux == this.transactionPool.size() || (aux + transactions.size()) != this.transactionPool.size()) {
             logger.error("Error occurred while adding transactions to memory pool", transactions, this.transactionPool);
@@ -252,10 +270,12 @@ public class Replica extends DefaultSingleRecoverable {
         byte[] reply = null;
         boolean hasReply = false;
 
+        logger.debug("Consensus leader is: " + msgCtx.getLeader());
         if (msgCtx.getLeader() != -1 && msgCtx.getLeader() != this.leader)
             this.leader = msgCtx.getLeader();
 
         if (this.blockProposalThread == null) {
+            logger.debug("Starting block proposal thread");
             this.blockProposalThread = new Thread(this::processNewBlock);
             this.blockProposalThread.start();
         }
@@ -380,6 +400,13 @@ public class Replica extends DefaultSingleRecoverable {
                         }
 
                         createProposedBlock();
+
+                        /*
+                         * TODO
+                         * Validate if block received height is the same as the last block in the local chain,
+                         * if it is instead of only seeing if it is equal we should do further checks in case of faulty
+                         * reply which could cause consensus breaking replica due to different blockchains
+                         */
 
                         boolean aux = recvBlock.equals(this.blockchain.getMostRecentBlock());
                         if (this.proposedBlock == null || aux) {

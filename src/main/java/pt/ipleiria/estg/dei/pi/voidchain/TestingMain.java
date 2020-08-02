@@ -22,7 +22,7 @@ public class TestingMain {
         if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
             Security.addProvider(new BouncyCastleProvider());
 
-        int id = 100;
+        int id = Integer.parseInt(args[0]);
         SignatureKeyGenerator.generatePubAndPrivKeys(id);
         ServiceProxy serviceProxy = new ServiceProxy(id);
 
@@ -46,7 +46,7 @@ public class TestingMain {
             return;
         }
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 700; i++) {
             byte[] data = new byte[config.getTransactionMaxSize() - 25];
             random.nextBytes(data);
             Transaction t;
@@ -60,7 +60,7 @@ public class TestingMain {
             transactions.add(t);
         }
 
-        System.out.println("Created 100 transactions");
+        System.out.println("Finished creating transactions");
 
         for (Transaction t : transactions) {
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
@@ -80,7 +80,7 @@ public class TestingMain {
                 objOut2.flush();
                 byteOut2.flush();
 
-                System.out.println("Sending transactions");
+                System.out.println("Sending transaction");
                 byte[] reply = serviceProxy.invokeOrdered(byteOut2.toByteArray());
 
                 if (reply.length == 0) {
@@ -98,16 +98,16 @@ public class TestingMain {
                 objIn.close();
                 byteIn.close();
 
-                System.out.println("Transactions added: " + added);
+                System.out.println("Transaction added: " + added);
 
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
-            try {
+            /*try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
+            }*/
         }
 
         /*try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
@@ -151,5 +151,9 @@ public class TestingMain {
             ioException.printStackTrace();
             return;
         }*/
+
+        System.out.println("##### DONE #####");
+
+        System.exit(0);
     }
 }

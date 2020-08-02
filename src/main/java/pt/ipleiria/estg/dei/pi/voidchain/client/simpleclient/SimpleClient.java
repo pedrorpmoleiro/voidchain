@@ -12,7 +12,6 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.BlockNoTransactions;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessageType;
-import pt.ipleiria.estg.dei.pi.voidchain.sync.BlockSyncClient;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
 import pt.ipleiria.estg.dei.pi.voidchain.util.SignatureKeyGenerator;
@@ -119,7 +118,6 @@ public class SimpleClient {
                 objIn.close();
                 byteIn.close();
 
-                //System.out.println(currentBlock.toString());
                 logger.info("Current block: " + currentBlock);
                 JOptionPane.showMessageDialog(null, currentBlock.toString(),
                         "Response", JOptionPane.INFORMATION_MESSAGE);
@@ -203,7 +201,6 @@ public class SimpleClient {
                 objIn.close();
                 byteIn.close();
 
-                //System.out.println(block.toString());
                 logger.info("Block " + blockHeight + " Data: " + block);
                 JOptionPane.showMessageDialog(null, block.toString(),
                         "Response", JOptionPane.INFORMATION_MESSAGE);

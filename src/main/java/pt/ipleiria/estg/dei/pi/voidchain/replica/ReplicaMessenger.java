@@ -58,7 +58,13 @@ public class ReplicaMessenger {
             objOut.flush();
             byteOut.flush();
 
-            byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
+            byte[] reply;
+            try {
+                reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
+            } catch (RuntimeException e) {
+                logger.error("Error while sending proposed block to network", e);
+                return false;
+            }
 
             if (reply.length == 0) {
                 System.err.println("No reply from network");
