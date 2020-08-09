@@ -23,28 +23,35 @@ import java.util.Map;
  * The transaction contains data of the operations performed by the replicas.
  * In the 'transactions' section of a block, transactions get recorded.
  * The structure of a transaction is: timestamp (when it was created), its size
- * , the version of the protocol when the transaction was created and the hash of the transaction (trasaction ID).
+ * , the version of the protocol when the transaction was created and the hash of the transaction (transaction ID).
  */
 public class Transaction implements Serializable {
     /* Attributes */
-    private static final Logger logger = LoggerFactory.getLogger(Transaction.class.getName());
+    private static final transient Logger logger = LoggerFactory.getLogger(Transaction.class.getName());
+
+    /*
+     * TODO
+     *  NONCE
+     */
 
     /**
      * The constant LIST_COMPARATOR provides a comparator to order transaction lists by timestamp.
      */
-    public static final Comparator<Transaction> LIST_COMPARATOR = (o1, o2) ->
+    public static final transient Comparator<Transaction> LIST_COMPARATOR = (o1, o2) ->
             Long.compare(o2.getTimestamp(), o1.getTimestamp());
     /**
      * The constant MAP_COMPARATOR provides a comparator to order a list of map entries of transaction hashes and
      * transactions by timestamp.
      */
-    public static final Comparator<Map.Entry<byte[], Transaction>> MAP_COMPARATOR = (o1, o2) ->
+    public static final transient Comparator<Map.Entry<byte[], Transaction>> MAP_COMPARATOR = (o1, o2) ->
             Long.compare(o2.getValue().getTimestamp(), o1.getValue().getTimestamp());
 
     private final long timestamp;
     private final byte[] data;
     private final String protocolVersion;
     private final byte[] signature;
+
+    /* Constructors */
 
     /**
      * Instantiates a new Transaction.

@@ -18,6 +18,8 @@ public class BlockNoTransactions implements Serializable {
     private final int blockHeight;
     private final int size;
 
+    /* Constructors */
+
     /**
      * Instantiates a new Block no transactions.
      *
@@ -32,6 +34,8 @@ public class BlockNoTransactions implements Serializable {
         this.blockHeight = blockHeight;
         this.size = size;
     }
+
+    /* Methods */
 
     /**
      * Gets the number of transactions inside a block.

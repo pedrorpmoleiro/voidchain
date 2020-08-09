@@ -31,7 +31,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <mainclass>pt.ipleiria.estg.dei.pi.voidchain.client.simpleclient.SimpleClient</mainclass>
+                <mainclass>pt.ipleiria.estg.dei.pi.voidchain.client.SimpleClient</mainclass>
                 <projectVersion>simple-client</projectVersion>
             </properties>
         </profile>

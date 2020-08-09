@@ -17,7 +17,7 @@ import pt.ipleiria.estg.dei.pi.voidchain.sync.BlockSyncClient;
 import pt.ipleiria.estg.dei.pi.voidchain.sync.BlockSyncServer;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
-import pt.ipleiria.estg.dei.pi.voidchain.util.SignatureKeyGenerator;
+import pt.ipleiria.estg.dei.pi.voidchain.util.KeyGenerator;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
 import java.io.*;
@@ -25,17 +25,17 @@ import java.security.Security;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-/**
+/*
  * TODO
- * Thread that 'validates' chain among other replicas and if invalid redownloads it
+ *  Thread that 'validates' chain among other replicas and if invalid re downloads it
  */
 
 public class Replica extends DefaultSingleRecoverable {
     private static final Logger logger = LoggerFactory.getLogger(Replica.class);
 
-    private Blockchain blockchain;
+    private final Blockchain blockchain;
 
-    private ReentrantLock transactionPoolLock = new ReentrantLock();
+    private final ReentrantLock transactionPoolLock = new ReentrantLock();
     private List<Transaction> transactionPool;
 
     private final ReplicaMessenger messenger;
@@ -45,7 +45,10 @@ public class Replica extends DefaultSingleRecoverable {
 
     private Block proposedBlock = null;
     private Thread blockProposalThread = null;
+    private boolean blockProposalThreadStop = false;
     private int leader = -1;
+
+    private final ServiceReplica replica;
 
     /**
      * Instantiates a new Replica.
@@ -70,14 +73,28 @@ public class Replica extends DefaultSingleRecoverable {
             logger.warn("Block sync server is not running on this replica, make sure at least one replica on this " +
                     "machine is running the service (-s option)");
 
-        new ServiceReplica(id, this, this);
+        replica = new ServiceReplica(id, this, this);
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("Stopping services before shutdown");
+            replica.kill();
+            this.blockSyncServer.stop();
+            this.messenger.getServiceProxy().close();
+            this.blockProposalThreadStop = true;
+            try {
+                this.blockProposalThread.join();
+                logger.debug("Block proposal thread has been stopped");
+            } catch (InterruptedException e) {
+                logger.error("Unable to join block proposal thread", e);
+                logger.info("Unable to confirm block proposal thread has stopped, continuing shutdown");
+            }
+        }));
     }
 
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
-            String args1 = args[0];
             args = new String[2];
-            args[0] = args1;
+            args[0] = " ";
             args[1] = "--help";
         }
 
@@ -104,13 +121,15 @@ public class Replica extends DefaultSingleRecoverable {
                         logger.info("Unknown option '" + args[i] + "'");
                 }
 
+        logger.info("To stop execution press CTRL+C");
+
         Storage.createDefaultConfigFiles();
 
         int id = Integer.parseInt(args[0]);
-        SignatureKeyGenerator.generatePubAndPrivKeys(id);
-        SignatureKeyGenerator.generateSSLKey(id);
+        KeyGenerator.generatePubAndPrivKeys(id);
+        KeyGenerator.generateSSLKey(id);
 
-        SignatureKeyGenerator.generatePubAndPrivKeys(-42); // Genesis Block Priv & Pub Key
+        KeyGenerator.generatePubAndPrivKeys(-42); // Genesis Block Priv & Pub Key
 
         new Replica(id, sync);
     }
@@ -164,8 +183,8 @@ public class Replica extends DefaultSingleRecoverable {
         }
 
         try {
-            // TODO: CONFIG
-            Thread.sleep(5000);
+            Thread.sleep(Configuration.getInstance().getBlockProposalTimer());
+            if (blockProposalThreadStop) return;
             processNewBlock();
         } catch (InterruptedException e) {
             logger.error("Block Proposal Thread error while waiting", e);
@@ -276,6 +295,7 @@ public class Replica extends DefaultSingleRecoverable {
 
         if (this.blockProposalThread == null) {
             logger.debug("Starting block proposal thread");
+            this.blockProposalThreadStop = false;
             this.blockProposalThread = new Thread(this::processNewBlock);
             this.blockProposalThread.start();
         }
@@ -286,7 +306,6 @@ public class Replica extends DefaultSingleRecoverable {
              ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
             Object input = objIn.readObject();
-            Configuration config = Configuration.getInstance();
 
             if (input.getClass() == ClientMessage.class) {
                 Block currentBlock = this.blockchain.getMostRecentBlock();
@@ -403,9 +422,9 @@ public class Replica extends DefaultSingleRecoverable {
 
                         /*
                          * TODO
-                         * Validate if block received height is the same as the last block in the local chain,
-                         * if it is instead of only seeing if it is equal we should do further checks in case of faulty
-                         * reply which could cause consensus breaking replica due to different blockchains
+                         *  Validate if block received height is the same as the last block in the local chain,
+                         *  if it is instead of only seeing if it is equal we should do further checks in case of faulty
+                         *  reply which could cause consensus breaking replica due to different blockchains
                          */
 
                         boolean aux = recvBlock.equals(this.blockchain.getMostRecentBlock());

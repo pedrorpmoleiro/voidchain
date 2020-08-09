@@ -6,17 +6,23 @@ import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import pt.ipleiria.estg.dei.pi.voidchain.util.SignatureKeyGenerator;
+import pt.ipleiria.estg.dei.pi.voidchain.util.KeyGenerator;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
 import java.io.IOException;
 import java.security.Security;
+import java.util.Random;
 
 /**
- * Faulty Replica class that takes too long to reply to a command.
+ * Faulty Replica class that always provides the same reply regardless of command.
  */
-public class FaultyReplica2 extends DefaultSingleRecoverable {
-    public FaultyReplica2(int id) {
+public class FaultyReplica1 extends DefaultSingleRecoverable {
+    private byte[] reply;
+
+    public FaultyReplica1(int id) {
+        this.reply = new byte[10];
+        new Random().nextBytes(reply);
+
         new ServiceReplica(id, this, this);
     }
 
@@ -25,34 +31,22 @@ public class FaultyReplica2 extends DefaultSingleRecoverable {
 
     @Override
     public byte[] getSnapshot() {
-        return new byte[0];
+        return reply;
     }
 
     @Override
     public byte[] appExecuteOrdered(byte[] bytes, MessageContext messageContext) {
-        try {
-            Thread.sleep(900000000000000000L);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            System.exit(-2);
-        }
-        return new byte[0];
+        return reply;
     }
 
     @Override
     public byte[] appExecuteUnordered(byte[] bytes, MessageContext messageContext) {
-        try {
-            Thread.sleep(900000000000000000L);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            System.exit(-2);
-        }
-        return new byte[0];
+        return reply;
     }
 
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
-            System.out.println("Usage: FaultyReplica2 <id>");
+            System.out.println("Usage: FaultyReplica1 <id>");
             System.exit(-1);
         }
 
@@ -62,11 +56,11 @@ public class FaultyReplica2 extends DefaultSingleRecoverable {
         Storage.createDefaultConfigFiles();
 
         int id = Integer.parseInt(args[0]);
-        SignatureKeyGenerator.generatePubAndPrivKeys(id);
-        SignatureKeyGenerator.generateSSLKey(id);
+        KeyGenerator.generatePubAndPrivKeys(id);
+        KeyGenerator.generateSSLKey(id);
 
-        SignatureKeyGenerator.generatePubAndPrivKeys(-42); // Genesis Block Priv & Pub Key
+        KeyGenerator.generatePubAndPrivKeys(-42); // Genesis Block Priv & Pub Key
 
-        new FaultyReplica2(id);
+        new FaultyReplica1(id);
     }
 }

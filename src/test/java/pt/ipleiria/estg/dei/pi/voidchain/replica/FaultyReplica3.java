@@ -6,7 +6,7 @@ import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import pt.ipleiria.estg.dei.pi.voidchain.util.SignatureKeyGenerator;
+import pt.ipleiria.estg.dei.pi.voidchain.util.KeyGenerator;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
 import java.io.IOException;
@@ -52,10 +52,10 @@ public class FaultyReplica3 extends DefaultSingleRecoverable {
         Storage.createDefaultConfigFiles();
 
         int id = Integer.parseInt(args[0]);
-        SignatureKeyGenerator.generatePubAndPrivKeys(id);
-        SignatureKeyGenerator.generateSSLKey(id);
+        KeyGenerator.generatePubAndPrivKeys(id);
+        KeyGenerator.generateSSLKey(id);
 
-        SignatureKeyGenerator.generatePubAndPrivKeys(-42); // Genesis Block Priv & Pub Key
+        KeyGenerator.generatePubAndPrivKeys(-42); // Genesis Block Priv & Pub Key
 
         new FaultyReplica3(id);
     }

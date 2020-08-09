@@ -18,7 +18,7 @@ import java.util.*;
  * BFT-Smart runs on top of this blockchain (more like blockchain is piece of the puzzle that is BFT-Smart),
  * and by running on top of a blockchain, making it more secure and robust.
  */
-public class Blockchain implements Serializable {
+public class Blockchain {
     /* Attributes */
     private List<Block> blocks;
     private int sizeInMemory;
@@ -28,6 +28,8 @@ public class Blockchain implements Serializable {
     private static final String GENESIS_STRING = "What to Know and What to Do About the Global Pandemic";
 
     private static final Logger logger = LoggerFactory.getLogger(Blockchain.class);
+
+    /* Constructors */
 
     private Blockchain() throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         Block genesisBlock = new Block(GENESIS_STRING.getBytes(StandardCharsets.UTF_8));
@@ -150,7 +152,7 @@ public class Blockchain implements Serializable {
     private static File[] getBlockFilesArray() {
         Configuration config = Configuration.getInstance();
 
-        return new File(config.getBlockFileDirectory()).listFiles();
+        return new File(config.getBlockFileDirectoryFull()).listFiles();
     }
 
     private static Pair<Integer, List<Block>> getBlocksListFromDisk() {
@@ -194,12 +196,12 @@ public class Blockchain implements Serializable {
             List<Integer> blockHeightList = new ArrayList<>();
 
             for (File blockFile : blockFiles) {
-                String[] aux = blockFile.getName().split(config.getBlockFileBaseNameSeparator());
+                String[] aux = blockFile.getName().split(Configuration.FILE_NAME_SEPARATOR);
 
                 if (!aux[0].equals(config.getBlockFileBaseName()))
                     continue;
 
-                String blockHeightString = aux[1].split(Configuration.BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT)[0];
+                String blockHeightString = aux[1].split(Configuration.FILE_EXTENSION_SEPARATOR_SPLIT)[0];
                 int currentFileBlockHeight = Integer.parseInt(blockHeightString);
                 blockHeightList.add(currentFileBlockHeight);
             }

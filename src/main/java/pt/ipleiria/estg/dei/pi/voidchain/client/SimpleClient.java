@@ -1,4 +1,4 @@
-package pt.ipleiria.estg.dei.pi.voidchain.client.simpleclient;
+package pt.ipleiria.estg.dei.pi.voidchain.client;
 
 import bftsmart.tom.ServiceProxy;
 
@@ -10,11 +10,9 @@ import org.slf4j.LoggerFactory;
 
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.BlockNoTransactions;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
-import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
-import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessageType;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
-import pt.ipleiria.estg.dei.pi.voidchain.util.SignatureKeyGenerator;
+import pt.ipleiria.estg.dei.pi.voidchain.util.KeyGenerator;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
 import javax.swing.*;
@@ -38,9 +36,11 @@ public class SimpleClient {
     private JPanel getBlockPanel;
     private JTextField blockHeightTextField;
     private JButton isChainValidButton;
-    private JButton getLeaderButton;
 
     private final ServiceProxy serviceProxy;
+    private final Wallet wallet;
+
+    private static final String password = "&V2%v3TWsPBCnpAo";
 
     private static final Logger logger = LoggerFactory.getLogger(SimpleClient.class);
 
@@ -51,11 +51,14 @@ public class SimpleClient {
      */
     public SimpleClient(int id) {
         this.serviceProxy = new ServiceProxy(id);
+        this.wallet = Wallet.getInstance(this.serviceProxy.getViewManager().getStaticConf(), password);
     }
 
     public static void main(String[] args) throws IOException {
-        if (args.length < 1)
-            System.out.println("Usage: voidchain-simpleclient <client id>");
+        if (args.length < 1) {
+            System.out.println("Usage: voidchain-simple-client <client id>");
+            return;
+        }
 
         if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
             Security.addProvider(new BouncyCastleProvider());
@@ -69,26 +72,32 @@ public class SimpleClient {
 
         int clientId = Integer.parseInt(args[0]);
 
-        SignatureKeyGenerator.generatePubAndPrivKeys(clientId);
-        SignatureKeyGenerator.generateSSLKey(clientId);
+        KeyGenerator.generatePubAndPrivKeys(clientId);
+        KeyGenerator.generateSSLKey(clientId);
 
-        SimpleClient client = new SimpleClient(clientId);
+        try {
+            SimpleClient client = new SimpleClient(clientId);
 
-        client.getCurrentBlockButton.addActionListener(client.getCurrentBlockButtonActionListener());
-        client.getCurrentBlockHeightButton.addActionListener(client.getCurrentBlockHeightButtonActionListener());
-        client.getBlockButton.addActionListener(client.getBlockButtonActionListener());
-        client.addTransactionButton.addActionListener(client.addTransactionButtonActionListener());
-        client.isChainValidButton.addActionListener(client.isChainValidButtonActionListener());
-        client.getLeaderButton.addActionListener(client.getLeaderButtonActionListener());
+            client.getCurrentBlockButton.addActionListener(client.getCurrentBlockButtonActionListener());
+            client.getCurrentBlockHeightButton.addActionListener(client.getCurrentBlockHeightButtonActionListener());
+            client.getBlockButton.addActionListener(client.getBlockButtonActionListener());
+            client.addTransactionButton.addActionListener(client.addTransactionButtonActionListener());
+            client.isChainValidButton.addActionListener(client.isChainValidButtonActionListener());
 
-        client.buttonQuit.addActionListener(e -> System.exit(0));
+            client.buttonQuit.addActionListener(e -> System.exit(0));
 
-        JFrame frame = new JFrame("Simple Client");
-        frame.setPreferredSize(new Dimension(600, 300));
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setContentPane(client.mainPanel);
-        frame.pack();
-        frame.setVisible(true);
+            Runtime.getRuntime().addShutdownHook(new Thread(client::close));
+
+            JFrame frame = new JFrame("Simple Client");
+            frame.setPreferredSize(new Dimension(600, 300));
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setContentPane(client.mainPanel);
+            frame.pack();
+            frame.setVisible(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
     }
 
     private ActionListener getCurrentBlockButtonActionListener() {
@@ -234,6 +243,8 @@ public class SimpleClient {
                     return;
                 }
 
+                this.wallet.addTransaction(t);
+
                 ByteArrayOutputStream byteOut2 = new ByteArrayOutputStream();
                 ObjectOutput objOut2 = new ObjectOutputStream(byteOut2);
 
@@ -322,40 +333,7 @@ public class SimpleClient {
         };
     }
 
-    private ActionListener getLeaderButtonActionListener() {
-        return e -> {
-            logger.info("Sending GET_LEADER request to network");
-            try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-                 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
-
-                ClientMessage req = new ClientMessage(ClientMessageType.GET_LEADER);
-                objOut.writeObject(req);
-
-                objOut.flush();
-                byteOut.flush();
-
-                byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
-
-                if (reply.length == 0) {
-                    logger.error("Empty reply from replicas");
-                    return;
-                }
-
-                ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
-                ObjectInput objIn = new ObjectInputStream(byteIn);
-
-                int leaderID = objIn.readInt();
-
-                objIn.close();
-                byteIn.close();
-
-                logger.info("Leader Replica ID: " + leaderID);
-                JOptionPane.showMessageDialog(null, "Leader Replica ID: " + leaderID,
-                        "Response", JOptionPane.INFORMATION_MESSAGE);
-
-            } catch (IOException ex) {
-                logger.error("An error has occurred", ex);
-            }
-        };
+    private void close() {
+        this.serviceProxy.close();
     }
 }

@@ -148,7 +148,7 @@ public class BlockSyncServer {
     }
 
     /**
-     * This will stop the exection of the server and restart it right after.
+     * This will stop the execution of the server and restart it right after.
      */
     public void restart() {
         if (running) {

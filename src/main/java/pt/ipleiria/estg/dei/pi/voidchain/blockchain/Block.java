@@ -9,12 +9,10 @@ import org.slf4j.LoggerFactory;
 
 import pt.ipleiria.estg.dei.pi.voidchain.util.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.Signature;
 import java.security.SignatureException;
 import java.util.*;
 
@@ -34,7 +32,7 @@ public class Block implements Serializable {
     private final int transactionCounter;
     private final int blockHeight;
 
-    private static final Logger logger = LoggerFactory.getLogger(Block.class);
+    /* Constructors */
 
     /**
      * Instantiates a new Genesis Block.
@@ -140,9 +138,9 @@ public class Block implements Serializable {
     public boolean toDisk() {
         Configuration config = Configuration.getInstance();
 
-        return Storage.writeObjectToDisk(this, config.getBlockFileDirectory(),
-                config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + this.blockHeight +
-                        Configuration.BLOCK_FILE_EXTENSION_SEPARATOR + config.getBlockFileExtension());
+        return Storage.writeObjectToDisk(this, config.getBlockFileDirectoryFull(),
+                config.getBlockFileBaseName() + Configuration.FILE_NAME_SEPARATOR + this.blockHeight +
+                        Configuration.FILE_EXTENSION_SEPARATOR + config.getDataFileExtension());
     }
 
     /**
@@ -158,9 +156,9 @@ public class Block implements Serializable {
     public static Block fromDisk(int blockHeight) throws IOException, ClassNotFoundException {
         Configuration config = Configuration.getInstance();
 
-        return (Block) Storage.readObjectFromDisk(config.getBlockFileDirectory() +
-                config.getBlockFileBaseName() + config.getBlockFileBaseNameSeparator() + blockHeight +
-                Configuration.BLOCK_FILE_EXTENSION_SEPARATOR + config.getBlockFileExtension());
+        return (Block) Storage.readObjectFromDisk(config.getBlockFileDirectoryFull() +
+                config.getBlockFileBaseName() + Configuration.FILE_NAME_SEPARATOR + blockHeight +
+                Configuration.FILE_EXTENSION_SEPARATOR + config.getDataFileExtension());
     }
 
     /* Getters */

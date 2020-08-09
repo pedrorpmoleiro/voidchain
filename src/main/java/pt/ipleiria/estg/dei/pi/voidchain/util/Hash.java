@@ -16,4 +16,16 @@ public class Hash {
 
         return ripemd160.digest(sha3_512.digest(data));
     }
+
+    /**
+     * Calculates sha3-256 hash of given byte array.
+     *
+     * @param data the data
+     * @return the hash
+     */
+    public static byte[] calculateSHA3256(byte[] data) {
+        SHA3.Digest256 sha3_256 = new SHA3.Digest256();
+
+        return sha3_256.digest(data);
+    }
 }

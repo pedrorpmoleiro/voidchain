@@ -26,10 +26,13 @@ public class Storage {
             if (Files.notExists(pD))
                 Files.createDirectories(pD);
 
-            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileDirectory + fileName,
-                    false));
+            FileOutputStream fos = new FileOutputStream(fileDirectory + fileName, false);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+
             oos.writeObject(object);
+
             oos.close();
+            fos.close();
 
             return true;
         } catch (IOException e) {
@@ -47,9 +50,15 @@ public class Storage {
      * @throws ClassNotFoundException the class not found exception
      */
     public static Object readObjectFromDisk(String fileName) throws IOException, ClassNotFoundException {
-        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName));
+        FileInputStream fis = new FileInputStream(fileName);
+        ObjectInputStream ois = new ObjectInputStream(fis);
 
-        return ois.readObject();
+        Object o = ois.readObject();
+
+        ois.close();
+        fis.close();
+
+        return o;
     }
 
     // TODO: Javadoc
@@ -64,6 +73,7 @@ public class Storage {
         return true;
     }
 
+    // TODO: FIX
     public static void createDefaultConfigFiles() throws IOException {
         Path configDir = Paths.get(Configuration.CONFIG_DIR);
 

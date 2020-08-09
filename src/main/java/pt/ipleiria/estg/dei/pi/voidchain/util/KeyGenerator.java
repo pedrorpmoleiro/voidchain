@@ -13,10 +13,8 @@ import java.nio.file.Paths;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 
-public class SignatureKeyGenerator {
-    private static final Logger logger = LoggerFactory.getLogger(SignatureKeyGenerator.class);
-
-    private static final String BFT_SMART_CONFIG_FILE = Configuration.CONFIG_DIR + "system.config";
+public class KeyGenerator {
+    private static final Logger logger = LoggerFactory.getLogger(KeyGenerator.class);
 
     private static final String SECRET = "Q2o3^TjE9OcrcZqG";
 
@@ -41,7 +39,7 @@ public class SignatureKeyGenerator {
         String[] aux = tomConf.getSSLTLSKeyStore().split("_");
 
         if (!aux[0].equals("EC"))
-            logger.warn("Recommended use of EC for key generation");
+            logger.warn("Recommended use of EC for SSL/TLS keys");
 
         String alg = aux[0];
         int keySize = Integer.parseInt(aux[2].split("\\.")[0]);
@@ -50,11 +48,11 @@ public class SignatureKeyGenerator {
                 keySize + ".pkcs12";
 
         if (!Storage.fileExists(keyFile)) {
-            logger.warn("SSL/TLS Key not found, attemping to generate a new one");
+            logger.warn("SSL/TLS Key not found, attempting to generate a new one");
 
-            String command = "keytool -genkey -keyalg " + alg + " -keysize " + keySize + " -alias bftsmartEC -keypass " +
-                    SignatureKeyGenerator.SECRET + " -storepass " + SignatureKeyGenerator.SECRET + " -keystore " + keyFile +
-                    " -dname \"CN=BFT-SMaRT\"";
+            String command = "keytool -genkey -keyalg " + alg + " -keysize " + keySize + " -alias bftsmart" + alg +
+                    " -keypass " + KeyGenerator.SECRET + " -storepass " + KeyGenerator.SECRET +
+                    " -keystore " + keyFile + " -dname \"CN=BFT-SMaRT\"";
 
             try {
                 Process tr = Runtime.getRuntime().exec(command);
@@ -87,7 +85,7 @@ public class SignatureKeyGenerator {
         String keyLoader = "ECDSA";
 
         try {
-            FileReader fr = new FileReader(BFT_SMART_CONFIG_FILE);
+            FileReader fr = new FileReader(Configuration.BFT_SMART_CONFIG_FILE);
             BufferedReader rd = new BufferedReader(fr);
 
             String line;

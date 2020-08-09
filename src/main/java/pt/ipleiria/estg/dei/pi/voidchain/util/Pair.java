@@ -1,6 +1,8 @@
 package pt.ipleiria.estg.dei.pi.voidchain.util;
 
-public class Pair<A extends Object, B extends Object> {
+import java.io.Serializable;
+
+public class Pair<A, B> implements Serializable {
     private final A o1;
     private final B o2;
 

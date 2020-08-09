@@ -2,7 +2,6 @@ package pt.ipleiria.estg.dei.pi.voidchain.sync;
 
 import bftsmart.tom.ServiceProxy;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +15,6 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.security.Security;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;

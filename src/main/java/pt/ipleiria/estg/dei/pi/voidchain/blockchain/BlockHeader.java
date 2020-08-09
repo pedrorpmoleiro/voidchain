@@ -40,7 +40,9 @@ public class BlockHeader implements Serializable {
 
     private final byte[] nonce; // much power, unseen. nonce is sith
 
-    private static final Logger logger = LoggerFactory.getLogger(BlockHeader.class);
+    private static final transient Logger logger = LoggerFactory.getLogger(BlockHeader.class);
+
+    /* Constructors */
 
     /**
      * Instantiates a new Block header.
@@ -81,7 +83,7 @@ public class BlockHeader implements Serializable {
      */
     public byte[] getData() {
         byte[] protocolVersionBytes = this.protocolVersion.getBytes(StandardCharsets.UTF_8);
-        byte[] timestampBytes = new byte[0];
+        byte[] timestampBytes;
 
         try {
             timestampBytes = Converters.longToByteArray(this.timestamp);

@@ -23,6 +23,10 @@ public class Configuration {
      */
     public static final String CONFIG_FILE = CONFIG_DIR + "voidchain.config";
     /**
+     * The constant BFT_SMART_CONFIG stores the location bft-smart configuration file.
+     */
+    public static final String BFT_SMART_CONFIG_FILE = CONFIG_DIR + "system.config";
+    /**
      * The constant DEFAULT_PROTOCOL_VERSION stores the default value of the protocol version.
      */
     public static final String DEFAULT_PROTOCOL_VERSION = "1.0";
@@ -41,26 +45,42 @@ public class Configuration {
      */
     public static final int DEFAULT_MEMORY_USED_FOR_BLOCKS = 128; // in MB
     /**
-     * The constant DEFAULT_BLOCK_FILE_EXTENSION stores the default value of block file extension.
+     * The constant DEFAULT_DATA_FILE_EXTENSION stores the default value of data file extension.
      */
-    public static final String DEFAULT_BLOCK_FILE_EXTENSION = "dat";
+    public static final String DEFAULT_DATA_FILE_EXTENSION = "dat";
     /**
      * The constant DEFAULT_BLOCK_FILE_BASE_NAME stores the default value of the block file base name.
      */
     public static final String DEFAULT_BLOCK_FILE_BASE_NAME = "block";
     /**
+     * The constant DEFAULT_WALLET_FILE_BASE_NAME stores the default value of the block file base name.
+     */
+    public static final String DEFAULT_WALLET_FILE_BASE_NAME = "wallet";
+    /**
+     * The constant DEFAULT_DATA_DIRECTORY stores the default value of the data directory.
+     */
+    public static final String DEFAULT_DATA_DIRECTORY = "data" + File.separator;
+    /**
      * The constant DEFAULT_BLOCK_FILE_DIRECTORY stores the default value of block file directory.
      */
-    public static final String DEFAULT_BLOCK_FILE_DIRECTORY = "data" + File.separator + "blocks" + File.separator;
+    public static final String DEFAULT_BLOCK_FILE_DIRECTORY = DEFAULT_DATA_DIRECTORY + "blocks" + File.separator;
     /**
-     * The constant BLOCK_FILE_EXTENSION_SEPARATOR stores the block file extension separator.
+     * The constant DEFAULT_WALLET_FILE_DIRECTORY stores the default value of the wallet directory.
      */
-    public static final String BLOCK_FILE_EXTENSION_SEPARATOR = ".";
+    public static final String DEFAULT_WALLET_FILE_DIRECTORY = DEFAULT_DATA_DIRECTORY + "wallets" + File.separator;
+    /**
+     * The constant FILE_EXTENSION_SEPARATOR stores the block file extension separator.
+     */
+    public static final String FILE_EXTENSION_SEPARATOR = ".";
     /**
      * The constant BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT stores the block file extension separator
      * to be used in split method.
      */
-    public static final String BLOCK_FILE_EXTENSION_SEPARATOR_SPLIT = "\\.";
+    public static final String FILE_EXTENSION_SEPARATOR_SPLIT = "\\.";
+    /**
+     * The constant FILE_NAME_SEPARATOR stores the file name separator.
+     */
+    public static final String FILE_NAME_SEPARATOR = "_";
     /**
      * The constant DEFAULT_BLOCK_SYNC_PORT stores the default value of the Block Synchronization service port.
      */
@@ -69,6 +89,10 @@ public class Configuration {
      * The constant DEFAULT_EC_PARAM stores the default value of the Elliptic Curve Domain Param.
      */
     public static final String DEFAULT_EC_PARAM = "secp256k1";
+    /**
+     * The constant DEFAULT_BLOCK_PROPOSAL_TIMER stores the default value of the sleep timer of block proposal thread.
+     */
+    public static final int DEFAULT_BLOCK_PROPOSAL_TIMER = 5000;
 
     private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
 
@@ -76,12 +100,15 @@ public class Configuration {
     private int transactionMaxSize = DEFAULT_TRANSACTION_MAX_SIZE;
     private int numTransactionsInBlock = DEFAULT_NUM_TRANSACTIONS_BLOCK;
     private int memoryUsedForBlocks = DEFAULT_MEMORY_USED_FOR_BLOCKS;
-    private String blockFileExtension = DEFAULT_BLOCK_FILE_EXTENSION;
+    private String dataFileExtension = DEFAULT_DATA_FILE_EXTENSION;
     private String blockFileBaseName = DEFAULT_BLOCK_FILE_BASE_NAME;
-    private final String blockFileBaseNameSeparator = "_";
+    private String dataDirectory = DEFAULT_DATA_DIRECTORY;
     private String blockFileDirectory = DEFAULT_BLOCK_FILE_DIRECTORY;
+    private String walletFileDirectory = DEFAULT_WALLET_FILE_DIRECTORY;
+    private String walletFileBaseName = DEFAULT_WALLET_FILE_BASE_NAME;
     private int blockSyncPort = DEFAULT_BLOCK_SYNC_PORT;
     private String ecParam = DEFAULT_EC_PARAM;
+    private int blockProposalTimer = DEFAULT_BLOCK_PROPOSAL_TIMER;
 
     private Configuration() {
         this.loadConfigurationFromDisk();
@@ -133,11 +160,11 @@ public class Configuration {
                             if (aux != null)
                                 this.numTransactionsInBlock = Integer.parseInt(aux);
                             continue;
-                        case "system.voidchain.storage.block_file_extension":
+                        case "system.voidchain.storage.data_file_extension":
                             if (firstRun) {
                                 aux = str.nextToken().trim();
                                 if (aux != null)
-                                    this.blockFileExtension = aux;
+                                    this.dataFileExtension = aux;
                             }
                             continue;
                         case "system.voidchain.storage.block_file_base_name":
@@ -145,6 +172,25 @@ public class Configuration {
                                 aux = str.nextToken().trim();
                                 if (aux != null)
                                     this.blockFileBaseName = aux;
+                            }
+                            continue;
+                        case "system.voidchain.storage.wallet_file_base_name":
+                            if (firstRun) {
+                                aux = str.nextToken().trim();
+                                if (aux != null)
+                                    this.walletFileBaseName = aux;
+                            }
+                            continue;
+                        case "system.voidchain.storage.data_directory":
+                            if (firstRun) {
+                                aux = str.nextToken().trim();
+                                if (aux != null) {
+                                    aux = aux.replace('/', File.separatorChar);
+                                    if (!aux.endsWith(File.separator))
+                                        //aux = aux.substring(0, aux.length() - 1);
+                                        aux = aux.concat(File.separator);
+                                    this.dataDirectory = aux;
+                                }
                             }
                             continue;
                         case "system.voidchain.storage.block_file_directory":
@@ -156,6 +202,18 @@ public class Configuration {
                                         //aux = aux.substring(0, aux.length() - 1);
                                         aux = aux.concat(File.separator);
                                     this.blockFileDirectory = aux;
+                                }
+                            }
+                            continue;
+                        case "system.voidchain.storage.wallet_file_directory":
+                            if (firstRun) {
+                                aux = str.nextToken().trim();
+                                if (aux != null) {
+                                    aux = aux.replace('/', File.separatorChar);
+                                    if (!aux.endsWith(File.separator))
+                                        //aux = aux.substring(0, aux.length() - 1);
+                                        aux = aux.concat(File.separator);
+                                    this.walletFileDirectory = aux;
                                 }
                             }
                             continue;
@@ -171,10 +229,15 @@ public class Configuration {
                                     this.blockSyncPort = Integer.parseInt(aux);
                             }
                             continue;
-                        case "DEFAULT_EC_PARAM":
+                        case "system.voidchain.crypto.ec_param":
                             aux = str.nextToken().trim();
                             if (aux != null)
                                 this.ecParam = aux;
+                            continue;
+                        case "system.voidchain.core.block_proposal_timer":
+                            aux = str.nextToken().trim();
+                            if (aux != null)
+                                this.blockProposalTimer = Integer.parseInt(aux) * 1000;
                             continue;
                     }
                 }
@@ -217,12 +280,12 @@ public class Configuration {
     }
 
     /**
-     * Gets the block file extension.
+     * Gets the data file extension.
      *
-     * @return the block file extension
+     * @return the data file extension
      */
-    public String getBlockFileExtension() {
-        return blockFileExtension;
+    public String getDataFileExtension() {
+        return dataFileExtension;
     }
 
     /**
@@ -243,13 +306,14 @@ public class Configuration {
         return blockFileDirectory;
     }
 
+
     /**
-     * Gets the block file base name separator.
+     * Gets the block file directory with full path from project root.
      *
-     * @return the block file base name separator
+     * @return the block file directory
      */
-    public String getBlockFileBaseNameSeparator() {
-        return blockFileBaseNameSeparator;
+    public String getBlockFileDirectoryFull() {
+        return dataDirectory + blockFileDirectory;
     }
 
     /**
@@ -279,17 +343,66 @@ public class Configuration {
         return ecParam;
     }
 
+    /**
+     * Gets data directory.
+     *
+     * @return the data directory
+     */
+    public String getDataDirectory() {
+        return dataDirectory;
+    }
+
+    /**
+     * Gets wallet file directory.
+     *
+     * @return the wallet file directory
+     */
+    public String getWalletFileDirectory() {
+        return walletFileDirectory;
+    }
+
+    /**
+     * Gets wallet file directory with full path from project root.
+     *
+     * @return the wallet file directory
+     */
+    public String getWalletFileDirectoryFull() {
+        return dataDirectory + walletFileDirectory;
+    }
+
+    /**
+     * Gets wallet file base name.
+     *
+     * @return the wallet file base name
+     */
+    public String getWalletFileBaseName() {
+        return walletFileBaseName;
+    }
+
+    /**
+     * Gets timer for block proposal thread.
+     *
+     * @return the block proposal timer
+     */
+    public int getBlockProposalTimer() {
+        return blockProposalTimer;
+    }
+
     @Override
     public String toString() {
-        return "Configuration: {" + System.lineSeparator() +
-                "protocol version: '" + protocolVersion + '\'' + System.lineSeparator() +
-                "transaction max size: " + transactionMaxSize + System.lineSeparator() +
-                "number of transactions per block: " + numTransactionsInBlock + System.lineSeparator() +
-                "number of MB used to store blocks in memory: " + memoryUsedForBlocks + System.lineSeparator() +
-                "block file extension: '" + blockFileExtension + '\'' + System.lineSeparator() +
-                "block file base name: '" + blockFileBaseName + '\'' + System.lineSeparator() +
-                "block file directory: '" + blockFileDirectory + '\'' + System.lineSeparator() +
-                "block file base name separator: '" + blockFileBaseNameSeparator + '\'' + System.lineSeparator() +
-                '}';
+        return "Configuration: " + System.lineSeparator() +
+                "\tprotocolVersion: " + protocolVersion + System.lineSeparator() +
+                "\ttransactionMaxSize: " + transactionMaxSize + System.lineSeparator() +
+                "\tnumTransactionsInBlock: " + numTransactionsInBlock + System.lineSeparator() +
+                "\tmemoryUsedForBlocks: " + memoryUsedForBlocks + System.lineSeparator() +
+                "\tdataFileExtension: " + dataFileExtension + System.lineSeparator() +
+                "\tblockFileBaseName: " + blockFileBaseName + System.lineSeparator() +
+                "\tdataDirectory: " + dataDirectory + System.lineSeparator() +
+                "\tblockFileDirectory: " + blockFileDirectory + System.lineSeparator() +
+                "\twalletFileDirectory: " + walletFileDirectory + System.lineSeparator() +
+                "\twalletFileBaseName: " + walletFileBaseName + System.lineSeparator() +
+                "\tblockSyncPort: " + blockSyncPort + System.lineSeparator() +
+                "\tecParam: " + ecParam + System.lineSeparator() +
+                "\tblockProposalTimer: " + blockProposalTimer;
     }
 }

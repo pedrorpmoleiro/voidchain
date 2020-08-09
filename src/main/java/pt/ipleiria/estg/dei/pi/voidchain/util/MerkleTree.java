@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 // https://medium.com/@vinayprabhu19/merkel-tree-in-java-b45093c8c6bd
 public class MerkleTree {
@@ -14,7 +13,7 @@ public class MerkleTree {
     /**
      * Return the merkle root of the given set of hashes.
      * <br>
-     * Returns byte[0] if error occurred while calculating the markle tree.
+     * Returns byte[0] if error occurred while calculating the merkle tree.
      *
      * @param transactionMap the transaction map
      * @return the merkle root
@@ -28,7 +27,7 @@ public class MerkleTree {
 
             return merkleTree(hashList).get(0);
         } catch (RuntimeException e) {
-            logger.error("Error occured while calculating merkle tree", e);
+            logger.error("Error occurred while calculating merkle tree", e);
             return new byte[0];
         }
     }
@@ -38,7 +37,7 @@ public class MerkleTree {
      *
      * @param hashList the hash list
      * @return the merkle tree array list
-     * @throws RuntimeException         runtime exception if error occured while calculating the merkle root
+     * @throws RuntimeException         runtime exception if error occurred while calculating the merkle root
      * @throws IllegalArgumentException illegal argument exception if given list is empty
      */
     public static ArrayList<byte[]> merkleTree(ArrayList<byte[]> hashList) throws RuntimeException {
