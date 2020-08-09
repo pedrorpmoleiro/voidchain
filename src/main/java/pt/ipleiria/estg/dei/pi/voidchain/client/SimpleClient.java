@@ -23,6 +23,12 @@ import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.time.Instant;
 
+/**
+ * The Simple Client class is equivalent to the Lightweight Client described in the VOIDChain report/documentation.
+ * Contains a Wallet, to store all of its transactions.
+ * It does not contain a full copy of the Blockchain.
+ * To keep track of its transactions, it only stores the block headers. Using the merkle root, which is part of the block header, the lightweight client can check if a transaction is included in a block.
+ */
 public class SimpleClient {
     private JButton getCurrentBlockButton;
     private JButton getCurrentBlockHeightButton;
@@ -54,6 +60,12 @@ public class SimpleClient {
         this.wallet = Wallet.getInstance(this.serviceProxy.getViewManager().getStaticConf(), password);
     }
 
+    /**
+     * The entry point of application.
+     *
+     * @param args the input arguments
+     * @throws IOException the io exception
+     */
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
             System.out.println("Usage: voidchain-simple-client <client id>");

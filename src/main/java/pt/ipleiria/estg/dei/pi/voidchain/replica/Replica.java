@@ -30,6 +30,9 @@ import java.util.concurrent.locks.ReentrantLock;
  *  Thread that 'validates' chain among other replicas and if invalid re downloads it
  */
 
+/**
+ * The type Replica.
+ */
 public class Replica extends DefaultSingleRecoverable {
     private static final Logger logger = LoggerFactory.getLogger(Replica.class);
 
@@ -53,7 +56,8 @@ public class Replica extends DefaultSingleRecoverable {
     /**
      * Instantiates a new Replica.
      *
-     * @param id the id
+     * @param id   the id
+     * @param sync the sync
      */
     public Replica(int id, boolean sync) {
         this.blockchain = Blockchain.getInstance();
@@ -91,6 +95,12 @@ public class Replica extends DefaultSingleRecoverable {
         }));
     }
 
+    /**
+     * The entry point of application.
+     *
+     * @param args the input arguments
+     * @throws IOException the io exception
+     */
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
             args = new String[2];
@@ -134,6 +144,9 @@ public class Replica extends DefaultSingleRecoverable {
         new Replica(id, sync);
     }
 
+    /**
+     *
+     */
     private void createProposedBlock() {
         if (this.proposedBlock != null) return;
 
@@ -165,6 +178,9 @@ public class Replica extends DefaultSingleRecoverable {
         transactionPoolLock.unlock();
     }
 
+    /**
+     *
+     */
     private void processNewBlock() {
         if (this.replicaContext.getStaticConfiguration().getProcessId() == leader) {
             createProposedBlock();
@@ -235,6 +251,7 @@ public class Replica extends DefaultSingleRecoverable {
         logger.info("Transactions added to memory pool");
         return true;
     }
+
 
     @Override
     public void installSnapshot(byte[] state) {
