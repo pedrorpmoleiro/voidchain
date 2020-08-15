@@ -6,9 +6,8 @@
 
     <groupId>pt.ipleiria.estg.dei.pi</groupId>
     <artifactId>voidchain</artifactId>
-    <version>${projectVersion}</version>
+    <version>0.9.0</version>
     <packaging>jar</packaging>
-
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -19,20 +18,26 @@
 
     <profiles>
         <profile>
-            <id>replica</id>
-            <properties>
-                <mainclass>pt.ipleiria.estg.dei.pi.voidchain.replica.Replica</mainclass>
-                <projectVersion>replica</projectVersion>
-            </properties>
-        </profile>
-        <profile>
-            <id>simple_client</id>
+            <id>node</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
+                <mainclass>pt.ipleiria.estg.dei.pi.voidchain.node.Node</mainclass>
+                <name>node</name>
+            </properties>
+        </profile>
+        <profile>
+            <id>simple_client</id>
+            <properties>
                 <mainclass>pt.ipleiria.estg.dei.pi.voidchain.client.SimpleClient</mainclass>
-                <projectVersion>simple-client</projectVersion>
+                <name>simple-client</name>
+            </properties>
+        </profile>
+        <profile>
+            <id>core</id>
+            <properties>
+                <name>core</name>
             </properties>
         </profile>
     </profiles>
@@ -83,6 +88,7 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
+                            <finalName>${project.artifactId}-${name}-${project.version}</finalName>
                             <archive>
                                 <manifest>
                                     <mainClass>
@@ -90,9 +96,9 @@
                                     </mainClass>
                                 </manifest>
                             </archive>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
+                            <descriptors>
+                                <descriptor>${project.basedir}/src/assembly/jar-${name}.xml</descriptor>
+                            </descriptors>
                             <appendAssemblyId>false</appendAssemblyId>
                         </configuration>
                     </execution>
@@ -100,4 +106,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>

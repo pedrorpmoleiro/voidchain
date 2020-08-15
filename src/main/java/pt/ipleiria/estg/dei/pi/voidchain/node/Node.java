@@ -1,4 +1,4 @@
-package pt.ipleiria.estg.dei.pi.voidchain.replica;
+package pt.ipleiria.estg.dei.pi.voidchain.node;
 
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
@@ -33,15 +33,15 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * The type Replica.
  */
-public class Replica extends DefaultSingleRecoverable {
-    private static final Logger logger = LoggerFactory.getLogger(Replica.class);
+public class Node extends DefaultSingleRecoverable {
+    private static final Logger logger = LoggerFactory.getLogger(Node.class);
 
     private final Blockchain blockchain;
 
     private final ReentrantLock transactionPoolLock = new ReentrantLock();
     private List<Transaction> transactionPool;
 
-    private final ReplicaMessenger messenger;
+    private final NodeMessenger messenger;
 
     private final BlockSyncServer blockSyncServer;
     private final BlockSyncClient blockSyncClient;
@@ -59,10 +59,10 @@ public class Replica extends DefaultSingleRecoverable {
      * @param id   the id
      * @param sync the sync
      */
-    public Replica(int id, boolean sync) {
+    public Node(int id, boolean sync) {
         this.blockchain = Blockchain.getInstance();
         this.transactionPool = new ArrayList<>();
-        this.messenger = new ReplicaMessenger(id);
+        this.messenger = new NodeMessenger(id);
         this.blockSyncClient = new BlockSyncClient(this.messenger.getServiceProxy());
 
         new Thread(() -> {
@@ -141,7 +141,7 @@ public class Replica extends DefaultSingleRecoverable {
 
         KeyGenerator.generatePubAndPrivKeys(-42); // Genesis Block Priv & Pub Key
 
-        new Replica(id, sync);
+        new Node(id, sync);
     }
 
     /**
@@ -402,8 +402,8 @@ public class Replica extends DefaultSingleRecoverable {
                     default:
                         logger.error("Unknown type of ClientMessageType");
                 }
-            } else if (input.getClass() == ReplicaMessage.class) {
-                ReplicaMessage req = (ReplicaMessage) input;
+            } else if (input.getClass() == NodeMessage.class) {
+                NodeMessage req = (NodeMessage) input;
 
                 switch (req.getType()) {
                     case NEW_BLOCK:

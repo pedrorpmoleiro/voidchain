@@ -1,4 +1,4 @@
-package pt.ipleiria.estg.dei.pi.voidchain.replica;
+package pt.ipleiria.estg.dei.pi.voidchain.node;
 
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
@@ -11,12 +11,18 @@ import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
 import java.io.IOException;
 import java.security.Security;
+import java.util.Random;
 
 /**
- * Faulty Replica class that shuts down when a command is received (crash simulation).
+ * Faulty Replica class that always provides the same reply regardless of command.
  */
-public class FaultyReplica3 extends DefaultSingleRecoverable {
-    public FaultyReplica3(int id) {
+public class FaultyReplica1 extends DefaultSingleRecoverable {
+    private byte[] reply;
+
+    public FaultyReplica1(int id) {
+        this.reply = new byte[10];
+        new Random().nextBytes(reply);
+
         new ServiceReplica(id, this, this);
     }
 
@@ -25,24 +31,22 @@ public class FaultyReplica3 extends DefaultSingleRecoverable {
 
     @Override
     public byte[] getSnapshot() {
-        return new byte[0];
+        return reply;
     }
 
     @Override
     public byte[] appExecuteOrdered(byte[] bytes, MessageContext messageContext) {
-        System.exit(100);
-        return new byte[0];
+        return reply;
     }
 
     @Override
     public byte[] appExecuteUnordered(byte[] bytes, MessageContext messageContext) {
-        System.exit(100);
-        return new byte[0];
+        return reply;
     }
 
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
-            System.out.println("Usage: FaultyReplica3 <id>");
+            System.out.println("Usage: FaultyReplica1 <id>");
             System.exit(-1);
         }
 
@@ -57,6 +61,6 @@ public class FaultyReplica3 extends DefaultSingleRecoverable {
 
         KeyGenerator.generatePubAndPrivKeys(-42); // Genesis Block Priv & Pub Key
 
-        new FaultyReplica3(id);
+        new FaultyReplica1(id);
     }
 }

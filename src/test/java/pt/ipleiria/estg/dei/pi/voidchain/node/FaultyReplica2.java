@@ -1,4 +1,4 @@
-package pt.ipleiria.estg.dei.pi.voidchain.replica;
+package pt.ipleiria.estg.dei.pi.voidchain.node;
 
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;

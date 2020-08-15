@@ -1,4 +1,4 @@
-package pt.ipleiria.estg.dei.pi.voidchain.replica;
+package pt.ipleiria.estg.dei.pi.voidchain.node;
 
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
@@ -26,7 +26,7 @@ import java.util.List;
 public class FaultyReplica4 extends DefaultSingleRecoverable {
     private Blockchain blockchain;
     private List<Transaction> transactionPool;
-    private final ReplicaMessenger messenger;
+    private final NodeMessenger messenger;
     private Block proposedBlock = null;
     private Thread blockProposalThread = null;
     private int leader = -1;
@@ -34,7 +34,7 @@ public class FaultyReplica4 extends DefaultSingleRecoverable {
     public FaultyReplica4(int id) {
         this.blockchain = Blockchain.getInstance();
         this.transactionPool = new ArrayList<>();
-        this.messenger = new ReplicaMessenger(id);
+        this.messenger = new NodeMessenger(id);
 
         new ServiceReplica(id, this, this);
     }
@@ -222,8 +222,8 @@ public class FaultyReplica4 extends DefaultSingleRecoverable {
                     default:
                         System.out.println("blablabla");
                 }
-            } else if (input.getClass() == ReplicaMessage.class) {
-                ReplicaMessage req = (ReplicaMessage) input;
+            } else if (input.getClass() == NodeMessage.class) {
+                NodeMessage req = (NodeMessage) input;
 
                 switch (req.getType()) {
                     case NEW_BLOCK:

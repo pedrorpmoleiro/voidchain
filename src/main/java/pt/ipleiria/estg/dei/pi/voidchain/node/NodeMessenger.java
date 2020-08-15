@@ -1,4 +1,4 @@
-package pt.ipleiria.estg.dei.pi.voidchain.replica;
+package pt.ipleiria.estg.dei.pi.voidchain.node;
 
 import bftsmart.tom.ServiceProxy;
 
@@ -13,8 +13,8 @@ import java.io.*;
  * The Replica messenger is a replica "client" that is tasked with communicating with allowing a replica to communicate
  * with other replicas in the network.
  */
-public class ReplicaMessenger {
-    private static final Logger logger = LoggerFactory.getLogger(ReplicaMessenger.class);
+public class NodeMessenger {
+    private static final Logger logger = LoggerFactory.getLogger(NodeMessenger.class);
 
     private final ServiceProxy serviceProxy;
 
@@ -23,7 +23,7 @@ public class ReplicaMessenger {
      *
      * @param id the id
      */
-    public ReplicaMessenger(int id) {
+    public NodeMessenger(int id) {
         this.serviceProxy = new ServiceProxy(id);
     }
 
@@ -37,7 +37,7 @@ public class ReplicaMessenger {
         try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
              ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-            ReplicaMessage req;
+            NodeMessage req;
 
             logger.info("Proposing new block (" + block.getBlockHeight() + ") to network");
 
@@ -48,7 +48,7 @@ public class ReplicaMessenger {
                 objOut2.flush();
                 byteOut2.flush();
 
-                req = new ReplicaMessage(this.serviceProxy.getProcessId(), ReplicaMessageType.NEW_BLOCK, byteOut2.toByteArray());
+                req = new NodeMessage(this.serviceProxy.getProcessId(), NodeMessageType.NEW_BLOCK, byteOut2.toByteArray());
             }
 
             objOut.writeObject(req);

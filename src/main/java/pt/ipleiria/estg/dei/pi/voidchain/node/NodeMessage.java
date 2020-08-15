@@ -1,10 +1,10 @@
-package pt.ipleiria.estg.dei.pi.voidchain.replica;
+package pt.ipleiria.estg.dei.pi.voidchain.node;
 
 import java.io.*;
 
-public class ReplicaMessage implements Serializable {
+public class NodeMessage implements Serializable {
 
-    private final ReplicaMessageType type;
+    private final NodeMessageType type;
     private final byte[] content;
     private final int sender;
 
@@ -14,7 +14,7 @@ public class ReplicaMessage implements Serializable {
      * @param sender the sender
      * @param type   the type
      */
-    public ReplicaMessage(int sender, ReplicaMessageType type) {
+    public NodeMessage(int sender, NodeMessageType type) {
         this.sender = sender;
         this.type = type;
         this.content = null;
@@ -27,7 +27,7 @@ public class ReplicaMessage implements Serializable {
      * @param type    the type
      * @param content the content
      */
-    public ReplicaMessage(int sender, ReplicaMessageType type, byte[] content) {
+    public NodeMessage(int sender, NodeMessageType type, byte[] content) {
         this.sender = sender;
         this.type = type;
         this.content = content;
@@ -40,7 +40,7 @@ public class ReplicaMessage implements Serializable {
      *
      * @return the type of the message
      */
-    public ReplicaMessageType getType() {
+    public NodeMessageType getType() {
         return type;
     }
 
