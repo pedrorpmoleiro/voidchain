@@ -1,6 +1,6 @@
-# VoidChain - A simple and high-performant permissioned distributed ledger technology platform
+# VOIDChain - A simple and high-performant distributed ledger technology platform
 
-## Descrition
+## Description
 
 ## Objective
 
@@ -14,7 +14,7 @@
 
 ## Planning tools
 
-* [Trello](trello.com/) - Web-based Kanban-style list-making application 
+* [Trello](https://trello.com/) - Web-based Kanban-style list-making application 
 * [Microsoft Teams](https://products.office.com/en-us/microsoft-teams/group-chat-software/) - Unified communication and collaboration platform
 * [GitKraken Timelines](https://www.gitkraken.com/timelines) - Timeline maker for communicating project milestones & deadlines
 * [MindMeister](https://www.mindmeister.com/) - Online mind mapping application
