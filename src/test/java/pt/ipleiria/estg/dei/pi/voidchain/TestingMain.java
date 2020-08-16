@@ -27,7 +27,8 @@ public class TestingMain {
         KeyGenerator.generatePubAndPrivKeys(id);
         ServiceProxy serviceProxy = new ServiceProxy(id);
 
-        Wallet wallet = Wallet.getInstance(serviceProxy.getViewManager().getStaticConf(), "&V2%v3TWsPBCnpAo");
+        Wallet wallet = new Wallet(serviceProxy.getViewManager().getStaticConf(), "&V2%v3TWsPBCnpAo");
+        //Wallet wallet = new Wallet(serviceProxy.getViewManager().getStaticConf(), "&V2%v3TWsPBCnpAo");
 
         try {
             Thread.sleep(10000);

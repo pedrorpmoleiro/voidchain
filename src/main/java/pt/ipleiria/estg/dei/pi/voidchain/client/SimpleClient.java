@@ -57,7 +57,7 @@ public class SimpleClient {
      */
     public SimpleClient(int id) {
         this.serviceProxy = new ServiceProxy(id);
-        this.wallet = Wallet.getInstance(this.serviceProxy.getViewManager().getStaticConf(), password);
+        this.wallet = new Wallet(this.serviceProxy.getViewManager().getStaticConf(), password);
     }
 
     /**

@@ -27,49 +27,48 @@ import java.util.List;
 
 public class Wallet implements Serializable {
     /* Attributes */
-    private final int id;
-    private final PrivateKey privateKey;
-    private final PublicKey publicKey;
-    private final byte[] password;
-    private final List<Pair<Integer, byte[]>> transactions;
-
-    private static transient Wallet INSTANCE = null;
+    private int id;
+    private PrivateKey privateKey;
+    private PublicKey publicKey;
+    private byte[] password;
+    private List<Pair<Integer, byte[]>> transactions;
 
     private static final transient Logger logger = LoggerFactory.getLogger(Wallet.class);
 
     /* Constructors */
 
-    private Wallet(TOMConfiguration smartConf, String password) {
-        this.id = smartConf.getProcessId();
-        this.privateKey = smartConf.getPrivateKey();
-        this.publicKey = smartConf.getPublicKey();
-        this.password = Hash.calculateSHA3256(password.getBytes(StandardCharsets.UTF_8));
-        this.transactions = new ArrayList<>();
+    public Wallet(TOMConfiguration smartConf, String password) {
+        try {
+            Wallet aux = Wallet.fromDisk(smartConf.getProcessId(), password);
+            if (aux.privateKey.equals(smartConf.getPrivateKey())) {
+                this.id = aux.id;
+                this.privateKey = aux.privateKey;
+                this.publicKey = aux.publicKey;
+                this.password = aux.password;
+                this.transactions = aux.transactions;
+            }
+
+        } catch (FileNotFoundException e) {
+            logger.error("Wallet with id (" + smartConf.getProcessId() + ") not found, creating new one", e);
+            this.id = smartConf.getProcessId();
+            this.privateKey = smartConf.getPrivateKey();
+            this.publicKey = smartConf.getPublicKey();
+            this.password = Hash.calculateSHA3256(password.getBytes(StandardCharsets.UTF_8));
+            this.transactions = new ArrayList<>();
+            this.toDisk();
+
+        } catch (ClassNotFoundException | NoSuchPaddingException | NoSuchAlgorithmException | NoSuchProviderException |
+                InvalidKeyException | BadPaddingException | IllegalBlockSizeException |
+                InvalidAlgorithmParameterException | IOException e) {
+
+            logger.error("Error while retrieving wallet with id (" + smartConf.getProcessId() + ")", e);
+            throw new IllegalStateException(e);
+        }
     }
 
     /* Methods */
     /* Getters */
 
-    public static Wallet getInstance(TOMConfiguration smartConf, String password) {
-        if (INSTANCE == null) {
-            try {
-                INSTANCE = Wallet.fromDisk(smartConf.getProcessId(), password);
-            } catch (FileNotFoundException e) {
-                logger.info("No wallet file detected, creating new wallet");
-                INSTANCE = new Wallet(smartConf, password);
-                new Thread(INSTANCE::toDisk).start();
-            } catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException |
-                    NoSuchProviderException | BadPaddingException | IllegalBlockSizeException |
-                    InvalidAlgorithmParameterException e) {
-                logger.error("Encryption Exception", e);
-                throw new RuntimeException("Encryption Exception");
-            } catch (IOException | ClassNotFoundException e) {
-                logger.error("Error while performing IO operations", e);
-            }
-        }
-
-        return INSTANCE;
-    }
 
     public int getId() {
         return id;
