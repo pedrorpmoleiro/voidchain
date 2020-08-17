@@ -121,7 +121,7 @@ public class SimpleClient {
 
     private ActionListener getCurrentBlockButtonActionListener() {
         return e -> {
-            logger.info("Sending GET_MOST_RECENT_BLOCK request to network");
+            logger.debug("Sending GET_MOST_RECENT_BLOCK request to network");
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -146,7 +146,7 @@ public class SimpleClient {
                 objIn.close();
                 byteIn.close();
 
-                logger.info("Current block: " + currentBlock);
+                logger.debug("Current block: " + currentBlock);
                 JOptionPane.showMessageDialog(null, currentBlock.toString(),
                         "Response", JOptionPane.INFORMATION_MESSAGE);
 
@@ -158,7 +158,7 @@ public class SimpleClient {
 
     private ActionListener getCurrentBlockHeightButtonActionListener() {
         return e -> {
-            logger.info("Sending GET_MOST_RECENT_BLOCK_HEIGHT request to network");
+            logger.debug("Sending GET_MOST_RECENT_BLOCK_HEIGHT request to network");
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -183,7 +183,7 @@ public class SimpleClient {
                 objIn.close();
                 byteIn.close();
 
-                logger.info("Block height: " + blockHeight);
+                logger.debug("Block height: " + blockHeight);
                 JOptionPane.showMessageDialog(null, "Block height: " + blockHeight,
                         "Response", JOptionPane.INFORMATION_MESSAGE);
 
@@ -195,7 +195,7 @@ public class SimpleClient {
 
     private ActionListener getBlockButtonActionListener() {
         return e -> {
-            logger.info("Sending GET_BLOCK ("+ this.blockHeightTextField.getText() + ") request to network");
+            logger.debug("Sending GET_BLOCK ("+ this.blockHeightTextField.getText() + ") request to network");
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -229,7 +229,7 @@ public class SimpleClient {
                 objIn.close();
                 byteIn.close();
 
-                logger.info("Block " + blockHeight + " Data: " + block);
+                logger.debug("Block " + blockHeight + " Data: " + block);
                 JOptionPane.showMessageDialog(null, block.toString(),
                         "Response", JOptionPane.INFORMATION_MESSAGE);
 
@@ -241,7 +241,7 @@ public class SimpleClient {
 
     private ActionListener addTransactionButtonActionListener() {
         return e -> {
-            logger.info("Sending ADD_TRANSACTION request to network");
+            logger.debug("Sending ADD_TRANSACTION request to network");
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -305,7 +305,7 @@ public class SimpleClient {
                 else
                     message = "Transaction not added";
 
-                logger.info(message);
+                logger.debug(message);
                 JOptionPane.showMessageDialog(null, message,
                         "Response", JOptionPane.INFORMATION_MESSAGE);
 
@@ -317,7 +317,7 @@ public class SimpleClient {
 
     private ActionListener isChainValidButtonActionListener() {
         return e -> {
-            logger.info("Sending IS_CHAIN_VALID request to network");
+            logger.debug("Sending IS_CHAIN_VALID request to network");
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -342,7 +342,7 @@ public class SimpleClient {
                 objIn.close();
                 byteIn.close();
 
-                logger.info("Is chain valid: " + isValid);
+                logger.debug("Is chain valid: " + isValid);
                 JOptionPane.showMessageDialog(null, "Is chain valid: " + isValid,
                         "Response", JOptionPane.INFORMATION_MESSAGE);
 

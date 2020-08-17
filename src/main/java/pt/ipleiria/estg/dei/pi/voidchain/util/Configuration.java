@@ -380,7 +380,7 @@ public class Configuration {
     }
 
     /**
-     * Gets timer for block proposal thread.
+     * Gets timer (in millis) for block proposal thread.
      *
      * @return the block proposal timer
      */
