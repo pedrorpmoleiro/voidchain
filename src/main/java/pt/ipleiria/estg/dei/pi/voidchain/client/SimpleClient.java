@@ -16,6 +16,7 @@ import pt.ipleiria.estg.dei.pi.voidchain.util.KeyGenerator;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.*;
@@ -46,8 +47,6 @@ public class SimpleClient {
     private final ServiceProxy serviceProxy;
     private final Wallet wallet;
 
-    private static final String password = "&V2%v3TWsPBCnpAo";
-
     private static final Logger logger = LoggerFactory.getLogger(SimpleClient.class);
 
     /**
@@ -55,9 +54,9 @@ public class SimpleClient {
      *
      * @param id the id of the client
      */
-    public SimpleClient(int id) {
+    public SimpleClient(int id, byte[] password) {
         this.serviceProxy = new ServiceProxy(id);
-        this.wallet = new Wallet(this.serviceProxy.getViewManager().getStaticConf(), password);
+        this.wallet = Wallet.getInstance(this.serviceProxy.getViewManager().getStaticConf(), password);
     }
 
     /**
@@ -67,8 +66,8 @@ public class SimpleClient {
      * @throws IOException the io exception
      */
     public static void main(String[] args) throws IOException {
-        if (args.length < 1) {
-            System.out.println("Usage: voidchain-simple-client <client id>");
+        if (args.length < 2) {
+            System.out.println("Usage: voidchain-simple-client <client id> <wallet password>");
             return;
         }
 
@@ -83,12 +82,20 @@ public class SimpleClient {
         }
 
         int clientId = Integer.parseInt(args[0]);
+        String password = args[1];
+
+        if (password.length() < 8) {
+            System.out.println("Password length should be greater than 8 characters");
+            return;
+        }
+
+        byte[] passwordBytes = password.getBytes(StandardCharsets.UTF_8);
 
         KeyGenerator.generatePubAndPrivKeys(clientId);
         KeyGenerator.generateSSLKey(clientId);
 
         try {
-            SimpleClient client = new SimpleClient(clientId);
+            SimpleClient client = new SimpleClient(clientId, passwordBytes);
 
             client.getCurrentBlockButton.addActionListener(client.getCurrentBlockButtonActionListener());
             client.getCurrentBlockHeightButton.addActionListener(client.getCurrentBlockHeightButtonActionListener());

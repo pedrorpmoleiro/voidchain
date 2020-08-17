@@ -4,9 +4,6 @@ import bftsmart.reconfiguration.util.TOMConfiguration;
 
 import org.bouncycastle.util.encoders.Base64;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import pt.ipleiria.estg.dei.pi.voidchain.util.*;
 
 import java.io.IOException;

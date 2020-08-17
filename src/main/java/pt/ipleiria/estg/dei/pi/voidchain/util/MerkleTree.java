@@ -2,6 +2,7 @@ package pt.ipleiria.estg.dei.pi.voidchain.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 
 import java.util.*;

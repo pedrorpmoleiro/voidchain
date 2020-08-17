@@ -14,8 +14,8 @@ import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,40 +35,42 @@ public class Wallet implements Serializable {
 
     private static final transient Logger logger = LoggerFactory.getLogger(Wallet.class);
 
+    private static Wallet INSTANCE = null;
+
     /* Constructors */
 
-    public Wallet(TOMConfiguration smartConf, String password) {
-        try {
-            Wallet aux = Wallet.fromDisk(smartConf.getProcessId(), password);
-            if (aux.privateKey.equals(smartConf.getPrivateKey())) {
-                this.id = aux.id;
-                this.privateKey = aux.privateKey;
-                this.publicKey = aux.publicKey;
-                this.password = aux.password;
-                this.transactions = aux.transactions;
-            }
+    private Wallet(TOMConfiguration smartConf, byte[] password) {
+        if (password.length < 8)
+            throw new IllegalArgumentException("Password is too short");
 
-        } catch (FileNotFoundException e) {
-            logger.error("Wallet with id (" + smartConf.getProcessId() + ") not found, creating new one", e);
-            this.id = smartConf.getProcessId();
-            this.privateKey = smartConf.getPrivateKey();
-            this.publicKey = smartConf.getPublicKey();
-            this.password = Hash.calculateSHA3256(password.getBytes(StandardCharsets.UTF_8));
-            this.transactions = new ArrayList<>();
-            this.toDisk();
-
-        } catch (ClassNotFoundException | NoSuchPaddingException | NoSuchAlgorithmException | NoSuchProviderException |
-                InvalidKeyException | BadPaddingException | IllegalBlockSizeException |
-                InvalidAlgorithmParameterException | IOException e) {
-
-            logger.error("Error while retrieving wallet with id (" + smartConf.getProcessId() + ")", e);
-            throw new IllegalStateException(e);
-        }
+        this.id = smartConf.getProcessId();
+        this.privateKey = smartConf.getPrivateKey();
+        this.publicKey = smartConf.getPublicKey();
+        this.password = Hash.calculateSHA3256(password);
+        this.transactions = new ArrayList<>();
     }
 
     /* Methods */
     /* Getters */
 
+    public static Wallet getInstance(TOMConfiguration smartConf, byte[] password) {
+        if (INSTANCE == null)
+            try {
+                INSTANCE = Wallet.fromDisk(smartConf.getProcessId(), password);
+            } catch (InvalidKeyException | InvalidAlgorithmParameterException | NoSuchAlgorithmException |
+                    NoSuchProviderException | IllegalBlockSizeException | BadPaddingException |
+                    NoSuchPaddingException e) {
+                logger.info("Encryption encryption", e);
+            } catch (FileNotFoundException e) {
+                logger.info("No wallet file detected, creating new wallet");
+                INSTANCE = new Wallet(smartConf, password);
+                INSTANCE.toDisk();
+            } catch (IOException | ClassNotFoundException e) {
+                logger.error("Error while performing IO Operations", e);
+            }
+
+        return INSTANCE;
+    }
 
     public int getId() {
         return id;
@@ -88,6 +90,22 @@ public class Wallet implements Serializable {
 
     public List<Pair<Integer, byte[]>> getTransactions() {
         return transactions;
+    }
+
+    public int getSize() {
+        int auxSize = Integer.BYTES + password.length;
+
+        for (Pair<Integer, byte[]> p : transactions) {
+            auxSize += Integer.BYTES + p.getO2().length;
+        }
+
+        if (privateKey != null)
+            auxSize += privateKey.getEncoded().length;
+
+        if (publicKey != null)
+            auxSize += publicKey.getEncoded().length;
+
+        return auxSize;
     }
 
     public void addTransaction(Transaction transaction) {
@@ -162,13 +180,13 @@ public class Wallet implements Serializable {
                         Configuration.FILE_EXTENSION_SEPARATOR + config.getDataFileExtension());
     }
 
-    public static Wallet fromDisk(int id, String password) throws IOException, ClassNotFoundException,
+    public static Wallet fromDisk(int id, byte[] password) throws IOException, ClassNotFoundException,
             NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException {
 
         Configuration config = Configuration.getInstance();
 
-        byte[] passwordHash = Hash.calculateSHA3256(password.getBytes(StandardCharsets.UTF_8));
+        byte[] passwordHash = Hash.calculateSHA3256(password);
         SecretKeySpec secret = new SecretKeySpec(passwordHash, "AES");
         IvParameterSpec iv = new IvParameterSpec(passwordHash, 0, 16);
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");

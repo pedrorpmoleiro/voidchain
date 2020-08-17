@@ -252,7 +252,6 @@ public class Node extends DefaultSingleRecoverable {
         return true;
     }
 
-
     @Override
     public void installSnapshot(byte[] state) {
         if (Arrays.equals(state, new byte[0]))

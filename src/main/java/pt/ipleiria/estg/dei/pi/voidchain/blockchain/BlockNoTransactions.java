@@ -1,6 +1,7 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
 import org.bouncycastle.util.encoders.Base64;
+
 import pt.ipleiria.estg.dei.pi.voidchain.util.Hash;
 
 import java.io.Serializable;

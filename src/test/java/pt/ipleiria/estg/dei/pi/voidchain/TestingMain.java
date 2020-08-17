@@ -12,6 +12,7 @@ import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.KeyGenerator;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -27,8 +28,8 @@ public class TestingMain {
         KeyGenerator.generatePubAndPrivKeys(id);
         ServiceProxy serviceProxy = new ServiceProxy(id);
 
-        Wallet wallet = new Wallet(serviceProxy.getViewManager().getStaticConf(), "&V2%v3TWsPBCnpAo");
-        //Wallet wallet = new Wallet(serviceProxy.getViewManager().getStaticConf(), "&V2%v3TWsPBCnpAo");
+        Wallet wallet = Wallet.getInstance(serviceProxy.getViewManager().getStaticConf(), "&V2%v3TWsPBCnpAo".getBytes(StandardCharsets.UTF_8));
+        //Wallet wallet = new Wallet(serviceProxy.getViewManager().getStaticConf(), "&V2%v3TWsPBCnpA".getBytes(StandardCharsets.UTF_8));
 
         try {
             Thread.sleep(10000);
