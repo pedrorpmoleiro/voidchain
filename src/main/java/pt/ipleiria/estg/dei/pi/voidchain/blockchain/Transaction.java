@@ -60,36 +60,65 @@ public class Transaction implements Serializable {
      * @param protocolVersion the protocol version
      * @param timestamp       the timestamp
      * @param smartConf       the instance of bft-smart configuration
-     * @throws IllegalArgumentException illegal argument exception will be thrown if transaction size exceeds max
-     *                                  value of transaction
      * @throws SignatureException       signature exception will be thrown if error occurs while signing the transaction
-     *                                  data
+     * data
      * @throws NoSuchAlgorithmException no such algorithm exception will be thrown if algorithm for signing the
-     *                                  transaction
+     * transaction
      * @throws InvalidKeyException      invalid key exception will be thrown if private key is invalid
+     * @throws IllegalArgumentException illegal argument exception will be thrown if transaction size exceeds max
+     * transaction size
      */
     public Transaction(byte[] data, String protocolVersion, long timestamp, TOMConfiguration smartConf)
             throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
-        int size = Long.BYTES + data.length + Integer.BYTES + Float.BYTES;
-
-        int transactionMaxSize = Configuration.getInstance().getTransactionMaxSize();
-        if (size > transactionMaxSize)
-            throw new IllegalArgumentException("Transaction size is " + size + " but max transaction size is "
-                    + transactionMaxSize);
-
         this.timestamp = timestamp;
         this.data = data;
         this.protocolVersion = protocolVersion;
 
         Signature signature = Signature.getInstance(smartConf.getSignatureAlgorithm());
         signature.initSign(smartConf.getPrivateKey());
-        signature.update(getBytesNoSignatureStatic(data, protocolVersion, timestamp));
+        signature.update(data);
         this.signature = signature.sign();
+
+        int size = Long.BYTES + data.length + Integer.BYTES + Float.BYTES + this.signature.length;
+        int transactionMaxSize = Configuration.getInstance().getTransactionMaxSize();
+        if (size > transactionMaxSize)
+            throw new IllegalArgumentException("Transaction size is " + size + " but max transaction size is "
+                    + transactionMaxSize);
+    }
+
+    /**
+     * Instantiates a new Transaction.
+     *
+     * @param data            the data
+     * @param protocolVersion the protocol version
+     * @param timestamp       the timestamp
+     * @param signature       the signature of data
+     * @throws IllegalArgumentException illegal argument exception will be thrown if transaction size exceeds max
+     * transaction size
+     */
+    public Transaction(byte[] data, String protocolVersion, long timestamp, byte[] signature) {
+        this.timestamp = timestamp;
+        this.data = data;
+        this.protocolVersion = protocolVersion;
+        this.signature = signature;
+
+        int size = Long.BYTES + data.length + Integer.BYTES + Float.BYTES + this.signature.length;
+        int transactionMaxSize = Configuration.getInstance().getTransactionMaxSize();
+        if (size > transactionMaxSize)
+            throw new IllegalArgumentException("Transaction size is " + size + " but max transaction size is "
+                    + transactionMaxSize);
     }
 
     /* Methods */
 
-    private static byte[] getBytesNoSignatureStatic(byte[] data, String protocolVersion, long timestamp) {
+    /**
+     * Calculates all the attributes in byte array format.
+     * <br>
+     * Will return byte[0] if an error occurs.
+     *
+     * @return the transaction bytes
+     */
+    public byte[] getBytes() {
         byte[] protocolVersionBytes = protocolVersion.getBytes(StandardCharsets.UTF_8);
         byte[] timestampBytes;
 
@@ -100,8 +129,8 @@ public class Transaction implements Serializable {
             return new byte[0];
         }
 
-        int sizeAux = protocolVersionBytes.length + timestampBytes.length + data.length;
-        byte[] dataBytes = new byte[sizeAux];
+        int size = protocolVersionBytes.length + timestampBytes.length + data.length + this.signature.length;
+        byte[] dataBytes = new byte[size];
         int i = 0;
 
         for (byte b : protocolVersionBytes) {
@@ -113,49 +142,6 @@ public class Transaction implements Serializable {
             i++;
         }
         for (byte b : data) {
-            dataBytes[i] = b;
-            i++;
-        }
-
-        if (i != sizeAux)
-            // THIS SHOULDN'T RUN
-            return new byte[0];
-
-        return dataBytes;
-    }
-
-    /**
-     * Calculates all the attributes in byte array format, excluding the transaction signature.
-     * <br>
-     * The output of this method is the input for the calculation of the signature.
-     * <br>
-     * Will return byte[0] if an error occurs.
-     *
-     * @return the transaction bytes without the signature
-     */
-    public byte[] getBytesNoSignature() {
-        return getBytesNoSignatureStatic(this.data, this.protocolVersion, this.timestamp);
-    }
-
-    /**
-     * Calculates all the attributes in byte array format.
-     * <br>
-     * Will return byte[0] if an error occurs.
-     *
-     * @return the transaction bytes
-     */
-    public byte[] getAllBytes() {
-        byte[] aux = getBytesNoSignatureStatic(this.data, this.protocolVersion, this.timestamp);
-        byte[] byte0 = new byte[0];
-
-        if (Arrays.equals(byte0, aux))
-            return byte0;
-
-        final int size = aux.length + this.signature.length;
-        byte[] dataBytes = new byte[size];
-        int i = 0;
-
-        for (byte b : aux) {
             dataBytes[i] = b;
             i++;
         }
@@ -221,7 +207,7 @@ public class Transaction implements Serializable {
      * @return the block hash
      */
     public byte[] getHash() {
-        byte[] dataBytes = this.getAllBytes();
+        byte[] dataBytes = this.getBytes();
         byte[] aux = new byte[0];
 
         if (Arrays.equals(dataBytes, aux))
