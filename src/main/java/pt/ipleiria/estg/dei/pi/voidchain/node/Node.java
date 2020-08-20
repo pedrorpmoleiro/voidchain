@@ -79,20 +79,7 @@ public class Node extends DefaultSingleRecoverable {
 
         replica = new ServiceReplica(id, this, this);
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Stopping services before shutdown");
-            replica.kill();
-            this.blockSyncServer.stop();
-            this.messenger.getServiceProxy().close();
-            this.blockProposalThreadStop = true;
-            try {
-                this.blockProposalThread.join();
-                logger.debug("Block proposal thread has been stopped");
-            } catch (InterruptedException e) {
-                logger.error("Unable to join block proposal thread", e);
-                logger.info("Unable to confirm block proposal thread has stopped, continuing shutdown");
-            }
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(this::close));
     }
 
     /**
@@ -473,5 +460,20 @@ public class Node extends DefaultSingleRecoverable {
         }
 
         return reply;
+    }
+
+    public void close() {
+        logger.info("Stopping services before shutdown");
+        replica.kill();
+        this.blockSyncServer.stop();
+        this.messenger.getServiceProxy().close();
+        this.blockProposalThreadStop = true;
+        try {
+            this.blockProposalThread.join();
+            logger.debug("Block proposal thread has been stopped");
+        } catch (InterruptedException e) {
+            logger.error("Unable to join block proposal thread", e);
+            logger.info("Unable to confirm block proposal thread has stopped, continuing shutdown");
+        }
     }
 }
