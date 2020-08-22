@@ -66,7 +66,7 @@ public class Storage {
         try {
             new FileReader(fileName);
         } catch (FileNotFoundException e) {
-            logger.warn("Requested file '" + fileName + "' has a problem", e);
+            logger.warn("The requested file '" + fileName + "' was not found");
             return false;
         }
 

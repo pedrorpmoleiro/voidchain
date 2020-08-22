@@ -152,10 +152,10 @@ public class BlockSyncClient {
             Block b;
             try {
                 b = (Block) objIn.readObject();
-                logger.info("Received Block " + b.getBlockHeight());
                 if (b == null)
                     throw new IllegalArgumentException();
 
+                logger.info("Received Block " + b.getBlockHeight());
                 b.toDisk();
             } catch (IOException | ClassNotFoundException | IllegalArgumentException e) {
                 logger.error("Error while retrieving block from server", e);

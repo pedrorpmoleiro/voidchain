@@ -51,8 +51,8 @@ public class TestingMain {
             return;
         }
 
-        for (int i = 0; i < 700; i++) {
-            byte[] data = new byte[config.getTransactionMaxSize() - 25];
+        for (int i = 0; i < 100; i++) {
+            byte[] data = new byte[config.getTransactionMaxSize() - 100];
             random.nextBytes(data);
             Transaction t;
             try {
@@ -67,7 +67,7 @@ public class TestingMain {
 
         System.out.println("Finished creating transactions");
 
-        /*for (Transaction t : transactions) {
+        for (Transaction t : transactions) {
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -116,9 +116,9 @@ public class TestingMain {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }*/
+        }
 
-        try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+        /*try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
              ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
             objOut.writeObject(transactions);
@@ -161,7 +161,7 @@ public class TestingMain {
         } catch (IOException ioException) {
             ioException.printStackTrace();
             return;
-        }
+        }*/
 
         System.out.println("##### DONE #####");
 

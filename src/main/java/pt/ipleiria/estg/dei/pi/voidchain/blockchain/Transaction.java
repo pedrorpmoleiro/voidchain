@@ -29,11 +29,6 @@ public class Transaction implements Serializable {
     /* Attributes */
     private static final transient Logger logger = LoggerFactory.getLogger(Transaction.class.getName());
 
-    /*
-     * TODO
-     *  NONCE
-     */
-
     /**
      * The constant LIST_COMPARATOR provides a comparator to order transaction lists by timestamp.
      */

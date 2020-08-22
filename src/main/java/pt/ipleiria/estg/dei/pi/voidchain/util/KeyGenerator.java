@@ -18,6 +18,8 @@ public class KeyGenerator {
 
     private static final String SECRET = "Q2o3^TjE9OcrcZqG";
 
+    // TODO Linux Not working generate SSL KEY
+
     /**
      * Generates public and private SSL/TLS keys according to 'system.config' configuration file.
      *
@@ -54,11 +56,12 @@ public class KeyGenerator {
                     " -keypass " + KeyGenerator.SECRET + " -storepass " + KeyGenerator.SECRET +
                     " -keystore " + keyFile + " -dname \"CN=BFT-SMaRT\"";
 
+            logger.debug("Executing command: '" + command + "'");
             try {
                 Process tr = Runtime.getRuntime().exec(command);
                 tr.waitFor(10, TimeUnit.SECONDS);
             } catch (IOException e) {
-                logger.error("Error while calling 'keytool'");
+                logger.error("Error while calling 'keytool'", e);
             } catch (InterruptedException e) {
                 logger.error("Error while waiting for command to finish", e);
             }
