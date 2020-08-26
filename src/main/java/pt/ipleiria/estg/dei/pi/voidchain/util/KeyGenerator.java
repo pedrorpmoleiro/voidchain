@@ -69,9 +69,10 @@ public class KeyGenerator {
             if (Storage.fileExists(keyFile))
                 logger.info("SSL/TLS Key pair generated successfully");
             else
-                logger.warn("Could not generate SSL/TLS Key pair");
+                logger.warn("Could not generate SSL/TLS Key pair, try to run the following command on the root of " +
+                        "the application: " + System.lineSeparator() + "\t" + command);
         } else
-            logger.info("SSL/TLS Key pair already present in system");
+            logger.debug("SSL/TLS Key pair already present in system");
     }
 
     /**

@@ -1,5 +1,6 @@
 package pt.ipleiria.estg.dei.pi.voidchain.util;
 
+import bftsmart.reconfiguration.util.HostsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,41 +74,35 @@ public class Storage {
         return true;
     }
 
-    // TODO: FIX
     public static void createDefaultConfigFiles() throws IOException {
         Path configDir = Paths.get(Configuration.CONFIG_DIR);
 
-        if (!Files.notExists(configDir))
-            return;
-
-        logger.info("Config files not found, creating with default values");
-
-        File confDir = new File(Storage.class.getClassLoader().getResource("config").getPath());
-        //File[] files2 = new File(ClassLoader.getSystemResource("config").getPath()).listFiles();
-        //File[] files3 = new File(URLClassLoader.getSystemResource("config").getPath()).listFiles();
-        File files4 = new File(Storage.class.getClassLoader().getResource("logback.xml").getPath());
-        File[] confFiles = confDir.listFiles();
-        //File files6 = new File(Storage.class.getClassLoader().getResource("config" + File.separator + "hosts.config").getPath());
-        boolean filesDir = confDir.isDirectory();
-
         try {
-            logger.debug("Creating config directory");
             Files.createDirectories(configDir);
         } catch (IOException e) {
             logger.error("Unable to create config directory");
             throw new IOException("Unable to create config dir");
         }
 
-        try {
-            assert confFiles != null;
-            copyFilesRecursive(confFiles, configDir);
-        } catch (IOException e) {
-            logger.error("Error while creating default config files");
-            throw new IOException("Error while creating default config files", e);
+        for (String f : Configuration.CONFIG_FILES) {
+            String filePath = configDir + File.separator + f;
+            if (Files.notExists(Paths.get(filePath))) {
+                logger.info("Creating file '" + f + "' in 'config'");
+
+                InputStream in = Storage.class.getClassLoader().getResourceAsStream(filePath);
+                File outFile = new File(filePath);
+                FileOutputStream out = new FileOutputStream(outFile);
+
+                outFile.createNewFile();
+
+                out.write(in.readAllBytes());
+                out.flush();
+                out.close();
+            }
         }
     }
 
-    private static void copyFilesRecursive(File[] files, Path dir) throws IOException {
+    /*public static void copyFilesRecursive(File[] files, Path dir) throws IOException {
         for (File f : files)
             if (f.isDirectory()) {
                 logger.debug("creating directory'" + f.getName() + "' in '" + dir + "'");
@@ -121,9 +116,5 @@ public class Storage {
                 Path path = Paths.get(dir + File.separator + f.getName());
                 Files.copy(f.toPath(), path);
             }
-    }
-
-    public static void main(String[] args) throws IOException {
-        createDefaultConfigFiles();
-    }
+    }*/
 }

@@ -1,6 +1,7 @@
 package pt.ipleiria.estg.dei.pi.voidchain.node;
 
 import bftsmart.tom.MessageContext;
+import bftsmart.tom.ServiceProxy;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
 
@@ -126,14 +127,16 @@ public class Node extends DefaultSingleRecoverable {
         KeyGenerator.generatePubAndPrivKeys(id);
         KeyGenerator.generateSSLKey(id);
 
-        KeyGenerator.generatePubAndPrivKeys(-42); // Genesis Block Priv & Pub Key
+        // TODO
+        KeyGenerator.generatePubAndPrivKeys(-42); // Genesis Block Priv & Pub Key Make STATIC
 
         new Node(id, sync);
     }
 
-    /**
-     *
-     */
+    public ServiceProxy getMessengerProxy() {
+        return this.messenger.getServiceProxy();
+    }
+
     private void createProposedBlock() {
         if (this.proposedBlock != null) return;
 

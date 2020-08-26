@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 /**
@@ -13,6 +15,12 @@ public class Configuration {
     private static Configuration INSTANCE = null;
 
     private boolean firstRun = true;
+
+    public static final List<String> CONFIG_FILES = new ArrayList<>() {{
+        add("hosts.config");
+        add("system.config");
+        add("voidchain.config");
+    }};
 
     /**
      * The constant CONFIG_DIR stores the location of the configuration directory.
