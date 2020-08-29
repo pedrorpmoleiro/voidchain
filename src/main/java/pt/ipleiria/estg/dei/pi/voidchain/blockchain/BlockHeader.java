@@ -1,11 +1,10 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
+import bitcoinj.Base58;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
-
-import org.bouncycastle.util.encoders.Base64;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -152,9 +151,9 @@ public class BlockHeader implements Serializable {
     public String toString() {
         return "Block Header: {" + System.lineSeparator() +
                 "timestamp: " + timestamp + System.lineSeparator() +
-                "previous block hash: " + Base64.toBase64String(previousBlockHash) + System.lineSeparator() +
+                "previous block hash: " + Base58.encode(previousBlockHash) + System.lineSeparator() +
                 "protocol version: " + protocolVersion + System.lineSeparator() +
-                "merkle root: " + Base64.toBase64String(merkleRoot) + System.lineSeparator() +
+                "merkle root: " + Base58.encode(merkleRoot) + System.lineSeparator() +
                 "}";
     }
 }

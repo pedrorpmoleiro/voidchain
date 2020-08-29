@@ -2,6 +2,7 @@ package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
 import bftsmart.reconfiguration.util.TOMConfiguration;
 
+import bitcoinj.Base58;
 import org.bouncycastle.util.encoders.Base64;
 
 import org.slf4j.Logger;
@@ -224,11 +225,11 @@ public class Transaction implements Serializable {
     public String toString() {
         return "Transaction: {" + System.lineSeparator() +
                 "timestamp: " + this.timestamp + System.lineSeparator() +
-                "owner: " + Base64.toBase64String(this.signature) + System.lineSeparator() +
-                "data: " + Base64.toBase64String(this.data) + System.lineSeparator() +
+                "signature: " + Base58.encode(this.signature) + System.lineSeparator() +
+                "data: " + Base58.encode(this.data) + System.lineSeparator() +
                 "size: " + this.getSize() + System.lineSeparator() +
                 "protocol version: " + this.protocolVersion + System.lineSeparator() +
-                "hash: " + Base64.toBase64String(this.getHash()) + System.lineSeparator() +
+                "hash: " + Base58.encode(this.getHash()) + System.lineSeparator() +
                 "}" + System.lineSeparator();
     }
 }

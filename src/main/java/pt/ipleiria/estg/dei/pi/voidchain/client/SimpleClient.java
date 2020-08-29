@@ -2,8 +2,9 @@ package pt.ipleiria.estg.dei.pi.voidchain.client;
 
 import bftsmart.tom.ServiceProxy;
 
+import bitcoinj.Base58;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.util.encoders.Base64;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -252,8 +253,8 @@ public class SimpleClient {
                     t = new Transaction(transactionDataTextArea.getText().getBytes(StandardCharsets.UTF_8),
                             config.getProtocolVersion(), Instant.now().toEpochMilli(),
                             this.serviceProxy.getViewManager().getStaticConf());
-                    logger.debug("Transaction Hash: " + Base64.toBase64String(t.getHash()));
-                    logger.debug("Transaction Signature: " + Base64.toBase64String(t.getSignature()));
+                    logger.debug("Transaction Hash: " + Base58.encode(t.getHash()));
+                    logger.debug("Transaction Signature: " + Base58.encode(t.getSignature()));
                 } catch (IllegalArgumentException | SignatureException | NoSuchAlgorithmException |
                         InvalidKeyException exception) {
                     logger.error("Unable to create transaction", exception);
