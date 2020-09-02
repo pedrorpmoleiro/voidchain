@@ -16,6 +16,9 @@ public class Configuration {
 
     private boolean firstRun = true;
 
+    /**
+     * The constant CONFIG_FILES stores all the configuration files stored in the jar.
+     */
     public static final List<String> CONFIG_FILES = new ArrayList<>() {{
         add("hosts.config");
         add("system.config");
@@ -101,7 +104,6 @@ public class Configuration {
      * The constant DEFAULT_BLOCK_PROPOSAL_TIMER stores the default value of the sleep timer of block proposal thread.
      */
     public static final int DEFAULT_BLOCK_PROPOSAL_TIMER = 5000;
-
     /**
      * The constant DEFAULT_BLOCKCHAIN_VALIDATION_TIMER stores the default value of the sleep timer of blockchain validity
      * verifier thread
@@ -408,28 +410,21 @@ public class Configuration {
         return blockProposalTimer;
     }
 
-    @Override
-    public String toString() {
-        return "Configuration: " + System.lineSeparator() +
-                "\tprotocolVersion: " + protocolVersion + System.lineSeparator() +
-                "\ttransactionMaxSize: " + transactionMaxSize + System.lineSeparator() +
-                "\tnumTransactionsInBlock: " + numTransactionsInBlock + System.lineSeparator() +
-                "\tmemoryUsedForBlocks: " + memoryUsedForBlocks + System.lineSeparator() +
-                "\tdataFileExtension: " + dataFileExtension + System.lineSeparator() +
-                "\tblockFileBaseName: " + blockFileBaseName + System.lineSeparator() +
-                "\tdataDirectory: " + dataDirectory + System.lineSeparator() +
-                "\tblockFileDirectory: " + blockFileDirectory + System.lineSeparator() +
-                "\twalletFileDirectory: " + walletFileDirectory + System.lineSeparator() +
-                "\twalletFileBaseName: " + walletFileBaseName + System.lineSeparator() +
-                "\tblockSyncPort: " + blockSyncPort + System.lineSeparator() +
-                "\tecParam: " + ecParam + System.lineSeparator() +
-                "\tblockProposalTimer: " + blockProposalTimer;
-    }
-
+    /**
+     * Gets blockchain valid timer.
+     *
+     * @return the blockchain valid timer
+     */
     public int getBlockchainValidTimer() {
         return blockchainValidTimer;
     }
 
+    /**
+     * Gets bft smart key loader.
+     *
+     * @return the bft smart key loader
+     * @throws IOException the io exception
+     */
     public String getBftSmartKeyLoader() throws IOException {
         String keyLoader = "ECDSA";
 
@@ -452,5 +447,23 @@ public class Configuration {
         }
 
         return keyLoader;
+    }
+
+    @Override
+    public String toString() {
+        return "Configuration: " + System.lineSeparator() +
+                "\tprotocolVersion: " + protocolVersion + System.lineSeparator() +
+                "\ttransactionMaxSize: " + transactionMaxSize + System.lineSeparator() +
+                "\tnumTransactionsInBlock: " + numTransactionsInBlock + System.lineSeparator() +
+                "\tmemoryUsedForBlocks: " + memoryUsedForBlocks + System.lineSeparator() +
+                "\tdataFileExtension: " + dataFileExtension + System.lineSeparator() +
+                "\tblockFileBaseName: " + blockFileBaseName + System.lineSeparator() +
+                "\tdataDirectory: " + dataDirectory + System.lineSeparator() +
+                "\tblockFileDirectory: " + blockFileDirectory + System.lineSeparator() +
+                "\twalletFileDirectory: " + walletFileDirectory + System.lineSeparator() +
+                "\twalletFileBaseName: " + walletFileBaseName + System.lineSeparator() +
+                "\tblockSyncPort: " + blockSyncPort + System.lineSeparator() +
+                "\tecParam: " + ecParam + System.lineSeparator() +
+                "\tblockProposalTimer: " + blockProposalTimer;
     }
 }

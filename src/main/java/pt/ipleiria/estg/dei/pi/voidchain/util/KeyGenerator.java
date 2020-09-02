@@ -18,8 +18,6 @@ public class KeyGenerator {
 
     private static final String SECRET = "Q2o3^TjE9OcrcZqG";
 
-    // TODO Linux Not working generate SSL KEY
-
     /**
      * Generates public and private SSL/TLS keys according to 'system.config' configuration file.
      *

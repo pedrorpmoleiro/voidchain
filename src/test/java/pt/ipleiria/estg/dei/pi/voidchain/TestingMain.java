@@ -39,7 +39,6 @@ public class TestingMain {
         }
 
         Random random = new Random(Instant.now().toEpochMilli());
-        List<Transaction> transactions = new ArrayList<>();
         Configuration config = Configuration.getInstance();
         Signature signature;
         try {
@@ -51,7 +50,7 @@ public class TestingMain {
             return;
         }
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10000; i++) {
             byte[] data = new byte[config.getTransactionMaxSize() - 100];
             random.nextBytes(data);
             Transaction t;
@@ -62,12 +61,7 @@ public class TestingMain {
                 e.printStackTrace();
                 return;
             }
-            transactions.add(t);
-        }
-
-        System.out.println("Finished creating transactions");
-
-        for (Transaction t : transactions) {
+            // Send Transaction
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -85,7 +79,7 @@ public class TestingMain {
                 objOut2.flush();
                 byteOut2.flush();
 
-                System.out.println("Sending transaction");
+                System.out.println("Sending transaction - " + i);
                 byte[] reply = serviceProxy.invokeOrdered(byteOut2.toByteArray());
 
                 if (reply.length == 0) {
@@ -117,51 +111,6 @@ public class TestingMain {
                 e.printStackTrace();
             }*/
         }
-
-        /*try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-             ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
-
-            objOut.writeObject(transactions);
-            objOut.flush();
-            byteOut.flush();
-            byte[] tBytes = byteOut.toByteArray();
-
-            ClientMessage cm = new ClientMessage(ClientMessageType.ADD_TRANSACTIONS, tBytes);
-
-            ByteArrayOutputStream byteOut2 = new ByteArrayOutputStream();
-            ObjectOutput objOut2 = new ObjectOutputStream(byteOut2);
-
-            objOut2.writeObject(cm);
-            objOut2.flush();
-            byteOut2.flush();
-
-            System.out.println("Sending all transactions");
-            byte[] reply = serviceProxy.invokeOrdered(byteOut2.toByteArray());
-
-            if (reply.length == 0) {
-                System.out.println("Empty reply from replicas");
-                return;
-            }
-
-            boolean added;
-
-            ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
-            ObjectInput objIn = new ObjectInputStream(byteIn);
-
-            added = objIn.readBoolean();
-
-            objIn.close();
-            byteIn.close();
-
-            System.out.println("Transactions added: " + added);
-
-            if (added)
-                wallet.addTransactions(transactions);
-
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
-            return;
-        }*/
 
         System.out.println("##### DONE #####");
 

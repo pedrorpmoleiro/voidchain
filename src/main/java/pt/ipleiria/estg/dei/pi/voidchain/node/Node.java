@@ -29,7 +29,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /*
  * TODO
- *  Thread that 'validates' chain among other replicas and if invalid re downloads it
+ *  Thread that 'validates' chain among other replicas and if invalid re downloads it kin
  */
 
 /**
@@ -61,10 +61,10 @@ public class Node extends DefaultSingleRecoverable {
     private final ServiceReplica replica;
 
     /**
-     * Instantiates a new Replica.
+     * Instantiates a new Node.
      *
-     * @param id   the id
-     * @param sync the sync
+     * @param id   the id of the node
+     * @param sync if the node will start the block sync server
      */
     public Node(int id, boolean sync) {
         this.blockchain = Blockchain.getInstance();
@@ -87,7 +87,6 @@ public class Node extends DefaultSingleRecoverable {
                 try {
                     Thread.sleep(Configuration.getInstance().getBlockchainValidTimer());
                     if (blockchainValidationCheckThreadStop) return;
-                    processNewBlock();
                 } catch (InterruptedException e) {
                     logger.error("Blockchain Validation Thread error while waiting", e);
                     this.blockchainValidationCheckThread = null;
@@ -97,7 +96,14 @@ public class Node extends DefaultSingleRecoverable {
         this.blockchainValidationCheckThread.start();
 
         this.blockProposalThread = new Thread(this::processNewBlock);
-        this.blockProposalThread.start();
+        new Thread(() -> {
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                logger.error("Block proposal start thread sleep error", e);
+            }
+            this.blockProposalThread.start();
+        }).start();
 
         this.blockSyncServer = new BlockSyncServer();
         if (sync)
@@ -112,7 +118,7 @@ public class Node extends DefaultSingleRecoverable {
     }
 
     /**
-     * The entry point of application.
+     * The entry point of Node.
      *
      * @param args the input arguments
      * @throws IOException the io exception

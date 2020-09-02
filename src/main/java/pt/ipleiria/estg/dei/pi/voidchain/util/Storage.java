@@ -1,6 +1,5 @@
 package pt.ipleiria.estg.dei.pi.voidchain.util;
 
-import bftsmart.reconfiguration.util.HostsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +61,11 @@ public class Storage {
         return o;
     }
 
+    /**
+     * Cleans all files from a directory and it's sub directories.
+     *
+     * @param directory the directory
+     */
     public static void cleanDirectory(String directory) {
         File dir = new File(directory);
 
@@ -73,7 +77,12 @@ public class Storage {
         }
     }
 
-    // TODO: Javadoc
+    /**
+     * Checks if the requested file exists
+     *
+     * @param fileName the file name
+     * @return the boolean
+     */
     public static boolean fileExists(String fileName) {
         try {
             new FileReader(fileName);
@@ -85,6 +94,11 @@ public class Storage {
         return true;
     }
 
+    /**
+     * Creates config files with the default values.
+     *
+     * @throws IOException the io exception
+     */
     public static void createDefaultConfigFiles() throws IOException {
         Path configDir = Paths.get(Configuration.CONFIG_DIR);
 

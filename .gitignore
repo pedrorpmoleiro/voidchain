@@ -76,6 +76,8 @@ doc/
 *.dat
 data/
 
+log/
+
 config/
 
 # NetBeans
