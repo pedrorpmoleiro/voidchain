@@ -2,6 +2,9 @@ package pt.ipleiria.estg.dei.pi.voidchain.client;
 
 import java.io.Serializable;
 
+/**
+ * The enum Client message type.
+ */
 public enum ClientMessageType implements Serializable {
     /**
      * Get most recent block client message type.
@@ -30,5 +33,13 @@ public enum ClientMessageType implements Serializable {
     /**
      * Get leader client message type.
      */
-    GET_LEADER
+    GET_LEADER,
+    /**
+     * Transaction status client message type.
+     */
+    TRANSACTION_STATUS,
+    /**
+     * Number nodes client message type.
+     */
+    NUMBER_NODES
 }

@@ -102,6 +102,12 @@ public class Configuration {
      */
     public static final int DEFAULT_BLOCK_PROPOSAL_TIMER = 5000;
 
+    /**
+     * The constant DEFAULT_BLOCKCHAIN_VALIDATION_TIMER stores the default value of the sleep timer of blockchain validity
+     * verifier thread
+     */
+    public static final int DEFAULT_BLOCKCHAIN_VALIDATION_TIMER = 60000;
+
     private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
 
     private String protocolVersion = DEFAULT_PROTOCOL_VERSION;
@@ -117,6 +123,7 @@ public class Configuration {
     private int blockSyncPort = DEFAULT_BLOCK_SYNC_PORT;
     private String ecParam = DEFAULT_EC_PARAM;
     private int blockProposalTimer = DEFAULT_BLOCK_PROPOSAL_TIMER;
+    private int blockchainValidTimer = DEFAULT_BLOCKCHAIN_VALIDATION_TIMER;
 
     private Configuration() {
         this.loadConfigurationFromDisk();
@@ -246,6 +253,11 @@ public class Configuration {
                             aux = str.nextToken().trim();
                             if (aux != null)
                                 this.blockProposalTimer = Integer.parseInt(aux) * 1000;
+                            continue;
+                        case "system.voidchain.blockchain.chain_valid_timer":
+                            aux = str.nextToken().trim();
+                            if (aux != null)
+                                this.blockchainValidTimer = Integer.parseInt(aux) * 1000;
                             continue;
                     }
                 }
@@ -412,5 +424,33 @@ public class Configuration {
                 "\tblockSyncPort: " + blockSyncPort + System.lineSeparator() +
                 "\tecParam: " + ecParam + System.lineSeparator() +
                 "\tblockProposalTimer: " + blockProposalTimer;
+    }
+
+    public int getBlockchainValidTimer() {
+        return blockchainValidTimer;
+    }
+
+    public String getBftSmartKeyLoader() throws IOException {
+        String keyLoader = "ECDSA";
+
+        FileReader fr = new FileReader(Configuration.BFT_SMART_CONFIG_FILE);
+        BufferedReader rd = new BufferedReader(fr);
+
+        String line;
+        while ((line = rd.readLine()) != null) {
+            if (line.startsWith("#"))
+                continue;
+
+            StringTokenizer str = new StringTokenizer(line, "=");
+            if (str.countTokens() > 1) {
+                switch (str.nextToken().trim()) {
+                    case "system.communication.defaultKeyLoader":
+                        keyLoader = str.nextToken().trim();
+                        continue;
+                }
+            }
+        }
+
+        return keyLoader;
     }
 }

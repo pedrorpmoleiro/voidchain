@@ -10,6 +10,7 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessageType;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -60,6 +61,10 @@ public class BlockSyncClient {
             return;
 
         List<Integer> heightArray = Blockchain.getBlockFileHeightArray();
+
+        if (allBlocks && heightArray != null)
+            Storage.cleanDirectory(Configuration.getInstance().getBlockFileDirectoryFull());
+
         int top = highestBlockHeight;
         if (heightArray == null) {
             logger.warn("No block files in disk");
@@ -114,8 +119,6 @@ public class BlockSyncClient {
         pingTimes.sort(Long::compare);
 
         InetSocketAddress add = new InetSocketAddress(pingTimesAdd.get(pingTimes.get(0)), config.getBlockSyncPort());
-        //InetSocketAddress add = new InetSocketAddress(this.serviceProxy.getViewManager().getCurrentView().getAddress(0).getAddress(), config.getBlockSyncPort()); // For testing
-        //InetSocketAddress add = new InetSocketAddress("127.0.0.1", config.getBlockSyncPort()); // For testing
 
         logger.info("Lowest ping replica (ip: " + pingTimesAdd.get(pingTimes.get(0)) +
                 ", ping time: " + pingTimes.get(0) + ")");

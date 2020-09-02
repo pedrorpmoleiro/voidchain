@@ -3,22 +3,24 @@ package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 import bftsmart.reconfiguration.util.TOMConfiguration;
 
 import bitcoinj.Base58;
-import org.bouncycastle.util.encoders.Base64;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Hash;
+import pt.ipleiria.estg.dei.pi.voidchain.util.KeyGenerator;
 
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Map;
+import java.security.spec.EncodedKeySpec;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
+import java.time.Instant;
+import java.util.*;
 
 /**
  * The transaction contains data of the operations performed by the replicas.
@@ -56,13 +58,9 @@ public class Transaction implements Serializable {
      * @param protocolVersion the protocol version
      * @param timestamp       the timestamp
      * @param smartConf       the instance of bft-smart configuration
-     * @throws SignatureException       signature exception will be thrown if error occurs while signing the transaction
-     * data
-     * @throws NoSuchAlgorithmException no such algorithm exception will be thrown if algorithm for signing the
-     * transaction
+     * @throws SignatureException       signature exception will be thrown if error occurs while signing the transaction data
+     * @throws NoSuchAlgorithmException no such algorithm exception will be thrown if algorithm for signing the transaction
      * @throws InvalidKeyException      invalid key exception will be thrown if private key is invalid
-     * @throws IllegalArgumentException illegal argument exception will be thrown if transaction size exceeds max
-     * transaction size
      */
     public Transaction(byte[] data, String protocolVersion, long timestamp, TOMConfiguration smartConf)
             throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
@@ -89,8 +87,7 @@ public class Transaction implements Serializable {
      * @param protocolVersion the protocol version
      * @param timestamp       the timestamp
      * @param signature       the signature of data
-     * @throws IllegalArgumentException illegal argument exception will be thrown if transaction size exceeds max
-     * transaction size
+     * @throws IllegalArgumentException illegal argument exception will be thrown if transaction size exceeds max transaction size
      */
     public Transaction(byte[] data, String protocolVersion, long timestamp, byte[] signature) {
         this.timestamp = timestamp;
@@ -190,6 +187,36 @@ public class Transaction implements Serializable {
     public int getSize() {
         return Long.BYTES + this.data.length + this.signature.length +
                 this.protocolVersion.getBytes(StandardCharsets.UTF_8).length;
+    }
+
+    /**
+     * Verifies the signature of the transaction.
+     *
+     * @param pubKey the public key to test
+     * @return true if the transaction belongs to the owner of the key, false other wise
+     * @throws NoSuchAlgorithmException the no such algorithm exception
+     * @throws NoSuchProviderException  the no such provider exception
+     * @throws InvalidKeySpecException  the invalid key spec exception
+     * @throws InvalidKeyException      the invalid key exception
+     * @throws SignatureException       the signature exception
+     */
+    public boolean verifySignature(byte[] pubKey) throws NoSuchAlgorithmException, NoSuchProviderException,
+            InvalidKeySpecException, InvalidKeyException, SignatureException, IOException {
+
+        TOMConfiguration tomConf = new TOMConfiguration(-42, Configuration.CONFIG_DIR, null);
+        String signatureAlgorithmProvider = tomConf.getSignatureAlgorithmProvider();
+        String signatureAlgorithm = tomConf.getSignatureAlgorithm();
+
+        KeyFactory keyFactory = KeyFactory.getInstance(Configuration.getInstance().getBftSmartKeyLoader(),
+                signatureAlgorithmProvider);
+        EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(pubKey);
+        PublicKey publicKey = keyFactory.generatePublic(pubKeySpec);
+
+        Signature signature = Signature.getInstance(signatureAlgorithm);
+        signature.initVerify(publicKey);
+        signature.update(this.data);
+
+        return signature.verify(this.signature);
     }
 
     /**

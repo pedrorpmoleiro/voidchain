@@ -86,26 +86,10 @@ public class KeyGenerator {
 
         String signatureAlgorithmProvider = tomConf.getSignatureAlgorithmProvider();
         boolean defaultKeys = tomConf.useDefaultKeys();
-        String keyLoader = "ECDSA";
+        String keyLoader;
 
         try {
-            FileReader fr = new FileReader(Configuration.BFT_SMART_CONFIG_FILE);
-            BufferedReader rd = new BufferedReader(fr);
-
-            String line;
-            while ((line = rd.readLine()) != null) {
-                if (line.startsWith("#"))
-                    continue;
-
-                StringTokenizer str = new StringTokenizer(line, "=");
-                if (str.countTokens() > 1) {
-                    switch (str.nextToken().trim()) {
-                        case "system.communication.defaultKeyLoader":
-                            keyLoader = str.nextToken().trim();
-                            continue;
-                    }
-                }
-            }
+            keyLoader = config.getBftSmartKeyLoader();
         } catch (IOException e) {
             logger.error("Unable to read BFT-SMaRt configurations, proceeding with default signature keys", e);
             return;

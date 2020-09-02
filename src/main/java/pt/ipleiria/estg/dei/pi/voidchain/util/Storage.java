@@ -62,6 +62,17 @@ public class Storage {
         return o;
     }
 
+    public static void cleanDirectory(String directory) {
+        File dir = new File(directory);
+
+        for (File f : dir.listFiles()) {
+            if (f.isDirectory())
+                cleanDirectory(f.getPath());
+            else
+                f.delete();
+        }
+    }
+
     // TODO: Javadoc
     public static boolean fileExists(String fileName) {
         try {
