@@ -32,18 +32,6 @@ public class Transaction implements Serializable {
     /* Attributes */
     private static final transient Logger logger = LoggerFactory.getLogger(Transaction.class.getName());
 
-    /**
-     * The constant LIST_COMPARATOR provides a comparator to order transaction lists by timestamp.
-     */
-    public static final transient Comparator<Transaction> LIST_COMPARATOR = (o1, o2) ->
-            Long.compare(o2.getTimestamp(), o1.getTimestamp());
-    /**
-     * The constant MAP_COMPARATOR provides a comparator to order a list of map entries of transaction hashes and
-     * transactions by timestamp.
-     */
-    public static final transient Comparator<Map.Entry<byte[], Transaction>> MAP_COMPARATOR = (o1, o2) ->
-            Long.compare(o2.getValue().getTimestamp(), o1.getValue().getTimestamp());
-
     private final long timestamp;
     private final byte[] data;
     private final String protocolVersion;

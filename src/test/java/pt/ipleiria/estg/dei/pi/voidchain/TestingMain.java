@@ -2,6 +2,7 @@ package pt.ipleiria.estg.dei.pi.voidchain;
 
 import bftsmart.tom.ServiceProxy;
 
+import bitcoinj.Base58;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
@@ -16,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -27,6 +29,8 @@ public class TestingMain {
         int id = Integer.parseInt(args[0]);
         KeyGenerator.generatePubAndPrivKeys(id);
         ServiceProxy serviceProxy = new ServiceProxy(id);
+
+        System.out.println("# Pub Key in Base58: " + Base58.encode(serviceProxy.getViewManager().getStaticConf().getPublicKey().getEncoded()));
 
         Wallet wallet = Wallet.getInstance(serviceProxy.getViewManager().getStaticConf(), "&V2%v3TWsPBCnpAo".getBytes(StandardCharsets.UTF_8));
         //Wallet wallet = new Wallet(serviceProxy.getViewManager().getStaticConf(), "&V2%v3TWsPBCnpA".getBytes(StandardCharsets.UTF_8));
@@ -50,7 +54,9 @@ public class TestingMain {
             return;
         }
 
-        for (int i = 0; i < 10000; i++) {
+        //List<Transaction> transactions = new ArrayList<>();
+
+        for (int i = 0; i < 1000; i++) {
             byte[] data = new byte[config.getTransactionMaxSize() - 100];
             random.nextBytes(data);
             Transaction t;
@@ -61,6 +67,7 @@ public class TestingMain {
                 e.printStackTrace();
                 return;
             }
+            //transactions.add(t);
             // Send Transaction
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
@@ -112,7 +119,12 @@ public class TestingMain {
             }*/
         }
 
+        //transactions.sort(Transaction.LIST_COMPARATOR);
+        //Collections.reverse(transactions);
+
         System.out.println("##### DONE #####");
+
+        System.out.println("# Pub Key in Base58: " + Base58.encode(serviceProxy.getViewManager().getStaticConf().getPublicKey().getEncoded()));
 
         System.exit(0);
     }

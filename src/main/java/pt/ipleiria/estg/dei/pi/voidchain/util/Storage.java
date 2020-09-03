@@ -8,6 +8,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * The type Storage.
+ */
 public class Storage {
     private static final Logger logger = LoggerFactory.getLogger(Storage.class);
 
@@ -75,6 +78,16 @@ public class Storage {
             else
                 f.delete();
         }
+    }
+
+    /**
+     * Removes a requested file.
+     *
+     * @param filename the filename
+     * @return true if the file was removed, false otherwise
+     */
+    public static boolean removeFile(String filename) {
+        return new File(filename).delete();
     }
 
     /**

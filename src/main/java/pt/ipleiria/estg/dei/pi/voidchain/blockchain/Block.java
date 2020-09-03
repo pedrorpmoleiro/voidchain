@@ -6,6 +6,7 @@ import bitcoinj.Base58;
 
 import pt.ipleiria.estg.dei.pi.voidchain.util.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.InvalidKeyException;
@@ -269,6 +270,18 @@ public class Block implements Serializable {
     public BlockNoTransactions getBlockNoTransactions() {
         return new BlockNoTransactions(this.blockHeader.clone(), this.transactionCounter, this.getBlockHeight(),
                 this.getSize());
+    }
+
+    public String getBlockFileFullName() {
+        return getBlockFileFullName(this.blockHeight);
+    }
+
+    public static String getBlockFileFullName(int height) {
+        Configuration config = Configuration.getInstance();
+
+        return config.getBlockFileDirectoryFull() + File.separator +
+                config.getBlockFileBaseName() + Configuration.FILE_NAME_SEPARATOR +
+                height + Configuration.FILE_EXTENSION_SEPARATOR + config.getDataFileExtension();
     }
 
     @Override

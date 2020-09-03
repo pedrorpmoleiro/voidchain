@@ -27,11 +27,6 @@ import java.security.Security;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-/*
- * TODO
- *  Thread that 'validates' chain among other replicas and if invalid re downloads it kin
- */
-
 /**
  * The type Replica.
  */
@@ -86,7 +81,7 @@ public class Node extends DefaultSingleRecoverable {
 
                 try {
                     Thread.sleep(Configuration.getInstance().getBlockchainValidTimer());
-                    if (blockchainValidationCheckThreadStop) return;
+                    if (this.blockchainValidationCheckThreadStop) return;
                 } catch (InterruptedException e) {
                     logger.error("Blockchain Validation Thread error while waiting", e);
                     this.blockchainValidationCheckThread = null;
@@ -112,9 +107,7 @@ public class Node extends DefaultSingleRecoverable {
             logger.warn("Block sync server is not running on this replica, make sure at least one replica on this " +
                     "machine is running the service (-s option)");
 
-        replica = new ServiceReplica(id, this, this);
-
-        Runtime.getRuntime().addShutdownHook(new Thread(this::close));
+        this.replica = new ServiceReplica(id, this, this);
     }
 
     /**
@@ -142,7 +135,7 @@ public class Node extends DefaultSingleRecoverable {
                         sync = true;
                         break;
                     case "--help":
-                        System.out.println("USAGE: voidchain_replica <id> [OPTIONS]" + System.lineSeparator());
+                        System.out.println("USAGE: voidchain-replica <id> [OPTIONS]" + System.lineSeparator());
                         System.out.println("OPTIONS:");
                         System.out.println("\t * Use --sync (-s) to enable block sync server.");
                         System.out.println("\t Note: If more than one replica is running in the same system, " +
@@ -164,7 +157,8 @@ public class Node extends DefaultSingleRecoverable {
         // TODO
         KeyGenerator.generatePubAndPrivKeys(-42); // Genesis Block Priv & Pub Key Make STATIC
 
-        new Node(id, sync);
+        Node node = new Node(id, sync);
+        Runtime.getRuntime().addShutdownHook(new Thread(node::close));
     }
 
     public ServiceProxy getMessengerProxy() {
@@ -177,7 +171,7 @@ public class Node extends DefaultSingleRecoverable {
         Configuration config = Configuration.getInstance();
         int transactionsPerBlock = config.getNumTransactionsInBlock();
 
-        transactionPoolLock.lock();
+        this.transactionPoolLock.lock();
         if (this.transactionPool.size() >= transactionsPerBlock) {
             logger.info("Creating block to be proposed from memory pool transactions");
 
@@ -197,9 +191,10 @@ public class Node extends DefaultSingleRecoverable {
             } catch (InstantiationException e) {
                 logger.error("Error creating new proposed block instance", e);
                 this.transactionPool.addAll(transactions);
+                this.transactionPool.sort(Comparator.comparingLong(Transaction::getTimestamp));
             }
         }
-        transactionPoolLock.unlock();
+        this.transactionPoolLock.unlock();
     }
 
     private void processNewBlock() {
@@ -208,20 +203,22 @@ public class Node extends DefaultSingleRecoverable {
 
             if (this.proposedBlock != null) {
                 logger.info("Proposing block to the network");
-                if (this.messenger.proposeBlock(this.proposedBlock))
-                    if (this.proposedBlock != null) {
-                        this.blockchain.addBlock(this.proposedBlock);
-                        logger.info("Adding proposed block to local blockchain");
-                    } else
-                        this.transactionPool.addAll(this.proposedBlock.getTransactions().values());
-
+                if (this.messenger.proposeBlock(this.proposedBlock)) {
+                    this.blockchain.addBlock(this.proposedBlock);
+                    logger.info("Adding proposed block to local blockchain");
+                } else {
+                    this.transactionPoolLock.lock();
+                    this.transactionPool.addAll(this.proposedBlock.getTransactions().values());
+                    this.transactionPool.sort(Comparator.comparingLong(Transaction::getTimestamp));
+                    this.transactionPoolLock.unlock();
+                }
                 this.proposedBlock = null;
             }
         }
 
         try {
             Thread.sleep(Configuration.getInstance().getBlockProposalTimer());
-            if (blockProposalThreadStop) return;
+            if (this.blockProposalThreadStop) return;
             processNewBlock();
         } catch (InterruptedException e) {
             logger.error("Block Proposal Thread error while waiting", e);
@@ -484,6 +481,7 @@ public class Node extends DefaultSingleRecoverable {
 
                         if (req.getSender() == this.replicaContext.getStaticConfiguration().getProcessId()) {
                             this.proposedBlock = recvBlock;
+                            // TODO: proposed Block lock
 
                             objOut.writeBoolean(true);
                             hasReply = true;
@@ -499,21 +497,30 @@ public class Node extends DefaultSingleRecoverable {
                          *  reply which could cause consensus breaking replica due to different blockchains
                          */
 
-                        boolean aux = recvBlock.equals(this.blockchain.getMostRecentBlock());
-                        if (this.proposedBlock == null || aux) {
-                            objOut.writeBoolean(aux);
+                        Block mostRecentBlock = this.blockchain.getMostRecentBlock();
+                        if (this.proposedBlock == null)
+                            objOut.writeBoolean(false);
+                        else if (recvBlock.equals(mostRecentBlock)) {
+                            Storage.removeFile(mostRecentBlock.getBlockFileFullName());
+                            this.blockchain.reloadBlocksFromDisk();
+                            this.blockchain.addBlock(recvBlock);
+                            objOut.writeBoolean(true);
+                        } else if (recvBlock.equals(this.proposedBlock)) {
+                            this.blockchain.addBlock(recvBlock);
+                            this.proposedBlock = null;
+                            objOut.writeBoolean(true);
                         } else {
-                            if (recvBlock.equals(this.proposedBlock)) {
-                                this.blockchain.addBlock(recvBlock);
-                                this.proposedBlock = null;
-                                objOut.writeBoolean(true);
-                            } else
-                                objOut.writeBoolean(false);
+                            this.transactionPoolLock.lock();
+                            this.transactionPool.addAll(this.proposedBlock.getTransactions().values());
+                            this.transactionPool.sort(Comparator.comparingLong(Transaction::getTimestamp));
+                            this.transactionPoolLock.unlock();
+                            this.proposedBlock = null;
+                            objOut.writeBoolean(false);
                         }
                         hasReply = true;
                         break;
                     default:
-                        logger.error("Unknown type of ReplicaMessageType");
+                        logger.error("Unknown type of NodeMessageType");
                 }
             } else
                 logger.error("Unknown message class, ignoring");

@@ -268,7 +268,8 @@ public class Configuration {
             fr.close();
             rd.close();
 
-            this.firstRun = false;
+            if (this.firstRun)
+                this.firstRun = false;
         } catch (IOException e) {
             logger.error("Could not load configuration", e);
         }

@@ -39,7 +39,7 @@
         <queueSize>1000</queueSize>
     </appender>
 
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="MED-STDOUT"/>
         <appender-ref ref="FILE"/>
     </root>
