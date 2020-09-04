@@ -540,7 +540,6 @@ public class Node extends DefaultSingleRecoverable {
 
     public void close() {
         logger.info("Stopping services before shutdown");
-        replica.kill();
         this.blockSyncServer.stop();
         this.messenger.getServiceProxy().close();
         this.blockProposalThreadStop = true;
@@ -559,5 +558,6 @@ public class Node extends DefaultSingleRecoverable {
             logger.error("Unable to join Blockchain validation thread", e);
             logger.info("Unable to confirm Blockchain validation thread has stopped, continuing shutdown");
         }
+        replica.kill();
     }
 }
