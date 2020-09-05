@@ -33,12 +33,12 @@ public class TestingMain {
         Keys.generatePubAndPrivKeys(id);
         ServiceProxy serviceProxy = new ServiceProxy(id);
 
-        logger.info("# Pub Key in Base58: " + Base58.encode(serviceProxy.getViewManager().getStaticConf().getPublicKey().getEncoded()));
+        // logger.info("# Pub Key in Base58: " + Base58.encode(serviceProxy.getViewManager().getStaticConf().getPublicKey().getEncoded()));
 
         Wallet wallet = Wallet.getInstance(serviceProxy.getViewManager().getStaticConf(), "&V2%v3TWsPBCnpAo".getBytes(StandardCharsets.UTF_8));
         //Wallet wallet = new Wallet(serviceProxy.getViewManager().getStaticConf(), "&V2%v3TWsPBCnpA".getBytes(StandardCharsets.UTF_8));
 
-        logger.info("Sleeping for 5 seconds for ServiceProxy to init");
+        // logger.info("Sleeping for 5 seconds for ServiceProxy to init");
         try {
             Thread.sleep(5000);
         } catch (InterruptedException e) {
@@ -64,7 +64,7 @@ public class TestingMain {
             byte[] data = new byte[config.getTransactionMaxSize() - 100];
             random.nextBytes(data);
             Transaction t;
-            logger.info("Creating Transaction " + i);
+            // logger.info("Creating Transaction " + i);
             try {
                 t = new Transaction(data, config.getProtocolVersion(), Instant.now().toEpochMilli(),
                         serviceProxy.getViewManager().getStaticConf());
@@ -72,7 +72,7 @@ public class TestingMain {
                 e.printStackTrace();
                 return;
             }
-            logger.info("Created Transaction " + i);
+            logger.info(" " + i);
             //transactions.add(t);
             // Send Transaction
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
@@ -83,7 +83,7 @@ public class TestingMain {
                 byteOut.flush();
                 byte[] tBytes = byteOut.toByteArray();
 
-                logger.info("Creating Message to send");
+                // logger.info("Creating Message to send");
                 ClientMessage cm = new ClientMessage(ClientMessageType.ADD_TRANSACTION, tBytes);
 
                 ByteArrayOutputStream byteOut2 = new ByteArrayOutputStream();
@@ -93,7 +93,7 @@ public class TestingMain {
                 objOut2.flush();
                 byteOut2.flush();
 
-                logger.info("Sending transaction - " + i);
+                // logger.info("Sending transaction - " + i);
                 byte[] reply = serviceProxy.invokeOrdered(byteOut2.toByteArray());
 
                 if (reply == null || reply.length == 0) {
@@ -101,7 +101,7 @@ public class TestingMain {
                     continue;
                 }
 
-                logger.info("Got reply from nodes");
+                // logger.info("Got reply from nodes");
 
                 boolean added;
 
@@ -116,7 +116,7 @@ public class TestingMain {
                 System.out.println("Transaction " + i + " added: " + added);
 
                 if (added) {
-                    logger.info("Adding transaction " + i + " to wallet");
+                    // logger.info("Adding transaction " + i + " to wallet");
                     wallet.addTransaction(t);
                 }
 
@@ -135,7 +135,7 @@ public class TestingMain {
 
         logger.info("##### DONE #####");
 
-        logger.info("# Pub Key in Base58: " + Base58.encode(serviceProxy.getViewManager().getStaticConf().getPublicKey().getEncoded()));
+        // logger.info("# Pub Key in Base58: " + Base58.encode(serviceProxy.getViewManager().getStaticConf().getPublicKey().getEncoded()));
 
         serviceProxy.close();
         System.exit(0);
