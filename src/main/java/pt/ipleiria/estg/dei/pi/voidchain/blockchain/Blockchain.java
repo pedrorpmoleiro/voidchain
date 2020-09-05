@@ -8,9 +8,14 @@ import pt.ipleiria.estg.dei.pi.voidchain.util.Pair;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 /**
@@ -31,13 +36,44 @@ public class Blockchain {
 
     /* Constructors */
 
-    private Blockchain() throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        Block genesisBlock = new Block(GENESIS_STRING.getBytes(StandardCharsets.UTF_8));
-        genesisBlock.toDisk();
+    private Blockchain(boolean newGenesis) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException,
+            NoSuchProviderException, IOException, InvalidKeySpecException {
 
-        this.blocks = new ArrayList<>();
-        this.blocks.add(genesisBlock);
-        this.sizeInMemory = genesisBlock.getSize();
+        if (newGenesis) {
+            Block genesisBlock = new Block(GENESIS_STRING.getBytes(StandardCharsets.UTF_8));
+            genesisBlock.toDisk();
+
+            this.blocks = new ArrayList<>();
+            this.blocks.add(genesisBlock);
+            this.sizeInMemory = genesisBlock.getSize();
+        } else {
+            Configuration config = Configuration.getInstance();
+
+            Path blockDir = Paths.get(config.getBlockFileDirectoryFull());
+
+            try {
+                Files.createDirectories(blockDir);
+            } catch (IOException e) {
+                logger.error("Unable to create config directory");
+                throw new IOException("Unable to create config dir");
+            }
+
+            String filePath = blockDir + File.separator + config.getBlockFileBaseName() +
+                    Configuration.FILE_NAME_SEPARATOR + "0" + Configuration.FILE_EXTENSION_SEPARATOR +
+                    config.getDataFileExtension();
+            String filePathJar = "blocks" + File.separator + "block_genesis.dat";
+            if (Files.notExists(Paths.get(filePath))) {
+                InputStream in = Blockchain.class.getClassLoader().getResourceAsStream(filePathJar);
+                File outFile = new File(filePath);
+                FileOutputStream out = new FileOutputStream(outFile);
+
+                outFile.createNewFile();
+
+                out.write(in.readAllBytes());
+                out.flush();
+                out.close();
+            }
+        }
     }
 
     private Blockchain(List<Block> blocks, int sizeInMemory) {
@@ -57,18 +93,21 @@ public class Blockchain {
             Pair<Integer, List<Block>> r = getBlocksListFromDisk();
             if (r == null) {
                 try {
-                    INSTANCE = new Blockchain();
-                } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+                    INSTANCE = new Blockchain(false);
+                } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException | IOException |
+                        NoSuchProviderException | InvalidKeySpecException e) {
+
                     logger.error("Unable to create Genesis Block", e);
                     INSTANCE = new Blockchain(new ArrayList<>(), 0);
                 }
-            }
-            else
+            } else
                 INSTANCE = new Blockchain(r.getO2(), r.getO1());
         } else {
             try {
-                INSTANCE = new Blockchain();
-            } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+                INSTANCE = new Blockchain(false);
+            } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException | IOException |
+                    NoSuchProviderException | InvalidKeySpecException e) {
+
                 logger.error("Unable to create Genesis Block", e);
                 INSTANCE = new Blockchain(new ArrayList<>(), 0);
             }

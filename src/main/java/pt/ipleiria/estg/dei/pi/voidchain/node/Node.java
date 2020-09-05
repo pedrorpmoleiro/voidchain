@@ -19,7 +19,7 @@ import pt.ipleiria.estg.dei.pi.voidchain.sync.BlockSyncClient;
 import pt.ipleiria.estg.dei.pi.voidchain.sync.BlockSyncServer;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
-import pt.ipleiria.estg.dei.pi.voidchain.util.KeyGenerator;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Keys;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
 import java.io.*;
@@ -151,11 +151,8 @@ public class Node extends DefaultSingleRecoverable {
         Storage.createDefaultConfigFiles();
 
         int id = Integer.parseInt(args[0]);
-        KeyGenerator.generatePubAndPrivKeys(id);
-        KeyGenerator.generateSSLKey(id);
-
-        // TODO
-        KeyGenerator.generatePubAndPrivKeys(-42); // Genesis Block Priv & Pub Key Make STATIC
+        Keys.generatePubAndPrivKeys(id);
+        Keys.generateSSLKey(id);
 
         Node node = new Node(id, sync);
         Runtime.getRuntime().addShutdownHook(new Thread(node::close));

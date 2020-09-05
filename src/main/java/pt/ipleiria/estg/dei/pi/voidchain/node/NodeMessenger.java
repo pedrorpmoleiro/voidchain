@@ -64,7 +64,7 @@ public class NodeMessenger {
                 return false;
             }
 
-            if (reply.length == 0) {
+            if (reply == null ||reply.length == 0) {
                 System.err.println("No reply from network");
                 return false;
             }

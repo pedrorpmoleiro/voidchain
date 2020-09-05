@@ -13,7 +13,7 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.BlockNoTransactions;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
-import pt.ipleiria.estg.dei.pi.voidchain.util.KeyGenerator;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Keys;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
 import javax.swing.*;
@@ -91,8 +91,8 @@ public class SimpleClient {
 
         byte[] passwordBytes = password.getBytes(StandardCharsets.UTF_8);
 
-        KeyGenerator.generatePubAndPrivKeys(clientId);
-        KeyGenerator.generateSSLKey(clientId);
+        Keys.generatePubAndPrivKeys(clientId);
+        Keys.generateSSLKey(clientId);
 
         try {
             SimpleClient client = new SimpleClient(clientId, passwordBytes);
@@ -133,7 +133,7 @@ public class SimpleClient {
 
                 byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
 
-                if (reply.length == 0) {
+                if (reply == null ||reply.length == 0) {
                     logger.error("Empty reply from replicas");
                     return;
                 }
@@ -170,7 +170,7 @@ public class SimpleClient {
 
                 byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
 
-                if (reply.length == 0) {
+                if (reply == null ||reply.length == 0) {
                     logger.error("Empty reply from replicas");
                     return;
                 }
@@ -216,7 +216,7 @@ public class SimpleClient {
 
                 byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
 
-                if (reply.length == 0) {
+                if (reply == null ||reply.length == 0) {
                     logger.error("Empty reply from replicas");
                     return;
                 }
@@ -284,7 +284,7 @@ public class SimpleClient {
 
                 byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
 
-                if (reply.length == 0) {
+                if (reply == null ||reply.length == 0) {
                     logger.error("Empty reply from replicas");
                     return;
                 }
@@ -329,7 +329,7 @@ public class SimpleClient {
 
                 byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
 
-                if (reply.length == 0) {
+                if (reply == null ||reply.length == 0) {
                     logger.error("Empty reply from replicas");
                     return;
                 }

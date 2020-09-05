@@ -8,10 +8,10 @@ import pt.ipleiria.estg.dei.pi.voidchain.util.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 /**
@@ -47,15 +47,22 @@ public class Block implements Serializable {
      * @throws InvalidKeyException      invalid key exception will be thrown if private key is invalid
      */
     // FOR USE BY BLOCKCHAIN CLASS TO CREATE GENESIS BLOCK
-    protected Block(byte[] genesisBytes) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    protected Block(byte[] genesisBytes) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException,
+            IOException, NoSuchProviderException, InvalidKeySpecException {
+
         Configuration config = Configuration.getInstance();
 
         // Date and time of the first meeting to plan the development of this project
         long timestamp = 1582135200000L;
 
-        TOMConfiguration tomConf = new TOMConfiguration(-42, Configuration.CONFIG_DIR, null);
+        TOMConfiguration tomConf = new TOMConfiguration(-100, Configuration.CONFIG_DIR, null);
 
-        Transaction t = new Transaction(genesisBytes, config.getProtocolVersion(), timestamp, tomConf);
+        Signature signature = Signature.getInstance(tomConf.getSignatureAlgorithm());
+        signature.initSign(Keys.getPrivKey(Keys.getPrivGenesisKeyBytes(), tomConf));
+        signature.update(genesisBytes);
+        byte[] signatureBytes = signature.sign();
+
+        Transaction t = new Transaction(genesisBytes, config.getProtocolVersion(), timestamp, signatureBytes);
         this.transactions = new Hashtable<>();
         this.transactions.put(t.getHash(), t);
 

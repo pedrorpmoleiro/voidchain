@@ -4,22 +4,18 @@ import bftsmart.reconfiguration.util.TOMConfiguration;
 
 import bitcoinj.Base58;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Hash;
-import pt.ipleiria.estg.dei.pi.voidchain.util.KeyGenerator;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Keys;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
-import java.time.Instant;
 import java.util.*;
 
 /**
@@ -191,17 +187,11 @@ public class Transaction implements Serializable {
     public boolean verifySignature(byte[] pubKey) throws NoSuchAlgorithmException, NoSuchProviderException,
             InvalidKeySpecException, InvalidKeyException, SignatureException, IOException {
 
-        TOMConfiguration tomConf = new TOMConfiguration(-42, Configuration.CONFIG_DIR, null);
-        String signatureAlgorithmProvider = tomConf.getSignatureAlgorithmProvider();
+        TOMConfiguration tomConf = new TOMConfiguration(-100, Configuration.CONFIG_DIR, null);
         String signatureAlgorithm = tomConf.getSignatureAlgorithm();
 
-        KeyFactory keyFactory = KeyFactory.getInstance(Configuration.getInstance().getBftSmartKeyLoader(),
-                signatureAlgorithmProvider);
-        EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(pubKey);
-        PublicKey publicKey = keyFactory.generatePublic(pubKeySpec);
-
         Signature signature = Signature.getInstance(signatureAlgorithm);
-        signature.initVerify(publicKey);
+        signature.initVerify(Keys.getPubKey(pubKey, tomConf));
         signature.update(this.data);
 
         return signature.verify(this.signature);

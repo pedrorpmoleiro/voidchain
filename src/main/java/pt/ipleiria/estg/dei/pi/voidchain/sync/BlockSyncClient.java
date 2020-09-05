@@ -194,7 +194,7 @@ public class BlockSyncClient {
         objOut.close();
         byteOut.close();
 
-        if (reply.length == 0) {
+        if (reply == null ||reply.length == 0) {
             logger.error("Empty reply from replicas");
             return -1;
         }
