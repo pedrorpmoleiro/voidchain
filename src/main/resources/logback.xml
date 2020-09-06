@@ -1,5 +1,7 @@
 <configuration debug="false">
 
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
     <!-- Logging to console -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -39,7 +41,7 @@
         <queueSize>1000</queueSize>
     </appender>
 
-    <root level="WARN">
+    <root level="INFO">
         <appender-ref ref="MED-STDOUT"/>
         <appender-ref ref="FILE"/>
     </root>

@@ -211,5 +211,8 @@ public class Keys {
         outPub.write(tomConf.getPublicKey().getEncoded());
         outPub.flush();
         outPub.close();
+
+        System.out.println("New genesis block keys generated, don't forget to replace the keys in the 'src/main/" +
+                "resources/keys' folder with the new keys generated inside the 'config' folder");
     }
 }

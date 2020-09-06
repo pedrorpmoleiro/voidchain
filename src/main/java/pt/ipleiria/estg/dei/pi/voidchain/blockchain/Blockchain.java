@@ -64,11 +64,13 @@ public class Blockchain {
      * @return the Blockchain class instance
      */
     public static Blockchain getInstance() {
+        final boolean newGenesis = false;
+
         if (INSTANCE == null) {
             Pair<Integer, List<Block>> r = getBlocksListFromDisk();
             if (r == null) {
                 try {
-                    INSTANCE = new Blockchain(false);
+                    INSTANCE = new Blockchain(newGenesis);
                 } catch (IOException | NoSuchProviderException | NoSuchAlgorithmException | InvalidKeySpecException |
                         InvalidKeyException | SignatureException e) {
 
@@ -79,7 +81,7 @@ public class Blockchain {
                 INSTANCE = new Blockchain(r.getO2(), r.getO1());
         } else {
             try {
-                INSTANCE = new Blockchain(false);
+                INSTANCE = new Blockchain(newGenesis);
             } catch (IOException | NoSuchProviderException | NoSuchAlgorithmException | InvalidKeySpecException |
                     InvalidKeyException | SignatureException e) {
 
@@ -87,6 +89,12 @@ public class Blockchain {
                 INSTANCE = new Blockchain(new ArrayList<>(), 0);
             }
         }
+
+        if (newGenesis)
+            throw new RuntimeException("New Genesis Block has been generated, check logs for the new signature to be " +
+                    "used in genesis blocks. After updating the signature please revert the newGenesis to false in " +
+                    "order to all nodes to have the same genesis block. If you wish to generate new Genesis keys " +
+                    "please run the main available in the Keys class (util package)");
 
         return INSTANCE;
     }
