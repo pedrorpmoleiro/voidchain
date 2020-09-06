@@ -60,7 +60,7 @@ public class TestingMain {
 
         //List<Transaction> transactions = new ArrayList<>();
 
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 1000; i++) {
             byte[] data = new byte[config.getTransactionMaxSize() - 100];
             random.nextBytes(data);
             Transaction t;

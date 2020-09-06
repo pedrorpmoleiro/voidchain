@@ -4,6 +4,7 @@ import bftsmart.reconfiguration.util.TOMConfiguration;
 import bftsmart.tom.util.ECDSAKeyPairGenerator;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,6 +1,7 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
 import bitcoinj.Base58;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

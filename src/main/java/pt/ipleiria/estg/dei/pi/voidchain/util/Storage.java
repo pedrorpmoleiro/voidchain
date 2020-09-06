@@ -124,10 +124,11 @@ public class Storage {
 
         for (String f : Configuration.CONFIG_FILES) {
             String filePath = configDir + File.separator + f;
+            String filePathJar = "config/" + f;
             if (Files.notExists(Paths.get(filePath))) {
                 logger.info("Creating file '" + f + "' in 'config'");
 
-                InputStream in = Storage.class.getClassLoader().getResourceAsStream(filePath);
+                InputStream in = Storage.class.getClassLoader().getResourceAsStream(filePathJar);
                 File outFile = new File(filePath);
                 FileOutputStream out = new FileOutputStream(outFile);
 

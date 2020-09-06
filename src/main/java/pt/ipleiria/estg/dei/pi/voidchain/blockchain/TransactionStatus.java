@@ -1,9 +1,11 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
+import java.io.Serializable;
+
 /**
  * The enum Transaction status.
  */
-public enum TransactionStatus {
+public enum TransactionStatus implements Serializable {
     /**
      * In block transaction status.
      */

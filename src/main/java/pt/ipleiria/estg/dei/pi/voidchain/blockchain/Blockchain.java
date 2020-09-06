@@ -61,10 +61,10 @@ public class Blockchain {
             String filePath = blockDir + File.separator + config.getBlockFileBaseName() +
                     Configuration.FILE_NAME_SEPARATOR + "0" + Configuration.FILE_EXTENSION_SEPARATOR +
                     config.getDataFileExtension();
-            String filePathJar = "blocks" + File.separator + "block_genesis.dat";
+            String filePathJar = "blocks/block_genesis.dat";
             if (Files.notExists(Paths.get(filePath))) {
                 InputStream in = Blockchain.class.getClassLoader().getResourceAsStream(filePathJar);
-                File outFile = new File(filePath);
+                    File outFile = new File(filePath);
                 FileOutputStream out = new FileOutputStream(outFile);
 
                 outFile.createNewFile();
@@ -72,6 +72,18 @@ public class Blockchain {
                 out.write(in.readAllBytes());
                 out.flush();
                 out.close();
+            }
+
+            this.blocks = new ArrayList<>();
+            this.sizeInMemory = 0;
+
+            try {
+                Block genesis = Block.fromDisk(0);
+                this.blocks.add(genesis);
+                this.sizeInMemory = genesis.getSize();
+            } catch (ClassNotFoundException e) {
+                logger.error("Unable to retrieve genesis block", e);
+                logger.warn("Continuing with empty list of blocks in memory");
             }
         }
     }
