@@ -2,8 +2,9 @@ package pt.ipleiria.estg.dei.pi.voidchain.client;
 
 import bftsmart.tom.ServiceProxy;
 
+import bitcoinj.Base58;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.util.encoders.Base64;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,10 +13,11 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.BlockNoTransactions;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
-import pt.ipleiria.estg.dei.pi.voidchain.util.KeyGenerator;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Keys;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.*;
@@ -27,7 +29,6 @@ import java.time.Instant;
  * The Simple Client class is equivalent to the Lightweight Client described in the VOIDChain report/documentation.
  * Contains a Wallet, to store all of its transactions.
  * It does not contain a full copy of the Blockchain.
- * To keep track of its transactions, it only stores the block headers. Using the merkle root, which is part of the block header, the lightweight client can check if a transaction is included in a block.
  */
 public class SimpleClient {
     private JButton getCurrentBlockButton;
@@ -46,8 +47,6 @@ public class SimpleClient {
     private final ServiceProxy serviceProxy;
     private final Wallet wallet;
 
-    private static final String password = "&V2%v3TWsPBCnpAo";
-
     private static final Logger logger = LoggerFactory.getLogger(SimpleClient.class);
 
     /**
@@ -55,7 +54,7 @@ public class SimpleClient {
      *
      * @param id the id of the client
      */
-    public SimpleClient(int id) {
+    public SimpleClient(int id, byte[] password) {
         this.serviceProxy = new ServiceProxy(id);
         this.wallet = Wallet.getInstance(this.serviceProxy.getViewManager().getStaticConf(), password);
     }
@@ -67,8 +66,8 @@ public class SimpleClient {
      * @throws IOException the io exception
      */
     public static void main(String[] args) throws IOException {
-        if (args.length < 1) {
-            System.out.println("Usage: voidchain-simple-client <client id>");
+        if (args.length < 2) {
+            System.out.println("Usage: voidchain-simple-client <client id> <wallet password>");
             return;
         }
 
@@ -83,12 +82,20 @@ public class SimpleClient {
         }
 
         int clientId = Integer.parseInt(args[0]);
+        String password = args[1];
 
-        KeyGenerator.generatePubAndPrivKeys(clientId);
-        KeyGenerator.generateSSLKey(clientId);
+        if (password.length() < 8) {
+            System.out.println("Password length should be greater than 8 characters");
+            return;
+        }
+
+        byte[] passwordBytes = password.getBytes(StandardCharsets.UTF_8);
+
+        Keys.generatePubAndPrivKeys(clientId);
+        Keys.generateSSLKey(clientId);
 
         try {
-            SimpleClient client = new SimpleClient(clientId);
+            SimpleClient client = new SimpleClient(clientId, passwordBytes);
 
             client.getCurrentBlockButton.addActionListener(client.getCurrentBlockButtonActionListener());
             client.getCurrentBlockHeightButton.addActionListener(client.getCurrentBlockHeightButtonActionListener());
@@ -114,7 +121,7 @@ public class SimpleClient {
 
     private ActionListener getCurrentBlockButtonActionListener() {
         return e -> {
-            logger.info("Sending GET_MOST_RECENT_BLOCK request to network");
+            logger.debug("Sending GET_MOST_RECENT_BLOCK request to network");
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -126,7 +133,7 @@ public class SimpleClient {
 
                 byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
 
-                if (reply.length == 0) {
+                if (reply == null ||reply.length == 0) {
                     logger.error("Empty reply from replicas");
                     return;
                 }
@@ -139,7 +146,7 @@ public class SimpleClient {
                 objIn.close();
                 byteIn.close();
 
-                logger.info("Current block: " + currentBlock);
+                logger.debug("Current block: " + currentBlock);
                 JOptionPane.showMessageDialog(null, currentBlock.toString(),
                         "Response", JOptionPane.INFORMATION_MESSAGE);
 
@@ -151,7 +158,7 @@ public class SimpleClient {
 
     private ActionListener getCurrentBlockHeightButtonActionListener() {
         return e -> {
-            logger.info("Sending GET_MOST_RECENT_BLOCK_HEIGHT request to network");
+            logger.debug("Sending GET_MOST_RECENT_BLOCK_HEIGHT request to network");
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -163,7 +170,7 @@ public class SimpleClient {
 
                 byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
 
-                if (reply.length == 0) {
+                if (reply == null ||reply.length == 0) {
                     logger.error("Empty reply from replicas");
                     return;
                 }
@@ -176,7 +183,7 @@ public class SimpleClient {
                 objIn.close();
                 byteIn.close();
 
-                logger.info("Block height: " + blockHeight);
+                logger.debug("Block height: " + blockHeight);
                 JOptionPane.showMessageDialog(null, "Block height: " + blockHeight,
                         "Response", JOptionPane.INFORMATION_MESSAGE);
 
@@ -188,7 +195,7 @@ public class SimpleClient {
 
     private ActionListener getBlockButtonActionListener() {
         return e -> {
-            logger.info("Sending GET_BLOCK ("+ this.blockHeightTextField.getText() + ") request to network");
+            logger.debug("Sending GET_BLOCK ("+ this.blockHeightTextField.getText() + ") request to network");
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -209,7 +216,7 @@ public class SimpleClient {
 
                 byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
 
-                if (reply.length == 0) {
+                if (reply == null ||reply.length == 0) {
                     logger.error("Empty reply from replicas");
                     return;
                 }
@@ -222,7 +229,7 @@ public class SimpleClient {
                 objIn.close();
                 byteIn.close();
 
-                logger.info("Block " + blockHeight + " Data: " + block);
+                logger.debug("Block " + blockHeight + " Data: " + block);
                 JOptionPane.showMessageDialog(null, block.toString(),
                         "Response", JOptionPane.INFORMATION_MESSAGE);
 
@@ -234,7 +241,7 @@ public class SimpleClient {
 
     private ActionListener addTransactionButtonActionListener() {
         return e -> {
-            logger.info("Sending ADD_TRANSACTION request to network");
+            logger.debug("Sending ADD_TRANSACTION request to network");
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -245,8 +252,8 @@ public class SimpleClient {
                     t = new Transaction(transactionDataTextArea.getText().getBytes(StandardCharsets.UTF_8),
                             config.getProtocolVersion(), Instant.now().toEpochMilli(),
                             this.serviceProxy.getViewManager().getStaticConf());
-                    logger.debug("Transaction Hash: " + Base64.toBase64String(t.getHash()));
-                    logger.debug("Transaction Signature: " + Base64.toBase64String(t.getSignature()));
+                    logger.debug("Transaction Hash: " + Base58.encode(t.getHash()));
+                    logger.debug("Transaction Signature: " + Base58.encode(t.getSignature()));
                 } catch (IllegalArgumentException | SignatureException | NoSuchAlgorithmException |
                         InvalidKeyException exception) {
                     logger.error("Unable to create transaction", exception);
@@ -277,7 +284,7 @@ public class SimpleClient {
 
                 byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
 
-                if (reply.length == 0) {
+                if (reply == null ||reply.length == 0) {
                     logger.error("Empty reply from replicas");
                     return;
                 }
@@ -298,7 +305,7 @@ public class SimpleClient {
                 else
                     message = "Transaction not added";
 
-                logger.info(message);
+                logger.debug(message);
                 JOptionPane.showMessageDialog(null, message,
                         "Response", JOptionPane.INFORMATION_MESSAGE);
 
@@ -310,7 +317,7 @@ public class SimpleClient {
 
     private ActionListener isChainValidButtonActionListener() {
         return e -> {
-            logger.info("Sending IS_CHAIN_VALID request to network");
+            logger.debug("Sending IS_CHAIN_VALID request to network");
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -322,7 +329,7 @@ public class SimpleClient {
 
                 byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
 
-                if (reply.length == 0) {
+                if (reply == null ||reply.length == 0) {
                     logger.error("Empty reply from replicas");
                     return;
                 }
@@ -335,7 +342,7 @@ public class SimpleClient {
                 objIn.close();
                 byteIn.close();
 
-                logger.info("Is chain valid: " + isValid);
+                logger.debug("Is chain valid: " + isValid);
                 JOptionPane.showMessageDialog(null, "Is chain valid: " + isValid,
                         "Response", JOptionPane.INFORMATION_MESSAGE);
 

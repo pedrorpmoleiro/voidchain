@@ -2,7 +2,7 @@
   <configuration default="false" name="Simple Client" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="pt.ipleiria.estg.dei.pi.voidchain.client.SimpleClient" />
     <module name="voidchain" />
-    <option name="PROGRAM_PARAMETERS" value="8" />
+    <option name="PROGRAM_PARAMETERS" value="8 &amp;V2%v3TWsPBCnpAo" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="pt.ipleiria.estg.dei.pi.voidchain.client.*" />

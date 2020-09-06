@@ -1,6 +1,7 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
-import org.bouncycastle.util.encoders.Base64;
+import bitcoinj.Base58;
+
 import pt.ipleiria.estg.dei.pi.voidchain.util.Hash;
 
 import java.io.Serializable;
@@ -144,7 +145,7 @@ public class BlockNoTransactions implements Serializable {
                 "size: " + this.getSize() + System.lineSeparator() +
                 "transaction counter: " + this.transactionCounter + System.lineSeparator() +
                 "block height: " + this.blockHeight + System.lineSeparator() +
-                "hash: " + Base64.toBase64String(this.getHash()) + System.lineSeparator() +
+                "hash: " + Base58.encode(this.getHash()) + System.lineSeparator() +
                 "}";
     }
 }

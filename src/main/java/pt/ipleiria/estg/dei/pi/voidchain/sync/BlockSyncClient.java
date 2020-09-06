@@ -10,6 +10,7 @@ import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessageType;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -36,7 +37,7 @@ public class BlockSyncClient {
     }
 
     /**
-     * Syncs blocks from other replicas to the current machine.
+     * Syncs blocks from other nodes to the current machine.
      *
      * @param allBlocks pass true if you wish to overwrite the blocks already stored in disk and false to only sync the missing blocks
      */
@@ -60,6 +61,10 @@ public class BlockSyncClient {
             return;
 
         List<Integer> heightArray = Blockchain.getBlockFileHeightArray();
+
+        if (allBlocks && heightArray != null)
+            Storage.cleanDirectory(Configuration.getInstance().getBlockFileDirectoryFull());
+
         int top = highestBlockHeight;
         if (heightArray == null) {
             logger.warn("No block files in disk");
@@ -114,8 +119,6 @@ public class BlockSyncClient {
         pingTimes.sort(Long::compare);
 
         InetSocketAddress add = new InetSocketAddress(pingTimesAdd.get(pingTimes.get(0)), config.getBlockSyncPort());
-        //InetSocketAddress add = new InetSocketAddress(this.serviceProxy.getViewManager().getCurrentView().getAddress(0).getAddress(), config.getBlockSyncPort()); // For testing
-        //InetSocketAddress add = new InetSocketAddress("127.0.0.1", config.getBlockSyncPort()); // For testing
 
         logger.info("Lowest ping replica (ip: " + pingTimesAdd.get(pingTimes.get(0)) +
                 ", ping time: " + pingTimes.get(0) + ")");
@@ -152,10 +155,10 @@ public class BlockSyncClient {
             Block b;
             try {
                 b = (Block) objIn.readObject();
-                logger.info("Received Block " + b.getBlockHeight());
                 if (b == null)
                     throw new IllegalArgumentException();
 
+                logger.info("Received Block " + b.getBlockHeight());
                 b.toDisk();
             } catch (IOException | ClassNotFoundException | IllegalArgumentException e) {
                 logger.error("Error while retrieving block from server", e);
@@ -191,7 +194,7 @@ public class BlockSyncClient {
         objOut.close();
         byteOut.close();
 
-        if (reply.length == 0) {
+        if (reply == null ||reply.length == 0) {
             logger.error("Empty reply from replicas");
             return -1;
         }

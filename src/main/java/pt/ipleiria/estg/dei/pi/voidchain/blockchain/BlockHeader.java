@@ -1,11 +1,11 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
+import bitcoinj.Base58;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
-
-import org.bouncycastle.util.encoders.Base64;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -15,7 +15,7 @@ import java.util.Objects;
 
 /**
  * The block header is a section of a block.
- * The hash of the block header is what IDs a block in the blockchain. It is the block ID.
+ * The hash of the block header is what IDs a block in the Blockchain. It is the block ID.
  * The structure of the header is: a timestamp, parents block (the block header) hash, the version of the protocol when the block was created,
  * a nonce (random byte array) and the root of the merkle tree (which resumes all the transactions stored in the block).
  */
@@ -152,9 +152,9 @@ public class BlockHeader implements Serializable {
     public String toString() {
         return "Block Header: {" + System.lineSeparator() +
                 "timestamp: " + timestamp + System.lineSeparator() +
-                "previous block hash: " + Base64.toBase64String(previousBlockHash) + System.lineSeparator() +
+                "previous block hash: " + Base58.encode(previousBlockHash) + System.lineSeparator() +
                 "protocol version: " + protocolVersion + System.lineSeparator() +
-                "merkle root: " + Base64.toBase64String(merkleRoot) + System.lineSeparator() +
+                "merkle root: " + Base58.encode(merkleRoot) + System.lineSeparator() +
                 "}";
     }
 }

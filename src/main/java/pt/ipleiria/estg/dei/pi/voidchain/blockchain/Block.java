@@ -2,27 +2,26 @@ package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
 import bftsmart.reconfiguration.util.TOMConfiguration;
 
-import org.bouncycastle.util.encoders.Base64;
+import bitcoinj.Base58;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.bouncycastle.util.encoders.Base64;
 
 import pt.ipleiria.estg.dei.pi.voidchain.util.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 /**
  * A block is where the transactions/data are stored in,
- * and then the block is added to the blockchain, if it's valid
+ * and then the block is added to the Blockchain if it's valid
  * The structure of a block follows: version, a header (which is its own class),
- * size, transaction counter and its height
- * In the blockchain, what identifies a block is its ID, which is the hash of its header (block header)
- * Keep in mind that the block hash is not stored in the blocks data structure nor in the blockchain,
+ * size, transaction counter, and its height.
+ * In the Blockchain, what identifies a block is its ID, which is the hash of its header (block header)
+ * Keep in mind that the block hash is not stored in the blocks data structure nor in the Blockchain,
  * it needs to be calculated if needed.
  */
 public class Block implements Serializable {
@@ -35,9 +34,35 @@ public class Block implements Serializable {
     /* Constructors */
 
     /**
+     * Instantiates a Static Genesis Block.
+     *
+     * @param genesisBytes the genesis data
+     * @param signature the signature of the data
+     * @throws IllegalArgumentException illegal argument exception will be thrown if transaction size exceeds max
+     *                                  value of transaction
+     */
+    // FOR USE BY BLOCKCHAIN CLASS TO CREATE STAIC GENESIS BLOCK
+    protected Block(byte[] genesisBytes, byte[] signature) {
+        Configuration config = Configuration.getInstance();
+
+        // Date and time of the first meeting to plan the development of this project
+        long timestamp = 1582135200000L;
+
+        Transaction t = new Transaction(genesisBytes, config.getProtocolVersion(), timestamp, signature);
+        this.transactions = new Hashtable<>();
+        this.transactions.put(t.getHash(), t);
+
+        byte[] nonce = new byte[10];
+        new Random(timestamp).nextBytes(nonce);
+
+        this.blockHeader = new BlockHeader(new byte[0], config.getProtocolVersion(), timestamp,
+                nonce, MerkleTree.getMerkleRoot(this.transactions));
+        this.blockHeight = 0;
+        this.transactionCounter = 1;
+    }
+
+    /**
      * Instantiates a new Genesis Block.
-     * <br>
-     * The transaction contained in this block is signed by id -42
      *
      * @param genesisBytes the genesis bytes
      * @throws IllegalArgumentException illegal argument exception will be thrown if transaction size exceeds max
@@ -48,16 +73,25 @@ public class Block implements Serializable {
      *                                  transaction
      * @throws InvalidKeyException      invalid key exception will be thrown if private key is invalid
      */
-    // FOR USE BY BLOCKCHAIN CLASS TO CREATE GENESIS BLOCK
-    protected Block(byte[] genesisBytes) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    // FOR USE BY BLOCKCHAIN CLASS TO CREATE NEW GENESIS BLOCK
+    protected Block(byte[] genesisBytes) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException,
+            IOException, NoSuchProviderException, InvalidKeySpecException {
+
         Configuration config = Configuration.getInstance();
 
         // Date and time of the first meeting to plan the development of this project
         long timestamp = 1582135200000L;
 
-        TOMConfiguration tomConf = new TOMConfiguration(-42, Configuration.CONFIG_DIR, null);
+        TOMConfiguration tomConf = new TOMConfiguration(-100, Configuration.CONFIG_DIR, null);
 
-        Transaction t = new Transaction(genesisBytes, config.getProtocolVersion(), timestamp, tomConf);
+        Signature signature = Signature.getInstance(tomConf.getSignatureAlgorithm());
+        signature.initSign(Keys.getPrivKey(Keys.getPrivGenesisKeyBytes(), tomConf));
+        signature.update(genesisBytes);
+        byte[] signatureBytes = signature.sign();
+
+        System.out.println("New Genesis Block Signature :: " + Base64.toBase64String(signatureBytes));
+
+        Transaction t = new Transaction(genesisBytes, config.getProtocolVersion(), timestamp, signatureBytes);
         this.transactions = new Hashtable<>();
         this.transactions.put(t.getHash(), t);
 
@@ -274,6 +308,18 @@ public class Block implements Serializable {
                 this.getSize());
     }
 
+    public String getBlockFileFullName() {
+        return getBlockFileFullName(this.blockHeight);
+    }
+
+    public static String getBlockFileFullName(int height) {
+        Configuration config = Configuration.getInstance();
+
+        return config.getBlockFileDirectoryFull() + File.separator +
+                config.getBlockFileBaseName() + Configuration.FILE_NAME_SEPARATOR +
+                height + Configuration.FILE_EXTENSION_SEPARATOR + config.getDataFileExtension();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -297,7 +343,7 @@ public class Block implements Serializable {
                 "size: " + this.getSize() + System.lineSeparator() +
                 "transaction counter: " + this.transactionCounter + System.lineSeparator() +
                 "block height: " + this.blockHeight + System.lineSeparator() +
-                "hash: " + Base64.toBase64String(this.getHash()) + System.lineSeparator() +
+                "hash: " + Base58.encode(this.getHash()) + System.lineSeparator() +
                 "}";
     }
 }

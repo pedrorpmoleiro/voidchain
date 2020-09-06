@@ -13,8 +13,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
- * The Block sync server is a service that is responsible for sending block files located in disk to other replicas
- * in order to maintain synchronicity between replicas.
+ * The Block sync server is a service that is responsible for sending block files located in disk to other nodes
+ * in order to maintain synchronicity between nodes.
  */
 public class BlockSyncServer {
     private static final Logger logger = LoggerFactory.getLogger(BlockSyncServer.class);

@@ -1,5 +1,7 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
+import org.bouncycastle.util.encoders.Base64;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,13 +12,15 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 /**
  * Blockchain data structure is an ordered, back-linked list of blocks of transactions/data.
- * BFT-Smart runs on top of this blockchain (more like blockchain is piece of the puzzle that is BFT-Smart),
- * and by running on top of a blockchain, making it more secure and robust.
+ * BFT-Smart runs on top of this Blockchain (more like blockchain is piece of the puzzle that is BFT-Smart),
+ * and by running on top of a Blockchain, making it more secure and robust.
  */
 public class Blockchain {
     /* Attributes */
@@ -26,15 +30,22 @@ public class Blockchain {
     private static Blockchain INSTANCE = null;
 
     private static final String GENESIS_STRING = "What to Know and What to Do About the Global Pandemic";
+    private static final byte[] GENESIS_SIGNATURE = Base64.decode("MEQCIFBivzXzZfe1orfaWN8PhZ6b+o0R8E2FQz8PWNfaGhn4AiBQjhCmXE59wk8ynzLGeb3FDTNCT1josFIMQhjhGVmZew==");
 
     private static final Logger logger = LoggerFactory.getLogger(Blockchain.class);
 
     /* Constructors */
 
-    private Blockchain() throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        Block genesisBlock = new Block(GENESIS_STRING.getBytes(StandardCharsets.UTF_8));
-        genesisBlock.toDisk();
+    private Blockchain(boolean newGenesis) throws IOException, NoSuchProviderException, NoSuchAlgorithmException,
+            InvalidKeySpecException, InvalidKeyException, SignatureException {
 
+        Block genesisBlock;
+        if (newGenesis)
+            genesisBlock = new Block(GENESIS_STRING.getBytes(StandardCharsets.UTF_8));
+        else
+            genesisBlock = new Block(GENESIS_STRING.getBytes(StandardCharsets.UTF_8), GENESIS_SIGNATURE);
+
+        genesisBlock.toDisk();
         this.blocks = new ArrayList<>();
         this.blocks.add(genesisBlock);
         this.sizeInMemory = genesisBlock.getSize();
@@ -57,18 +68,21 @@ public class Blockchain {
             Pair<Integer, List<Block>> r = getBlocksListFromDisk();
             if (r == null) {
                 try {
-                    INSTANCE = new Blockchain();
-                } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+                    INSTANCE = new Blockchain(false);
+                } catch (IOException | NoSuchProviderException | NoSuchAlgorithmException | InvalidKeySpecException |
+                        InvalidKeyException | SignatureException e) {
+
                     logger.error("Unable to create Genesis Block", e);
                     INSTANCE = new Blockchain(new ArrayList<>(), 0);
                 }
-            }
-            else
+            } else
                 INSTANCE = new Blockchain(r.getO2(), r.getO1());
         } else {
             try {
-                INSTANCE = new Blockchain();
-            } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+                INSTANCE = new Blockchain(false);
+            } catch (IOException | NoSuchProviderException | NoSuchAlgorithmException | InvalidKeySpecException |
+                    InvalidKeyException | SignatureException e) {
+
                 logger.error("Unable to create Genesis Block", e);
                 INSTANCE = new Blockchain(new ArrayList<>(), 0);
             }
@@ -88,7 +102,7 @@ public class Blockchain {
     }
 
     /**
-     * Tests if this blockchain is a valid blockchain.
+     * Tests if this Blockchain is a valid Blockchain.
      *
      * @return true if the block chain is valid or false otherwise
      */
@@ -223,7 +237,7 @@ public class Blockchain {
     }
 
     /**
-     * Gets the last added block to the chain, or in other words, the highest block in the blockchain
+     * Gets the last added block to the chain, or in other words, the highest block in the Blockchain
      *
      * @return the most recently created block
      */

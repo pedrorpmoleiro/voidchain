@@ -1,6 +1,7 @@
 package pt.ipleiria.estg.dei.pi.voidchain.node;
 
 import bftsmart.tom.MessageContext;
+import bftsmart.tom.ServiceProxy;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
 
@@ -12,12 +13,13 @@ import org.slf4j.LoggerFactory;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Block;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Blockchain;
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
+import pt.ipleiria.estg.dei.pi.voidchain.blockchain.TransactionStatus;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
 import pt.ipleiria.estg.dei.pi.voidchain.sync.BlockSyncClient;
 import pt.ipleiria.estg.dei.pi.voidchain.sync.BlockSyncServer;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Converters;
-import pt.ipleiria.estg.dei.pi.voidchain.util.KeyGenerator;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Keys;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Storage;
 
 import java.io.*;
@@ -25,13 +27,10 @@ import java.security.Security;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-/*
- * TODO
- *  Thread that 'validates' chain among other replicas and if invalid re downloads it
- */
-
 /**
- * The type Replica.
+ * The class Node represents the actor that actively participates in consensus, meaning it is responsible for the process of messages sent by clients and also for the block creation process.
+ * During the block creation process, only the node elected as leader possesses the ability to create and then propose a block to other nodes.
+ * If a block is accepted, all nodes append the block the their Blockchain.
  */
 public class Node extends DefaultSingleRecoverable {
     private static final Logger logger = LoggerFactory.getLogger(Node.class);
@@ -47,17 +46,22 @@ public class Node extends DefaultSingleRecoverable {
     private final BlockSyncClient blockSyncClient;
 
     private Block proposedBlock = null;
-    private Thread blockProposalThread = null;
+
+    private Thread blockProposalThread;
     private boolean blockProposalThreadStop = false;
+
+    private Thread blockchainValidationCheckThread;
+    private boolean blockchainValidationCheckThreadStop = false;
+
     private int leader = -1;
 
     private final ServiceReplica replica;
 
     /**
-     * Instantiates a new Replica.
+     * Instantiates a new Node.
      *
-     * @param id   the id
-     * @param sync the sync
+     * @param id   the id of the node
+     * @param sync if the node will start the block sync server
      */
     public Node(int id, boolean sync) {
         this.blockchain = Blockchain.getInstance();
@@ -70,6 +74,34 @@ public class Node extends DefaultSingleRecoverable {
             this.blockchain.reloadBlocksFromDisk();
         }).start();
 
+        this.blockchainValidationCheckThread = new Thread(() -> {
+            while (true) {
+                if (!this.blockchain.isChainValid()) {
+                    this.blockSyncClient.sync(true);
+                    this.blockchain.reloadBlocksFromDisk();
+                }
+
+                try {
+                    Thread.sleep(Configuration.getInstance().getBlockchainValidTimer());
+                    if (this.blockchainValidationCheckThreadStop) return;
+                } catch (InterruptedException e) {
+                    logger.error("Blockchain Validation Thread error while waiting", e);
+                    this.blockchainValidationCheckThread = null;
+                }
+            }
+        });
+        this.blockchainValidationCheckThread.start();
+
+        this.blockProposalThread = new Thread(this::processNewBlock);
+        new Thread(() -> {
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                logger.error("Block proposal start thread sleep error", e);
+            }
+            this.blockProposalThread.start();
+        }).start();
+
         this.blockSyncServer = new BlockSyncServer();
         if (sync)
             this.blockSyncServer.run();
@@ -77,26 +109,11 @@ public class Node extends DefaultSingleRecoverable {
             logger.warn("Block sync server is not running on this replica, make sure at least one replica on this " +
                     "machine is running the service (-s option)");
 
-        replica = new ServiceReplica(id, this, this);
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Stopping services before shutdown");
-            replica.kill();
-            this.blockSyncServer.stop();
-            this.messenger.getServiceProxy().close();
-            this.blockProposalThreadStop = true;
-            try {
-                this.blockProposalThread.join();
-                logger.debug("Block proposal thread has been stopped");
-            } catch (InterruptedException e) {
-                logger.error("Unable to join block proposal thread", e);
-                logger.info("Unable to confirm block proposal thread has stopped, continuing shutdown");
-            }
-        }));
+        this.replica = new ServiceReplica(id, this, this);
     }
 
     /**
-     * The entry point of application.
+     * The entry point of Node.
      *
      * @param args the input arguments
      * @throws IOException the io exception
@@ -120,7 +137,7 @@ public class Node extends DefaultSingleRecoverable {
                         sync = true;
                         break;
                     case "--help":
-                        System.out.println("USAGE: voidchain_replica <id> [OPTIONS]" + System.lineSeparator());
+                        System.out.println("USAGE: voidchain-replica <id> [OPTIONS]" + System.lineSeparator());
                         System.out.println("OPTIONS:");
                         System.out.println("\t * Use --sync (-s) to enable block sync server.");
                         System.out.println("\t Note: If more than one replica is running in the same system, " +
@@ -136,16 +153,19 @@ public class Node extends DefaultSingleRecoverable {
         Storage.createDefaultConfigFiles();
 
         int id = Integer.parseInt(args[0]);
-        KeyGenerator.generatePubAndPrivKeys(id);
-        KeyGenerator.generateSSLKey(id);
+        Keys.generatePubAndPrivKeys(id);
+        Keys.generateSSLKey(id);
 
-        KeyGenerator.generatePubAndPrivKeys(-42); // Genesis Block Priv & Pub Key
+        Node node = new Node(id, sync);
+        Runtime.getRuntime().addShutdownHook(new Thread(node::close));
+    }
 
-        new Node(id, sync);
+    public ServiceProxy getMessengerProxy() {
+        return this.messenger.getServiceProxy();
     }
 
     /**
-     *
+     *  Creates a block to proposed to the rest of the other nodes.
      */
     private void createProposedBlock() {
         if (this.proposedBlock != null) return;
@@ -153,7 +173,7 @@ public class Node extends DefaultSingleRecoverable {
         Configuration config = Configuration.getInstance();
         int transactionsPerBlock = config.getNumTransactionsInBlock();
 
-        transactionPoolLock.lock();
+        this.transactionPoolLock.lock();
         if (this.transactionPool.size() >= transactionsPerBlock) {
             logger.info("Creating block to be proposed from memory pool transactions");
 
@@ -173,13 +193,14 @@ public class Node extends DefaultSingleRecoverable {
             } catch (InstantiationException e) {
                 logger.error("Error creating new proposed block instance", e);
                 this.transactionPool.addAll(transactions);
+                this.transactionPool.sort(Comparator.comparingLong(Transaction::getTimestamp));
             }
         }
-        transactionPoolLock.unlock();
+        this.transactionPoolLock.unlock();
     }
 
     /**
-     *
+     * Appends a block the its local blockchain.
      */
     private void processNewBlock() {
         if (this.replicaContext.getStaticConfiguration().getProcessId() == leader) {
@@ -187,20 +208,22 @@ public class Node extends DefaultSingleRecoverable {
 
             if (this.proposedBlock != null) {
                 logger.info("Proposing block to the network");
-                if (this.messenger.proposeBlock(this.proposedBlock))
-                    if (this.proposedBlock != null) {
-                        this.blockchain.addBlock(this.proposedBlock);
-                        logger.info("Adding proposed block to local blockchain");
-                    } else
-                        this.transactionPool.addAll(this.proposedBlock.getTransactions().values());
-
+                if (this.messenger.proposeBlock(this.proposedBlock)) {
+                    this.blockchain.addBlock(this.proposedBlock);
+                    logger.info("Adding proposed block to local blockchain");
+                } else {
+                    this.transactionPoolLock.lock();
+                    this.transactionPool.addAll(this.proposedBlock.getTransactions().values());
+                    this.transactionPool.sort(Comparator.comparingLong(Transaction::getTimestamp));
+                    this.transactionPoolLock.unlock();
+                }
                 this.proposedBlock = null;
             }
         }
 
         try {
             Thread.sleep(Configuration.getInstance().getBlockProposalTimer());
-            if (blockProposalThreadStop) return;
+            if (this.blockProposalThreadStop) return;
             processNewBlock();
         } catch (InterruptedException e) {
             logger.error("Block Proposal Thread error while waiting", e);
@@ -251,7 +274,6 @@ public class Node extends DefaultSingleRecoverable {
         logger.info("Transactions added to memory pool");
         return true;
     }
-
 
     @Override
     public void installSnapshot(byte[] state) {
@@ -309,13 +331,6 @@ public class Node extends DefaultSingleRecoverable {
         logger.debug("Consensus leader is: " + msgCtx.getLeader());
         if (msgCtx.getLeader() != -1 && msgCtx.getLeader() != this.leader)
             this.leader = msgCtx.getLeader();
-
-        if (this.blockProposalThread == null) {
-            logger.debug("Starting block proposal thread");
-            this.blockProposalThreadStop = false;
-            this.blockProposalThread = new Thread(this::processNewBlock);
-            this.blockProposalThread.start();
-        }
 
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(command);
              ObjectInput objIn = new ObjectInputStream(byteIn);
@@ -399,6 +414,48 @@ public class Node extends DefaultSingleRecoverable {
                         objOut.writeInt(msgCtx.getLeader());
                         hasReply = true;
                         break;
+                    case TRANSACTION_STATUS:
+                        if (req.hasContent()) {
+                            logger.info("Processing TRANSACTION_STATUS request");
+
+                            byte[] transactionHash = req.getContent();
+
+                            TransactionStatus status = TransactionStatus.UNKNOWN;
+                            for (Transaction t : transactionPool)
+                                if (Arrays.equals(transactionHash, t.getHash())) {
+                                    status = TransactionStatus.IN_MEM_POOL;
+                                    break;
+                                }
+
+                            if (status == TransactionStatus.UNKNOWN) {
+                                List<Integer> blocksDisk = Blockchain.getBlockFileHeightArray();
+                                Collections.reverse(blocksDisk);
+
+                                for (Integer i : blocksDisk) {
+                                    Block b;
+                                    try {
+                                        b = this.blockchain.getBlock(i);
+                                    } catch (IOException | ClassNotFoundException e) {
+                                        logger.error("Error while retrieving block from disk", e);
+                                        continue;
+                                    }
+
+                                    for (byte[] hash : b.getTransactions().keySet())
+                                        if (Arrays.equals(transactionHash, hash))
+                                            status = TransactionStatus.IN_BLOCK;
+                                }
+                            }
+
+                            objOut.writeObject(status);
+                            hasReply = true;
+                        } else
+                            logger.error("Message has no content, ignoring");
+                        break;
+                    case NUMBER_NODES:
+                        logger.info("Returning number of active nodes to client");
+                        objOut.writeInt(this.replicaContext.getCurrentView().getN());
+                        hasReply = true;
+                        break;
                     default:
                         logger.error("Unknown type of ClientMessageType");
                 }
@@ -429,6 +486,7 @@ public class Node extends DefaultSingleRecoverable {
 
                         if (req.getSender() == this.replicaContext.getStaticConfiguration().getProcessId()) {
                             this.proposedBlock = recvBlock;
+                            // TODO: proposed Block lock
 
                             objOut.writeBoolean(true);
                             hasReply = true;
@@ -444,21 +502,30 @@ public class Node extends DefaultSingleRecoverable {
                          *  reply which could cause consensus breaking replica due to different blockchains
                          */
 
-                        boolean aux = recvBlock.equals(this.blockchain.getMostRecentBlock());
-                        if (this.proposedBlock == null || aux) {
-                            objOut.writeBoolean(aux);
+                        Block mostRecentBlock = this.blockchain.getMostRecentBlock();
+                        if (this.proposedBlock == null)
+                            objOut.writeBoolean(false);
+                        else if (recvBlock.equals(mostRecentBlock)) {
+                            Storage.removeFile(mostRecentBlock.getBlockFileFullName());
+                            this.blockchain.reloadBlocksFromDisk();
+                            this.blockchain.addBlock(recvBlock);
+                            objOut.writeBoolean(true);
+                        } else if (recvBlock.equals(this.proposedBlock)) {
+                            this.blockchain.addBlock(recvBlock);
+                            this.proposedBlock = null;
+                            objOut.writeBoolean(true);
                         } else {
-                            if (recvBlock.equals(this.proposedBlock)) {
-                                this.blockchain.addBlock(recvBlock);
-                                this.proposedBlock = null;
-                                objOut.writeBoolean(true);
-                            } else
-                                objOut.writeBoolean(false);
+                            this.transactionPoolLock.lock();
+                            this.transactionPool.addAll(this.proposedBlock.getTransactions().values());
+                            this.transactionPool.sort(Comparator.comparingLong(Transaction::getTimestamp));
+                            this.transactionPoolLock.unlock();
+                            this.proposedBlock = null;
+                            objOut.writeBoolean(false);
                         }
                         hasReply = true;
                         break;
                     default:
-                        logger.error("Unknown type of ReplicaMessageType");
+                        logger.error("Unknown type of NodeMessageType");
                 }
             } else
                 logger.error("Unknown message class, ignoring");
@@ -474,5 +541,28 @@ public class Node extends DefaultSingleRecoverable {
         }
 
         return reply;
+    }
+
+    public void close() {
+        logger.info("Stopping services before shutdown");
+        this.blockSyncServer.stop();
+        this.messenger.getServiceProxy().close();
+        this.blockProposalThreadStop = true;
+        try {
+            this.blockProposalThread.join();
+            logger.debug("Block proposal thread has been stopped");
+        } catch (InterruptedException e) {
+            logger.error("Unable to join block proposal thread", e);
+            logger.info("Unable to confirm block proposal thread has stopped, continuing shutdown");
+        }
+        this.blockchainValidationCheckThreadStop = true;
+        try {
+            this.blockchainValidationCheckThread.join();
+            logger.debug("Blockchain validation thread has been stopped");
+        } catch (InterruptedException e) {
+            logger.error("Unable to join Blockchain validation thread", e);
+            logger.info("Unable to confirm Blockchain validation thread has stopped, continuing shutdown");
+        }
+        replica.kill();
     }
 }

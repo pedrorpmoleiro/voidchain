@@ -2,42 +2,51 @@ package pt.ipleiria.estg.dei.pi.voidchain;
 
 import bftsmart.tom.ServiceProxy;
 
+import bitcoinj.Base58;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import pt.ipleiria.estg.dei.pi.voidchain.blockchain.Transaction;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessage;
 import pt.ipleiria.estg.dei.pi.voidchain.client.ClientMessageType;
 import pt.ipleiria.estg.dei.pi.voidchain.client.Wallet;
 import pt.ipleiria.estg.dei.pi.voidchain.util.Configuration;
-import pt.ipleiria.estg.dei.pi.voidchain.util.KeyGenerator;
+import pt.ipleiria.estg.dei.pi.voidchain.util.Keys;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 public class TestingMain {
+    private static final Logger logger = LoggerFactory.getLogger(TestingMain.class);
+
     public static void main(String[] args) {
         if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
             Security.addProvider(new BouncyCastleProvider());
 
         int id = Integer.parseInt(args[0]);
-        KeyGenerator.generatePubAndPrivKeys(id);
+        Keys.generatePubAndPrivKeys(id);
         ServiceProxy serviceProxy = new ServiceProxy(id);
 
-        Wallet wallet = Wallet.getInstance(serviceProxy.getViewManager().getStaticConf(), "&V2%v3TWsPBCnpAo");
+        logger.info("# Pub Key in Base58: " + Base58.encode(serviceProxy.getViewManager().getStaticConf().getPublicKey().getEncoded()));
 
+        Wallet wallet = Wallet.getInstance(serviceProxy.getViewManager().getStaticConf(), "&V2%v3TWsPBCnpAo".getBytes(StandardCharsets.UTF_8));
+        //Wallet wallet = new Wallet(serviceProxy.getViewManager().getStaticConf(), "&V2%v3TWsPBCnpA".getBytes(StandardCharsets.UTF_8));
+
+        logger.info("Sleeping for 5 seconds for ServiceProxy to init");
         try {
-            Thread.sleep(10000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
             return;
         }
 
         Random random = new Random(Instant.now().toEpochMilli());
-        List<Transaction> transactions = new ArrayList<>();
         Configuration config = Configuration.getInstance();
         Signature signature;
         try {
@@ -49,10 +58,13 @@ public class TestingMain {
             return;
         }
 
-        for (int i = 0; i < 700; i++) {
-            byte[] data = new byte[config.getTransactionMaxSize() - 25];
+        //List<Transaction> transactions = new ArrayList<>();
+
+        for (int i = 0; i < 1000; i++) {
+            byte[] data = new byte[config.getTransactionMaxSize() - 100];
             random.nextBytes(data);
             Transaction t;
+            logger.info("Creating Transaction " + i);
             try {
                 t = new Transaction(data, config.getProtocolVersion(), Instant.now().toEpochMilli(),
                         serviceProxy.getViewManager().getStaticConf());
@@ -60,12 +72,9 @@ public class TestingMain {
                 e.printStackTrace();
                 return;
             }
-            transactions.add(t);
-        }
-
-        System.out.println("Finished creating transactions");
-
-        /*for (Transaction t : transactions) {
+            logger.info("Created Transaction " + i);
+            //transactions.add(t);
+            // Send Transaction
             try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                  ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -74,6 +83,7 @@ public class TestingMain {
                 byteOut.flush();
                 byte[] tBytes = byteOut.toByteArray();
 
+                logger.info("Creating Message to send");
                 ClientMessage cm = new ClientMessage(ClientMessageType.ADD_TRANSACTION, tBytes);
 
                 ByteArrayOutputStream byteOut2 = new ByteArrayOutputStream();
@@ -83,13 +93,15 @@ public class TestingMain {
                 objOut2.flush();
                 byteOut2.flush();
 
-                System.out.println("Sending transaction");
+                logger.info("Sending transaction - " + i);
                 byte[] reply = serviceProxy.invokeOrdered(byteOut2.toByteArray());
 
-                if (reply.length == 0) {
+                if (reply == null || reply.length == 0) {
                     System.out.println("Empty reply from replicas");
                     continue;
                 }
+
+                logger.info("Got reply from nodes");
 
                 boolean added;
 
@@ -101,68 +113,31 @@ public class TestingMain {
                 objIn.close();
                 byteIn.close();
 
-                System.out.println("Transaction added: " + added);
+                System.out.println("Transaction " + i + " added: " + added);
 
-                if (added)
+                if (added) {
+                    logger.info("Adding transaction " + i + " to wallet");
                     wallet.addTransaction(t);
+                }
 
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
-            try {
+            /*try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
-        }*/
-
-        try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-             ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
-
-            objOut.writeObject(transactions);
-            objOut.flush();
-            byteOut.flush();
-            byte[] tBytes = byteOut.toByteArray();
-
-            ClientMessage cm = new ClientMessage(ClientMessageType.ADD_TRANSACTIONS, tBytes);
-
-            ByteArrayOutputStream byteOut2 = new ByteArrayOutputStream();
-            ObjectOutput objOut2 = new ObjectOutputStream(byteOut2);
-
-            objOut2.writeObject(cm);
-            objOut2.flush();
-            byteOut2.flush();
-
-            System.out.println("Sending all transactions");
-            byte[] reply = serviceProxy.invokeOrdered(byteOut2.toByteArray());
-
-            if (reply.length == 0) {
-                System.out.println("Empty reply from replicas");
-                return;
-            }
-
-            boolean added;
-
-            ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
-            ObjectInput objIn = new ObjectInputStream(byteIn);
-
-            added = objIn.readBoolean();
-
-            objIn.close();
-            byteIn.close();
-
-            System.out.println("Transactions added: " + added);
-
-            if (added)
-                wallet.addTransactions(transactions);
-
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
-            return;
+            }*/
         }
 
-        System.out.println("##### DONE #####");
+        //transactions.sort(Transaction.LIST_COMPARATOR);
+        //Collections.reverse(transactions);
 
+        logger.info("##### DONE #####");
+
+        logger.info("# Pub Key in Base58: " + Base58.encode(serviceProxy.getViewManager().getStaticConf().getPublicKey().getEncoded()));
+
+        serviceProxy.close();
         System.exit(0);
     }
 }
