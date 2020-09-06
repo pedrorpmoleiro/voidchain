@@ -20,9 +20,10 @@ import java.security.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/*
- * TODO
- *  JAVADOC
+/**
+ * The wallet is a storage device for the user's asymmetric keys, used by users to sign transactions and a list of the user's transactions.
+ * To secure its data, a symmetric-key algorithm, with user-created password, is applied.
+ *
  */
 
 public class Wallet implements Serializable {
@@ -50,9 +51,14 @@ public class Wallet implements Serializable {
         this.transactions = new ArrayList<>();
     }
 
-    /* Methods */
-    /* Getters */
 
+    /**
+     * Gets the instance of Wallet class
+     *
+     * @param smartConf
+     * @param password
+     * @return the Wallet class instance
+     */
     public static Wallet getInstance(TOMConfiguration smartConf, byte[] password) {
         if (INSTANCE == null)
             try {
@@ -72,6 +78,11 @@ public class Wallet implements Serializable {
         return INSTANCE;
     }
 
+    /**
+     * Gets the wallet ID
+     *
+     * @return the wallet ID
+     */
     public int getId() {
         return id;
     }
@@ -108,16 +119,32 @@ public class Wallet implements Serializable {
         return auxSize;
     }
 
+    /**
+     *  Adds a transaction to the wallet
+     *
+     * @param transaction
+     */
     public void addTransaction(Transaction transaction) {
         this.transactions.add(new Pair<>(0, transaction.getHash()));
         this.toDisk();
     }
 
+    /**
+     * Adds a transaction to the wallet plus the last block
+     *
+     * @param transaction
+     * @param lastBlockInChainHeight
+     */
     public void addTransaction(Transaction transaction, int lastBlockInChainHeight) {
         this.transactions.add(new Pair<>(lastBlockInChainHeight, transaction.getHash()));
         this.toDisk();
     }
 
+    /**
+     * Adds a batch of transactions to the wallet
+     *
+     * @param transactions
+     */
     public void addTransactions(List<Transaction> transactions) {
         transactions.forEach(transaction -> {
             this.transactions.add(new Pair<>(0, transaction.getHash()));
@@ -132,6 +159,11 @@ public class Wallet implements Serializable {
         this.toDisk();
     }
 
+    /**
+     * Saves the wallet in local disk
+     *
+     * @return true if writing/saving the wallet in the local disk was successful or false otherwise
+     */
     public boolean toDisk() {
         Configuration config = Configuration.getInstance();
 
@@ -180,6 +212,22 @@ public class Wallet implements Serializable {
                         Configuration.FILE_EXTENSION_SEPARATOR + config.getDataFileExtension());
     }
 
+    /**
+     * Loads wallet from local disk
+     *
+     * @param id
+     * @param password
+     * @return the wallet saved in local disk
+     * @throws IOException
+     * @throws ClassNotFoundException
+     * @throws NoSuchPaddingException
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     * @throws InvalidKeyException
+     * @throws BadPaddingException
+     * @throws IllegalBlockSizeException
+     * @throws InvalidAlgorithmParameterException
+     */
     public static Wallet fromDisk(int id, byte[] password) throws IOException, ClassNotFoundException,
             NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException {

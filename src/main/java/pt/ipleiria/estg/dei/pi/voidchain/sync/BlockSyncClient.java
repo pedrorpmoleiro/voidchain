@@ -37,7 +37,7 @@ public class BlockSyncClient {
     }
 
     /**
-     * Syncs blocks from other replicas to the current machine.
+     * Syncs blocks from other nodes to the current machine.
      *
      * @param allBlocks pass true if you wish to overwrite the blocks already stored in disk and false to only sync the missing blocks
      */

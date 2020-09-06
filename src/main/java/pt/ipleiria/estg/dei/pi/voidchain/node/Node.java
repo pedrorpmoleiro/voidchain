@@ -28,7 +28,9 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * The type Replica.
+ * The class Node represents the actor that actively participates in consensus, meaning it is responsible for the process of messages sent by clients and also for the block creation process.
+ * During the block creation process, only the node elected as leader possesses the ability to create and then propose a block to other nodes.
+ * If a block is accepted, all nodes append the block the their Blockchain.
  */
 public class Node extends DefaultSingleRecoverable {
     private static final Logger logger = LoggerFactory.getLogger(Node.class);
@@ -162,6 +164,9 @@ public class Node extends DefaultSingleRecoverable {
         return this.messenger.getServiceProxy();
     }
 
+    /**
+     *  Creates a block to proposed to the rest of the other nodes.
+     */
     private void createProposedBlock() {
         if (this.proposedBlock != null) return;
 
@@ -194,6 +199,9 @@ public class Node extends DefaultSingleRecoverable {
         this.transactionPoolLock.unlock();
     }
 
+    /**
+     * Appends a block the its local blockchain.
+     */
     private void processNewBlock() {
         if (this.replicaContext.getStaticConfiguration().getProcessId() == leader) {
             createProposedBlock();

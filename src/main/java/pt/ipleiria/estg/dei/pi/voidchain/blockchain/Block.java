@@ -17,11 +17,11 @@ import java.util.*;
 
 /**
  * A block is where the transactions/data are stored in,
- * and then the block is added to the blockchain if it's valid
+ * and then the block is added to the Blockchain if it's valid
  * The structure of a block follows: version, a header (which is its own class),
  * size, transaction counter, and its height.
- * In the blockchain, what identifies a block is its ID, which is the hash of its header (block header)
- * Keep in mind that the block hash is not stored in the blocks data structure nor in the blockchain,
+ * In the Blockchain, what identifies a block is its ID, which is the hash of its header (block header)
+ * Keep in mind that the block hash is not stored in the blocks data structure nor in the Blockchain,
  * it needs to be calculated if needed.
  */
 public class Block implements Serializable {
