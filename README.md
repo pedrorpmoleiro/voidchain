@@ -1,5 +1,9 @@
 # VOIDChain - A simple and high-performant distributed ledger technology platform
 
+## Made For
+* [Polytechnic of Leiria](https://www.ipleiria.pt/)
+* [VOID Software](https://void.pt/)
+
 ## Description
 
 ## Objective
@@ -10,7 +14,8 @@
 * [BouncyCastle](https://bouncycastle.org/java.html)  - A cryptography API provider
 * [AdoptOpenJDK v11](https://adoptopenjdk.net/?variant=openjdk11&jvmVariant=hotspot) -  Community driven provider for OpenJDK binaries
 * [IntelliJ IDEA](https://www.jetbrains.com/idea/) - Java IDE
-* [JUnit 5](https://junit.org/junit5/) - Java Testing Framework
+* [bitcoinj](https://github.com/bitcoinj/bitcoinj) - Java implementation of Bitcoin protocol
+* [Maven](https://maven.apache.org/) - Compilation Automation and dependency manager tool
 
 ## Planning tools
 
@@ -25,5 +30,5 @@ We used [GitKraken](https://www.gitkraken.com/) for versioning.
 
 ## Authors
 
-* **Pedro Galveias - 2161966**
-* **Pedro Moleiro - 2171264**
+* **Pedro Galveias - Student Number: 2161966**
+* **Pedro Moleiro - Student Number: 2171264**
