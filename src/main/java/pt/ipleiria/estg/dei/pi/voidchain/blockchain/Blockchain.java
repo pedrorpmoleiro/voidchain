@@ -1,5 +1,7 @@
 package pt.ipleiria.estg.dei.pi.voidchain.blockchain;
 
+import org.bouncycastle.util.encoders.Base64;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,9 +10,6 @@ import pt.ipleiria.estg.dei.pi.voidchain.util.Pair;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -31,61 +30,25 @@ public class Blockchain {
     private static Blockchain INSTANCE = null;
 
     private static final String GENESIS_STRING = "What to Know and What to Do About the Global Pandemic";
+    private static final byte[] GENESIS_SIGNATURE = Base64.decode("MEQCIFBivzXzZfe1orfaWN8PhZ6b+o0R8E2FQz8PWNfaGhn4AiBQjhCmXE59wk8ynzLGeb3FDTNCT1josFIMQhjhGVmZew==");
 
     private static final Logger logger = LoggerFactory.getLogger(Blockchain.class);
 
     /* Constructors */
 
-    private Blockchain(boolean newGenesis) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException,
-            NoSuchProviderException, IOException, InvalidKeySpecException {
+    private Blockchain(boolean newGenesis) throws IOException, NoSuchProviderException, NoSuchAlgorithmException,
+            InvalidKeySpecException, InvalidKeyException, SignatureException {
 
-        if (newGenesis) {
-            Block genesisBlock = new Block(GENESIS_STRING.getBytes(StandardCharsets.UTF_8));
-            genesisBlock.toDisk();
+        Block genesisBlock;
+        if (newGenesis)
+            genesisBlock = new Block(GENESIS_STRING.getBytes(StandardCharsets.UTF_8));
+        else
+            genesisBlock = new Block(GENESIS_STRING.getBytes(StandardCharsets.UTF_8), GENESIS_SIGNATURE);
 
-            this.blocks = new ArrayList<>();
-            this.blocks.add(genesisBlock);
-            this.sizeInMemory = genesisBlock.getSize();
-        } else {
-            Configuration config = Configuration.getInstance();
-
-            Path blockDir = Paths.get(config.getBlockFileDirectoryFull());
-
-            try {
-                Files.createDirectories(blockDir);
-            } catch (IOException e) {
-                logger.error("Unable to create config directory");
-                throw new IOException("Unable to create config dir");
-            }
-
-            String filePath = blockDir + File.separator + config.getBlockFileBaseName() +
-                    Configuration.FILE_NAME_SEPARATOR + "0" + Configuration.FILE_EXTENSION_SEPARATOR +
-                    config.getDataFileExtension();
-            String filePathJar = "blocks/block_genesis.dat";
-            if (Files.notExists(Paths.get(filePath))) {
-                InputStream in = Blockchain.class.getClassLoader().getResourceAsStream(filePathJar);
-                    File outFile = new File(filePath);
-                FileOutputStream out = new FileOutputStream(outFile);
-
-                outFile.createNewFile();
-
-                out.write(in.readAllBytes());
-                out.flush();
-                out.close();
-            }
-
-            this.blocks = new ArrayList<>();
-            this.sizeInMemory = 0;
-
-            try {
-                Block genesis = Block.fromDisk(0);
-                this.blocks.add(genesis);
-                this.sizeInMemory = genesis.getSize();
-            } catch (ClassNotFoundException e) {
-                logger.error("Unable to retrieve genesis block", e);
-                logger.warn("Continuing with empty list of blocks in memory");
-            }
-        }
+        genesisBlock.toDisk();
+        this.blocks = new ArrayList<>();
+        this.blocks.add(genesisBlock);
+        this.sizeInMemory = genesisBlock.getSize();
     }
 
     private Blockchain(List<Block> blocks, int sizeInMemory) {
@@ -106,8 +69,8 @@ public class Blockchain {
             if (r == null) {
                 try {
                     INSTANCE = new Blockchain(false);
-                } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException | IOException |
-                        NoSuchProviderException | InvalidKeySpecException e) {
+                } catch (IOException | NoSuchProviderException | NoSuchAlgorithmException | InvalidKeySpecException |
+                        InvalidKeyException | SignatureException e) {
 
                     logger.error("Unable to create Genesis Block", e);
                     INSTANCE = new Blockchain(new ArrayList<>(), 0);
@@ -117,8 +80,8 @@ public class Blockchain {
         } else {
             try {
                 INSTANCE = new Blockchain(false);
-            } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException | IOException |
-                    NoSuchProviderException | InvalidKeySpecException e) {
+            } catch (IOException | NoSuchProviderException | NoSuchAlgorithmException | InvalidKeySpecException |
+                    InvalidKeyException | SignatureException e) {
 
                 logger.error("Unable to create Genesis Block", e);
                 INSTANCE = new Blockchain(new ArrayList<>(), 0);

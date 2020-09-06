@@ -4,11 +4,12 @@ import bftsmart.reconfiguration.util.TOMConfiguration;
 
 import bitcoinj.Base58;
 
+import org.bouncycastle.util.encoders.Base64;
+
 import pt.ipleiria.estg.dei.pi.voidchain.util.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -33,9 +34,35 @@ public class Block implements Serializable {
     /* Constructors */
 
     /**
+     * Instantiates a Static Genesis Block.
+     *
+     * @param genesisBytes the genesis data
+     * @param signature the signature of the data
+     * @throws IllegalArgumentException illegal argument exception will be thrown if transaction size exceeds max
+     *                                  value of transaction
+     */
+    // FOR USE BY BLOCKCHAIN CLASS TO CREATE STAIC GENESIS BLOCK
+    protected Block(byte[] genesisBytes, byte[] signature) {
+        Configuration config = Configuration.getInstance();
+
+        // Date and time of the first meeting to plan the development of this project
+        long timestamp = 1582135200000L;
+
+        Transaction t = new Transaction(genesisBytes, config.getProtocolVersion(), timestamp, signature);
+        this.transactions = new Hashtable<>();
+        this.transactions.put(t.getHash(), t);
+
+        byte[] nonce = new byte[10];
+        new Random(timestamp).nextBytes(nonce);
+
+        this.blockHeader = new BlockHeader(new byte[0], config.getProtocolVersion(), timestamp,
+                nonce, MerkleTree.getMerkleRoot(this.transactions));
+        this.blockHeight = 0;
+        this.transactionCounter = 1;
+    }
+
+    /**
      * Instantiates a new Genesis Block.
-     * <br>
-     * The transaction contained in this block is signed by id -42
      *
      * @param genesisBytes the genesis bytes
      * @throws IllegalArgumentException illegal argument exception will be thrown if transaction size exceeds max
@@ -46,7 +73,7 @@ public class Block implements Serializable {
      *                                  transaction
      * @throws InvalidKeyException      invalid key exception will be thrown if private key is invalid
      */
-    // FOR USE BY BLOCKCHAIN CLASS TO CREATE GENESIS BLOCK
+    // FOR USE BY BLOCKCHAIN CLASS TO CREATE NEW GENESIS BLOCK
     protected Block(byte[] genesisBytes) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException,
             IOException, NoSuchProviderException, InvalidKeySpecException {
 
@@ -61,6 +88,8 @@ public class Block implements Serializable {
         signature.initSign(Keys.getPrivKey(Keys.getPrivGenesisKeyBytes(), tomConf));
         signature.update(genesisBytes);
         byte[] signatureBytes = signature.sign();
+
+        System.out.println("New Genesis Block Signature :: " + Base64.toBase64String(signatureBytes));
 
         Transaction t = new Transaction(genesisBytes, config.getProtocolVersion(), timestamp, signatureBytes);
         this.transactions = new Hashtable<>();

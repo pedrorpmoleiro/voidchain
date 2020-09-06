@@ -139,39 +139,26 @@ public class Keys {
     }
 
     public static byte[] getPubGenesisKeyBytes() throws IOException {
-        return Storage.class.getClassLoader().getResourceAsStream("keys" + File.separator +
-                "publickey-genesis").readAllBytes();
+        return Storage.class.getClassLoader().getResourceAsStream("keys/publickey-genesis").readAllBytes();
     }
 
     public static byte[] getPrivGenesisKeyBytes() throws IOException {
-        return Storage.class.getClassLoader().getResourceAsStream("keys" + File.separator +
-                "privatekey-genesis").readAllBytes();
+        return Storage.class.getClassLoader().getResourceAsStream("keys/privatekey-genesis").readAllBytes();
     }
 
     public static PublicKey getPubKey(byte[] pubKey) throws IOException, NoSuchProviderException,
             NoSuchAlgorithmException, InvalidKeySpecException {
-
         TOMConfiguration tomConf = new TOMConfiguration(-100, Configuration.CONFIG_DIR, null);
-        String signatureAlgorithmProvider = tomConf.getSignatureAlgorithmProvider();
 
-        KeyFactory keyFactory = KeyFactory.getInstance(Configuration.getInstance().getBftSmartKeyLoader(),
-                signatureAlgorithmProvider);
-        EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(pubKey);
-
-        return keyFactory.generatePublic(pubKeySpec);
+        return getPubKey(pubKey, tomConf);
     }
 
     public static PrivateKey getPrivKey(byte[] privKey) throws IOException, NoSuchProviderException,
             NoSuchAlgorithmException, InvalidKeySpecException {
 
         TOMConfiguration tomConf = new TOMConfiguration(-100, Configuration.CONFIG_DIR, null);
-        String signatureAlgorithmProvider = tomConf.getSignatureAlgorithmProvider();
 
-        KeyFactory keyFactory = KeyFactory.getInstance(Configuration.getInstance().getBftSmartKeyLoader(),
-                signatureAlgorithmProvider);
-        EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privKey);
-
-        return keyFactory.generatePrivate(privateKeySpec);
+        return getPrivKey(privKey, tomConf);
     }
 
     public static PublicKey getPubKey(byte[] pubKey, TOMConfiguration tomConf) throws IOException, NoSuchProviderException,
