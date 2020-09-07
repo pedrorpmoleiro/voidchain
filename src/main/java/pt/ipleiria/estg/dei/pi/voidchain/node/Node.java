@@ -160,12 +160,17 @@ public class Node extends DefaultSingleRecoverable {
         Runtime.getRuntime().addShutdownHook(new Thread(node::close));
     }
 
+    /**
+     * Gets messenger service proxy.
+     *
+     * @return the messenger service proxy
+     */
     public ServiceProxy getMessengerProxy() {
         return this.messenger.getServiceProxy();
     }
 
     /**
-     *  Creates a block to proposed to the rest of the other nodes.
+     *  Creates a block to propose to the rest of the other nodes or to validate proposed block.
      */
     private void createProposedBlock() {
         if (this.proposedBlock != null) return;
@@ -200,7 +205,9 @@ public class Node extends DefaultSingleRecoverable {
     }
 
     /**
-     * Appends a block the its local blockchain.
+     * If current node is leader node, creates proposed block and proposes it to the network. If the networks accepts it
+     * the block is added to the local chain, if not all the transactions stored in the proposed block are re added to
+     * the memory pool.
      */
     private void processNewBlock() {
         if (this.replicaContext.getStaticConfiguration().getProcessId() == leader) {
@@ -232,7 +239,7 @@ public class Node extends DefaultSingleRecoverable {
     }
 
     /**
-     * Adds a single transaction to the memory pool. Starts the process of proposing new blocks if conditions are met.
+     * Adds a single transaction to the memory pool.
      *
      * @param transaction the transaction
      * @return true if the transaction was successfully added to the memory pool or false otherwise
@@ -254,7 +261,7 @@ public class Node extends DefaultSingleRecoverable {
     }
 
     /**
-     * Adds a list of transactions to the memory pool. Starts the process of proposing new blocks if conditions are met.
+     * Adds a batch of transactions to the memory pool.
      *
      * @param transactions the transactions
      * @return true if the transactions were successfully added to the memory pool or false otherwise
@@ -543,6 +550,9 @@ public class Node extends DefaultSingleRecoverable {
         return reply;
     }
 
+    /**
+     * Shutdown all node services.
+     */
     public void close() {
         logger.info("Stopping services before shutdown");
         this.blockSyncServer.stop();

@@ -8,9 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-/**
- * The type Storage.
- */
 public class Storage {
     private static final Logger logger = LoggerFactory.getLogger(Storage.class);
 

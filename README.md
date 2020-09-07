@@ -1,8 +1,18 @@
 # VOIDChain - A simple and high-performant distributed ledger technology platform
 
+## Made For
+* [Polytechnic of Leiria](https://www.ipleiria.pt/)
+* [VOID Software](https://void.pt/)
+
 ## Description
+Implementation of a simple and high-performant distributed ledger technologies platform, VOIDChain, based on a popular Byzantine Fault-Tolerant state machine replication Java library, [BFT-SMaRt](https://bft-smart.github.io/library/).
+Development of an API REST service in conjunction with this application, which is available [here](https://github.com/pedrorpmoleiro/voidchain-api).
+
 
 ## Objective
+* Investigating distributed ledger technologies, crypto coins and consensus algorithm concepts and relate that knowledge with BFT-SMaRt.
+* Development of actors to populate the network, such as nodes and lightweight clients.
+* Development of a client wallet for storing asymmetric keys and transactions.
 
 ## Built With
 
@@ -10,7 +20,8 @@
 * [BouncyCastle](https://bouncycastle.org/java.html)  - A cryptography API provider
 * [AdoptOpenJDK v11](https://adoptopenjdk.net/?variant=openjdk11&jvmVariant=hotspot) -  Community driven provider for OpenJDK binaries
 * [IntelliJ IDEA](https://www.jetbrains.com/idea/) - Java IDE
-* [JUnit 5](https://junit.org/junit5/) - Java Testing Framework
+* [bitcoinj](https://github.com/bitcoinj/bitcoinj) - Java implementation of Bitcoin protocol
+* [Maven](https://maven.apache.org/) - Compilation Automation and dependency manager tool
 
 ## Planning tools
 
@@ -25,5 +36,5 @@ We used [GitKraken](https://www.gitkraken.com/) for versioning.
 
 ## Authors
 
-* **Pedro Galveias - 2161966**
-* **Pedro Moleiro - 2171264**
+* **Pedro Galveias - Student Number: 2161966**
+* **Pedro Moleiro - Student Number: 2171264**

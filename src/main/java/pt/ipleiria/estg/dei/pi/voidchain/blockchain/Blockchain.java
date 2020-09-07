@@ -30,7 +30,9 @@ public class Blockchain {
     private static Blockchain INSTANCE = null;
 
     private static final String GENESIS_STRING = "What to Know and What to Do About the Global Pandemic";
-    private static final byte[] GENESIS_SIGNATURE = Base64.decode("MEQCIFBivzXzZfe1orfaWN8PhZ6b+o0R8E2FQz8PWNfaGhn4AiBQjhCmXE59wk8ynzLGeb3FDTNCT1josFIMQhjhGVmZew==");
+    private static final byte[] GENESIS_SIGNATURE = Base64.decode(
+            "MEQCIFBivzXzZfe1orfaWN8PhZ6b+o0R8E2FQz8PWNfaGhn4AiBQjhCmXE59wk8ynzLGeb3FDTNCT1josFIMQhjhGVmZew=="
+    );
 
     private static final Logger logger = LoggerFactory.getLogger(Blockchain.class);
 
@@ -64,11 +66,13 @@ public class Blockchain {
      * @return the Blockchain class instance
      */
     public static Blockchain getInstance() {
+        final boolean newGenesis = false;
+
         if (INSTANCE == null) {
             Pair<Integer, List<Block>> r = getBlocksListFromDisk();
             if (r == null) {
                 try {
-                    INSTANCE = new Blockchain(false);
+                    INSTANCE = new Blockchain(newGenesis);
                 } catch (IOException | NoSuchProviderException | NoSuchAlgorithmException | InvalidKeySpecException |
                         InvalidKeyException | SignatureException e) {
 
@@ -79,7 +83,7 @@ public class Blockchain {
                 INSTANCE = new Blockchain(r.getO2(), r.getO1());
         } else {
             try {
-                INSTANCE = new Blockchain(false);
+                INSTANCE = new Blockchain(newGenesis);
             } catch (IOException | NoSuchProviderException | NoSuchAlgorithmException | InvalidKeySpecException |
                     InvalidKeyException | SignatureException e) {
 
@@ -88,11 +92,17 @@ public class Blockchain {
             }
         }
 
+        if (newGenesis)
+            throw new RuntimeException("New Genesis Block has been generated, check logs for the new signature to be " +
+                    "used in genesis blocks. After updating the signature please revert the newGenesis to false in " +
+                    "order to all nodes to have the same genesis block. If you wish to generate new Genesis keys " +
+                    "please run the main available in the Keys class (util package)");
+
         return INSTANCE;
     }
 
     /**
-     * Reloads blocks from disk.
+     * Reloads blocks from disk into memory.
      */
     public void reloadBlocksFromDisk() {
         logger.info("Refreshing blocks from disk to memory");
@@ -198,7 +208,7 @@ public class Blockchain {
     }
 
     /**
-     * Gets a list of block height from block files stored in disk.
+     * Gets the list of block height's from block files stored in disk.
      *
      * @return the block height list
      */

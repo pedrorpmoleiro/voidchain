@@ -20,8 +20,14 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.concurrent.TimeUnit;
 
 public class Keys {
+    /**
+     * The constant logger.
+     */
     protected static final Logger logger = LoggerFactory.getLogger(Keys.class);
 
+    /**
+     * The constant SECRET.
+     */
     protected static final String SECRET = "Q2o3^TjE9OcrcZqG";
 
     /**
@@ -138,31 +144,39 @@ public class Keys {
         }
     }
 
+    /**
+     * Returns the public key to be used for verifying the genesis block transaction. This key is stored in the JAR.
+     *
+     * @return the public genesis key
+     * @throws IOException the io exception
+     */
     public static byte[] getPubGenesisKeyBytes() throws IOException {
         return Storage.class.getClassLoader().getResourceAsStream("keys/publickey-genesis").readAllBytes();
     }
 
+    /**
+     * Returns the private key to be used for signing the genesis block transaction. This key is stored in the JAR.
+     *
+     * @return the private genesis key
+     * @throws IOException the io exception
+     */
     public static byte[] getPrivGenesisKeyBytes() throws IOException {
         return Storage.class.getClassLoader().getResourceAsStream("keys/privatekey-genesis").readAllBytes();
     }
 
-    public static PublicKey getPubKey(byte[] pubKey) throws IOException, NoSuchProviderException,
-            NoSuchAlgorithmException, InvalidKeySpecException {
-        TOMConfiguration tomConf = new TOMConfiguration(-100, Configuration.CONFIG_DIR, null);
-
-        return getPubKey(pubKey, tomConf);
-    }
-
-    public static PrivateKey getPrivKey(byte[] privKey) throws IOException, NoSuchProviderException,
-            NoSuchAlgorithmException, InvalidKeySpecException {
-
-        TOMConfiguration tomConf = new TOMConfiguration(-100, Configuration.CONFIG_DIR, null);
-
-        return getPrivKey(privKey, tomConf);
-    }
-
-    public static PublicKey getPubKey(byte[] pubKey, TOMConfiguration tomConf) throws IOException, NoSuchProviderException,
-            NoSuchAlgorithmException, InvalidKeySpecException {
+    /**
+     * Converts an encoded private key into a PrivateKey instance according to current system configurations.
+     *
+     * @param pubKey  the public key
+     * @param tomConf the tom configuration
+     * @return the public key
+     * @throws IOException              the io exception
+     * @throws NoSuchProviderException  the no such provider exception
+     * @throws NoSuchAlgorithmException the no such algorithm exception
+     * @throws InvalidKeySpecException  the invalid key spec exception
+     */
+    public static PublicKey getPubKey(byte[] pubKey, TOMConfiguration tomConf) throws IOException,
+            NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
 
         String signatureAlgorithmProvider = tomConf.getSignatureAlgorithmProvider();
 
@@ -173,8 +187,19 @@ public class Keys {
         return keyFactory.generatePublic(pubKeySpec);
     }
 
-    public static PrivateKey getPrivKey(byte[] privKey, TOMConfiguration tomConf) throws IOException, NoSuchProviderException,
-            NoSuchAlgorithmException, InvalidKeySpecException {
+    /**
+     * Converts an encoded private key into a PrivateKey instance according to current system configurations.
+     *
+     * @param privKey the private key
+     * @param tomConf the tom configuration
+     * @return the private key
+     * @throws IOException              the io exception
+     * @throws NoSuchProviderException  the no such provider exception
+     * @throws NoSuchAlgorithmException the no such algorithm exception
+     * @throws InvalidKeySpecException  the invalid key spec exception
+     */
+    public static PrivateKey getPrivKey(byte[] privKey, TOMConfiguration tomConf) throws IOException,
+            NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
 
         String signatureAlgorithmProvider = tomConf.getSignatureAlgorithmProvider();
 
@@ -211,5 +236,8 @@ public class Keys {
         outPub.write(tomConf.getPublicKey().getEncoded());
         outPub.flush();
         outPub.close();
+
+        System.out.println("New genesis block keys generated, don't forget to replace the keys in the 'src/main/" +
+                "resources/keys' folder with the new keys generated inside the 'config' folder");
     }
 }
