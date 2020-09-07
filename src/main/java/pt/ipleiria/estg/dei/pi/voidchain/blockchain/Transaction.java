@@ -183,6 +183,7 @@ public class Transaction implements Serializable {
      * @throws InvalidKeySpecException  the invalid key spec exception
      * @throws InvalidKeyException      the invalid key exception
      * @throws SignatureException       the signature exception
+     * @throws IOException              the io exception
      */
     public boolean verifySignature(byte[] pubKey) throws NoSuchAlgorithmException, NoSuchProviderException,
             InvalidKeySpecException, InvalidKeyException, SignatureException, IOException {

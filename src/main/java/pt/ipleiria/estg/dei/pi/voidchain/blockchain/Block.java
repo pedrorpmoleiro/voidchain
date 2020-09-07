@@ -37,9 +37,8 @@ public class Block implements Serializable {
      * Instantiates a Static Genesis Block.
      *
      * @param genesisBytes the genesis data
-     * @param signature the signature of the data
-     * @throws IllegalArgumentException illegal argument exception will be thrown if transaction size exceeds max
-     *                                  value of transaction
+     * @param signature    the signature of the data
+     * @throws IllegalArgumentException illegal argument exception will be thrown if transaction size exceeds max                                  value of transaction
      */
     // FOR USE BY BLOCKCHAIN CLASS TO CREATE STAIC GENESIS BLOCK
     protected Block(byte[] genesisBytes, byte[] signature) {
@@ -65,13 +64,12 @@ public class Block implements Serializable {
      * Instantiates a new Genesis Block.
      *
      * @param genesisBytes the genesis bytes
-     * @throws IllegalArgumentException illegal argument exception will be thrown if transaction size exceeds max
-     *                                  value of transaction
-     * @throws SignatureException       signature exception will be thrown if error occurs while signing the transaction
-     *                                  data
-     * @throws NoSuchAlgorithmException no such algorithm exception will be thrown if algorithm for signing the
-     *                                  transaction
+     * @throws NoSuchAlgorithmException no such algorithm exception will be thrown if algorithm for signing the                                  transaction
      * @throws InvalidKeyException      invalid key exception will be thrown if private key is invalid
+     * @throws SignatureException       signature exception will be thrown if error occurs while signing the transaction                                  data
+     * @throws IOException              the io exception
+     * @throws NoSuchProviderException  the no such provider exception
+     * @throws InvalidKeySpecException  the invalid key spec exception
      */
     // FOR USE BY BLOCKCHAIN CLASS TO CREATE NEW GENESIS BLOCK
     protected Block(byte[] genesisBytes) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException,
@@ -308,10 +306,21 @@ public class Block implements Serializable {
                 this.getSize());
     }
 
+    /**
+     * Gets block file full name.
+     *
+     * @return the block file full name
+     */
     public String getBlockFileFullName() {
         return getBlockFileFullName(this.blockHeight);
     }
 
+    /**
+     * Gets block file full name.
+     *
+     * @param height the height
+     * @return the block file full name
+     */
     public static String getBlockFileFullName(int height) {
         Configuration config = Configuration.getInstance();
 

@@ -30,7 +30,9 @@ public class Blockchain {
     private static Blockchain INSTANCE = null;
 
     private static final String GENESIS_STRING = "What to Know and What to Do About the Global Pandemic";
-    private static final byte[] GENESIS_SIGNATURE = Base64.decode("MEQCIFBivzXzZfe1orfaWN8PhZ6b+o0R8E2FQz8PWNfaGhn4AiBQjhCmXE59wk8ynzLGeb3FDTNCT1josFIMQhjhGVmZew==");
+    private static final byte[] GENESIS_SIGNATURE = Base64.decode(
+            "MEQCIFBivzXzZfe1orfaWN8PhZ6b+o0R8E2FQz8PWNfaGhn4AiBQjhCmXE59wk8ynzLGeb3FDTNCT1josFIMQhjhGVmZew=="
+    );
 
     private static final Logger logger = LoggerFactory.getLogger(Blockchain.class);
 
@@ -100,7 +102,7 @@ public class Blockchain {
     }
 
     /**
-     * Reloads blocks from disk.
+     * Reloads blocks from disk into memory.
      */
     public void reloadBlocksFromDisk() {
         logger.info("Refreshing blocks from disk to memory");
@@ -206,7 +208,7 @@ public class Blockchain {
     }
 
     /**
-     * Gets a list of block height from block files stored in disk.
+     * Gets the list of block height's from block files stored in disk.
      *
      * @return the block height list
      */

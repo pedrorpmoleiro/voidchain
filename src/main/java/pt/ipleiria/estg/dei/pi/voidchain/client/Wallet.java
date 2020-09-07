@@ -23,9 +23,7 @@ import java.util.List;
 /**
  * The wallet is a storage device for the user's asymmetric keys, used by users to sign transactions and a list of the user's transactions.
  * To secure its data, a symmetric-key algorithm, with user-created password, is applied.
- *
  */
-
 public class Wallet implements Serializable {
     /* Attributes */
     private int id;
@@ -55,8 +53,8 @@ public class Wallet implements Serializable {
     /**
      * Gets the instance of Wallet class
      *
-     * @param smartConf
-     * @param password
+     * @param smartConf the smart conf
+     * @param password  the password
      * @return the Wallet class instance
      */
     public static Wallet getInstance(TOMConfiguration smartConf, byte[] password) {
@@ -87,22 +85,47 @@ public class Wallet implements Serializable {
         return id;
     }
 
+    /**
+     * Gets private key.
+     *
+     * @return the private key
+     */
     public PrivateKey getPrivateKey() {
         return privateKey;
     }
 
+    /**
+     * Gets public key.
+     *
+     * @return the public key
+     */
     public PublicKey getPublicKey() {
         return publicKey;
     }
 
+    /**
+     * Gets the SHA3_256 hash of the password.
+     *
+     * @return the hash of the password
+     */
     public byte[] getPassword() {
         return password;
     }
 
+    /**
+     * Gets transactions.
+     *
+     * @return the transactions
+     */
     public List<Pair<Integer, byte[]>> getTransactions() {
         return transactions;
     }
 
+    /**
+     * Gets size of the wallet in bytes.
+     *
+     * @return the size
+     */
     public int getSize() {
         int auxSize = Integer.BYTES + password.length;
 
@@ -120,9 +143,9 @@ public class Wallet implements Serializable {
     }
 
     /**
-     *  Adds a transaction to the wallet
+     * Adds a transaction to the wallet
      *
-     * @param transaction
+     * @param transaction the transaction
      */
     public void addTransaction(Transaction transaction) {
         this.transactions.add(new Pair<>(0, transaction.getHash()));
@@ -132,8 +155,8 @@ public class Wallet implements Serializable {
     /**
      * Adds a transaction to the wallet plus the last block
      *
-     * @param transaction
-     * @param lastBlockInChainHeight
+     * @param transaction            the transaction
+     * @param lastBlockInChainHeight the last block in chain height
      */
     public void addTransaction(Transaction transaction, int lastBlockInChainHeight) {
         this.transactions.add(new Pair<>(lastBlockInChainHeight, transaction.getHash()));
@@ -143,7 +166,7 @@ public class Wallet implements Serializable {
     /**
      * Adds a batch of transactions to the wallet
      *
-     * @param transactions
+     * @param transactions the transactions
      */
     public void addTransactions(List<Transaction> transactions) {
         transactions.forEach(transaction -> {
@@ -152,6 +175,12 @@ public class Wallet implements Serializable {
         this.toDisk();
     }
 
+    /**
+     * Add transactions.
+     *
+     * @param transactions           the transactions
+     * @param lastBlockInChainHeight the last block in chain height
+     */
     public void addTransactions(List<Transaction> transactions, int lastBlockInChainHeight) {
         transactions.forEach(transaction -> {
             this.transactions.add(new Pair<>(lastBlockInChainHeight, transaction.getHash()));
@@ -215,18 +244,18 @@ public class Wallet implements Serializable {
     /**
      * Loads wallet from local disk
      *
-     * @param id
-     * @param password
+     * @param id       the id
+     * @param password the password
      * @return the wallet saved in local disk
-     * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws NoSuchPaddingException
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchProviderException
-     * @throws InvalidKeyException
-     * @throws BadPaddingException
-     * @throws IllegalBlockSizeException
-     * @throws InvalidAlgorithmParameterException
+     * @throws IOException                        the io exception
+     * @throws ClassNotFoundException             the class not found exception
+     * @throws NoSuchPaddingException             the no such padding exception
+     * @throws NoSuchAlgorithmException           the no such algorithm exception
+     * @throws NoSuchProviderException            the no such provider exception
+     * @throws InvalidKeyException                the invalid key exception
+     * @throws BadPaddingException                the bad padding exception
+     * @throws IllegalBlockSizeException          the illegal block size exception
+     * @throws InvalidAlgorithmParameterException the invalid algorithm parameter exception
      */
     public static Wallet fromDisk(int id, byte[] password) throws IOException, ClassNotFoundException,
             NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException,
